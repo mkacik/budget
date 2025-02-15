@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
 use budget::database::Database;
-use budget::import::{bank_mapping_for_testing, shop_mapping_for_testing};
+use budget::record_mapping::{bank_mapping_for_testing, shop_mapping_for_testing};
 use budget::statement_import_config::StatementImportConfig;
 
 #[derive(Parser, Debug)]

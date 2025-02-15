@@ -2,7 +2,7 @@ use sqlx::sqlite::SqliteRow;
 use sqlx::{FromRow, Row};
 
 use crate::database::{get_column_decode_error, Database, ID};
-use crate::import::RecordMapping;
+use crate::record_mapping::RecordMapping;
 
 pub struct StatementImportConfig {
     pub id: ID,

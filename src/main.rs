@@ -3,11 +3,11 @@ use clap::Parser;
 mod database;
 mod datetime;
 mod expense;
-mod import;
+mod record_mapping;
 mod statement_import_config;
 
 use crate::database::Database;
-use crate::import::parse_statement;
+use crate::record_mapping::parse_statement;
 use crate::statement_import_config::StatementImportConfig;
 
 #[derive(Parser, Debug)]
