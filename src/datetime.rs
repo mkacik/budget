@@ -3,8 +3,9 @@ use chrono::offset::Utc;
 use chrono::{DateTime, Datelike, Timelike};
 use chrono_tz::America::Chicago;
 use dateparser::parse_with;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TZ {
     Local,
     UTC,

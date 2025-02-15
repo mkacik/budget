@@ -1,9 +1,10 @@
 use csv::{Reader, StringRecord};
+use serde::{Deserialize, Serialize};
 
 use crate::datetime::{to_local_date, to_local_time, TZ};
 use crate::expense::Expense;
 
-pub fn default_mapping_for_testing() -> RecordMapping {
+pub fn bank_mapping_for_testing() -> RecordMapping {
     RecordMapping {
         transaction_date: TransactionDate::FromColumn {
             col: 0,
@@ -45,29 +46,29 @@ pub fn parse_statement(mapping: &RecordMapping, path: String) -> anyhow::Result<
 
 type ColID = usize;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TransactionDate {
     FromColumn { col: ColID, tz: TZ },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TransactionTime {
     FromColumn { col: ColID, tz: TZ },
     Empty,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Amount {
     FromColumn { col: ColID },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum OptionalText {
     FromColumn { col: ColID },
     Empty,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RequiredText {
     FromColumn { col: ColID },
 }
@@ -145,6 +146,7 @@ impl RequiredText {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct RecordMapping {
     pub transaction_date: TransactionDate,
     pub transaction_time: TransactionTime,

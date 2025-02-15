@@ -1,10 +1,14 @@
 use clap::Parser;
 
+mod database;
 mod datetime;
 mod expense;
 mod import;
+mod statement_import_config;
 
-use crate::import::{default_mapping_for_testing, parse_statement, shop_mapping_for_testing};
+use crate::database::Database;
+use crate::import::parse_statement;
+use crate::statement_import_config::StatementImportConfig;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -14,12 +18,18 @@ struct Args {
     shop: bool,
 }
 
-fn main() {
-    let args = Args::parse();
+#[tokio::main]
+async fn main() {
+    let db = Database::init().await;
 
-    let mapping = match args.shop {
-        false => default_mapping_for_testing(),
-        true => shop_mapping_for_testing(),
+    let args = Args::parse();
+    let mapping_name = match args.shop {
+        false => "bank",
+        true => "shop",
     };
-    let _ = parse_statement(&mapping, args.file);
+
+    let import_config = StatementImportConfig::fetch_by_name(&db, mapping_name)
+        .await
+        .unwrap();
+    let _ = parse_statement(&import_config.record_mapping, args.file);
 }
