@@ -100,11 +100,11 @@ impl Account {
 
         let class = serde_json::to_string(&self.class)?;
         sqlx::query!(
-      "UPDATE accounts SET name = ?1, class = ?2, statement_import_config_id = ?3 WHERE id = ?4",
+      "UPDATE accounts SET name = ?2, class = ?3, statement_import_config_id = ?4 WHERE id = ?1",
+      self.id,
       self.name,
       class,
-      self.statement_import_config_id,
-      self.id
+      self.statement_import_config_id
     )
         .execute(&mut *conn)
         .await?;
