@@ -4,35 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::datetime::{to_local_date, to_local_time, TZ};
 use crate::expense::Expense;
 
-pub fn bank_mapping_for_testing() -> RecordMapping {
-    RecordMapping {
-        transaction_date: TransactionDate::FromColumn {
-            col: 0,
-            tz: TZ::Local,
-        },
-        transaction_time: TransactionTime::Empty,
-        description: RequiredText::FromColumn { col: 1 },
-        amount: Amount::FromColumn { col: 2 },
-        details: OptionalText::Empty,
-    }
-}
-
-pub fn shop_mapping_for_testing() -> RecordMapping {
-    RecordMapping {
-        transaction_date: TransactionDate::FromColumn {
-            col: 2,
-            tz: TZ::UTC,
-        },
-        transaction_time: TransactionTime::FromColumn {
-            col: 2,
-            tz: TZ::UTC,
-        },
-        description: RequiredText::FromColumn { col: 23 },
-        amount: Amount::FromColumn { col: 10 },
-        details: OptionalText::FromColumn { col: 12 },
-    }
-}
-
 pub fn parse_statement(mapping: &RecordMapping, path: String) -> anyhow::Result<()> {
     let mut reader = Reader::from_path(path)?;
     for result in reader.records() {
@@ -146,7 +117,7 @@ impl RequiredText {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RecordMapping {
     pub transaction_date: TransactionDate,
     pub transaction_time: TransactionTime,
