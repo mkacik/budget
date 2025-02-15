@@ -1,19 +1,8 @@
-use csv::{Reader, StringRecord};
+use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 
 use crate::datetime::{to_local_date, to_local_time, TZ};
 use crate::expense::Expense;
-
-pub fn parse_statement(mapping: &RecordMapping, path: String) -> anyhow::Result<()> {
-    let mut reader = Reader::from_path(path)?;
-    for result in reader.records() {
-        let record = result?;
-        let expense = mapping.record_to_expense(record);
-        println!("{:?}", expense);
-    }
-
-    Ok(())
-}
 
 type ColID = usize;
 
@@ -127,7 +116,7 @@ pub struct RecordMapping {
 }
 
 impl RecordMapping {
-    fn record_to_expense(&self, record: StringRecord) -> anyhow::Result<Expense> {
+    pub fn record_to_expense(&self, record: StringRecord) -> anyhow::Result<Expense> {
         let transaction_date = self.transaction_date.from_record(&record)?;
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;
@@ -135,6 +124,8 @@ impl RecordMapping {
         let details = self.details.from_record(&record)?;
 
         let expense = Expense {
+            id: None,
+            account_id: None,
             transaction_date: transaction_date,
             transaction_time: transaction_time,
             description: description,
