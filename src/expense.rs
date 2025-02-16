@@ -22,7 +22,47 @@ pub struct Expense {
     pub details: Option<String>,
 }
 
+pub struct LatestTransactions {
+    pub date: String,
+    pub transactions: Vec<Expense>,
+}
+
 impl Expense {
+    pub async fn fetch_latest_transactions(
+        db: &Database,
+        account_id: ID,
+    ) -> anyhow::Result<Option<LatestTransactions>> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        let result = sqlx::query_scalar!(
+            "SELECT transaction_date FROM expenses WHERE account_id = ?1
+            ORDER BY transaction_date DESC LIMIT 1",
+            account_id,
+        )
+        .fetch_optional(&mut *conn)
+        .await?;
+
+        let date: String = match result {
+            Some(value) => value,
+            None => return Ok(None),
+        };
+
+        let transactions = sqlx::query_as::<_, Expense>(
+            "SELECT * FROM expenses WHERE account_id = ?1 AND transaction_date = ?2",
+        )
+        .bind(account_id)
+        .bind(&date)
+        .fetch_all(&mut *conn)
+        .await?;
+
+        let latest_transactions = LatestTransactions {
+            date: date,
+            transactions: transactions,
+        };
+
+        Ok(Some(latest_transactions))
+    }
+
     pub async fn save(&mut self, db: &Database) -> anyhow::Result<()> {
         match self.id {
             None => self.insert(db).await,
