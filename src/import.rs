@@ -1,4 +1,4 @@
-use csv::{Reader, StringRecord};
+use csv::Reader;
 use std::cmp::Ordering;
 
 use crate::account::Account;
@@ -85,11 +85,11 @@ fn deduplicate_expenses(
 }
 
 // TODO: consider vec.dedup_by
-fn remove_duplicates(mut new: Vec<Expense>, mut old: Vec<Expense>) -> Vec<Expense> {
+fn remove_duplicates(mut new: Vec<Expense>, old: Vec<Expense>) -> Vec<Expense> {
     for old_expense in old {
         let mut dupe_index: Option<usize> = None;
         for (index, new_expense) in new.iter().enumerate() {
-            if (is_duplicate(&new_expense, &old_expense)) {
+            if is_duplicate(&new_expense, &old_expense) {
                 dupe_index = Some(index);
                 break;
             }
@@ -110,16 +110,16 @@ fn is_duplicate(new: &Expense, old: &Expense) -> bool {
     //  - date, because this function is only called when date is the same
     //  - id, because it's None before expense is saved in db
     //  - account_id, because it's set only right before writing to db
-    if (new.transaction_time != old.transaction_time) {
+    if new.transaction_time != old.transaction_time {
         return false;
     }
-    if (new.description != old.description) {
+    if new.description != old.description {
         return false;
     }
-    if (new.amount != old.amount) {
+    if new.amount != old.amount {
         return false;
     }
-    if (new.details != old.details) {
+    if new.details != old.details {
         return false;
     }
     return true;
