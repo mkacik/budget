@@ -18,7 +18,8 @@ CREATE TABLE expenses (
   transaction_time TEXT,
   description TEXT NOT NULL,
   amount DOUBLE NOT NULL,
-  details TEXT
+  details TEXT,
+  category_id INTEGER
 );
 
 CREATE TABLE budget_categories (

@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 
 use crate::account::Account;
 use crate::database::Database;
-use crate::expense::{Expense, LatestTransactions};
+use crate::expense::{Expense, LatestExpenses};
 use crate::record_mapping::RecordMapping;
 use crate::statement_import_config::StatementImportConfig;
 
@@ -27,7 +27,7 @@ pub async fn process_statement(
 
     let mut expenses = read_expenses(&config.record_mapping, path).await?;
 
-    let mut deduplicated = match Expense::fetch_latest_transactions(&db, account.id).await? {
+    let mut deduplicated = match Expense::fetch_latest_expenses(&db, account.id).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
         None => expenses,
     };
@@ -60,7 +60,7 @@ async fn read_expenses(mapping: &RecordMapping, path: String) -> anyhow::Result<
 
 fn deduplicate_expenses(
     expenses: Vec<Expense>,
-    latest_transactions: LatestTransactions,
+    latest_logged_expenses: LatestExpenses,
 ) -> Vec<Expense> {
     // 1. Split expenses into 3 groups based on transaction date and the latest expense in db:
     //  * expenses older than last "seen" transactions - throw those away, we already logged them
@@ -71,14 +71,14 @@ fn deduplicate_expenses(
 
     for expense in expenses {
         let expense_date = &expense.transaction_date;
-        match expense_date.cmp(&latest_transactions.date) {
+        match expense_date.cmp(&latest_logged_expenses.date) {
             Ordering::Less => {}
             Ordering::Greater => new_only.push(expense),
             Ordering::Equal => maybe_duplicates.push(expense),
         }
     }
 
-    let mut deduplicated = remove_duplicates(maybe_duplicates, latest_transactions.transactions);
+    let mut deduplicated = remove_duplicates(maybe_duplicates, latest_logged_expenses.transactions);
     deduplicated.append(&mut new_only);
 
     deduplicated

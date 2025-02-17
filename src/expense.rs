@@ -20,18 +20,19 @@ pub struct Expense {
     pub description: String,
     pub amount: f64,
     pub details: Option<String>,
+    pub category_id: ID,
 }
 
-pub struct LatestTransactions {
+pub struct LatestExpenses {
     pub date: String,
     pub transactions: Vec<Expense>,
 }
 
 impl Expense {
-    pub async fn fetch_latest_transactions(
+    pub async fn fetch_latest_expenses(
         db: &Database,
         account_id: ID,
-    ) -> anyhow::Result<Option<LatestTransactions>> {
+    ) -> anyhow::Result<Option<LatestExpenses>> {
         let mut conn = db.acquire_db_conn().await?;
 
         let result = sqlx::query_scalar!(
@@ -55,7 +56,7 @@ impl Expense {
         .fetch_all(&mut *conn)
         .await?;
 
-        let latest_transactions = LatestTransactions {
+        let latest_transactions = LatestExpenses {
             date: date,
             transactions: transactions,
         };
@@ -66,7 +67,9 @@ impl Expense {
     pub async fn save(&mut self, db: &Database) -> anyhow::Result<()> {
         match self.id {
             None => self.insert(db).await,
-            _ => self.update(db).await,
+            _ => Err(anyhow::anyhow!(
+                "Only newly added expenses can be saved through this path"
+            )),
         }
     }
 
@@ -98,29 +101,28 @@ impl Expense {
         Ok(())
     }
 
-    async fn update(&self, db: &Database) -> anyhow::Result<()> {
+    pub async fn set_category(&mut self, db: &Database, category_id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
+        self.assert_id_set()?;
         sqlx::query!(
-            "UPDATE expenses SET
-        account_id = ?2,
-        transaction_date = ?3,
-        transaction_time = ?4,
-        description = ?5,
-        amount = ?6,
-        details = ?7
-      WHERE id = ?1",
-            self.id,
-            self.account_id,
-            self.transaction_date,
-            self.transaction_time,
-            self.description,
-            self.amount,
-            self.details
+            "UPDATE expenses SET category_id = ?1 WHERE id = ?2",
+            category_id,
+            self.id
         )
         .execute(&mut *conn)
         .await?;
+        self.category_id = category_id;
 
         Ok(())
+    }
+
+    fn assert_id_set(&self) -> anyhow::Result<()> {
+        match self.id {
+            Some(_) => Ok(()),
+            None => Err(anyhow::anyhow!(
+                "Attempting to mutate object not yet saved to DB!"
+            )),
+        }
     }
 }

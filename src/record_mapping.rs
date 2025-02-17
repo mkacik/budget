@@ -131,6 +131,7 @@ impl RecordMapping {
             description: description,
             amount: amount,
             details: details,
+            category_id: None,
         };
 
         Ok(expense)
