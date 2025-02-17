@@ -1,6 +1,7 @@
 use clap::Parser;
 
 mod account;
+mod budget;
 mod database;
 mod datetime;
 mod expense;
