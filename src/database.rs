@@ -16,16 +16,6 @@ pub async fn get_db_pool() -> SqlitePool {
     }
 }
 
-pub fn get_column_decode_error(column: String, details: String) -> sqlx::Error {
-    let source: Box<dyn std::error::Error + 'static + Send + Sync> = details.into();
-    let error = sqlx::Error::ColumnDecode {
-        index: column,
-        source: source,
-    };
-
-    error
-}
-
 pub type DatabaseConnection = PoolConnection<Sqlite>;
 
 pub struct Database {
