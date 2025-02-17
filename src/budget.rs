@@ -41,34 +41,6 @@ impl BudgetAmount {
     }
 }
 
-impl<'r, DB: sqlx::Database> sqlx::Decode<'r, DB> for BudgetAmount
-where
-    &'r str: sqlx::Decode<'r, DB>,
-{
-    fn decode(
-        value: <DB as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<BudgetAmount, Box<dyn std::error::Error + 'static + Send + Sync>> {
-        let json_string = <&str as sqlx::Decode<DB>>::decode(value)?;
-
-        let value: BudgetAmount = match serde_json::from_str(json_string) {
-            Ok(value) => value,
-            Err(e) => {
-                let err: Box<dyn std::error::Error + 'static + Send + Sync> =
-                    format!("{:?}", e).into();
-                return Err(err);
-            }
-        };
-
-        Ok(value)
-    }
-}
-
-impl sqlx::Type<sqlx::Sqlite> for BudgetAmount {
-    fn type_info() -> <sqlx::Sqlite as sqlx::Database>::TypeInfo {
-        <&str as sqlx::Type<sqlx::Sqlite>>::type_info()
-    }
-}
-
 #[derive(Debug, sqlx::FromRow)]
 pub struct Budget {
     pub categories: Vec<BudgetCategory>,

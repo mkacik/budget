@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
-use sqlx::sqlite::SqliteRow;
-use sqlx::{FromRow, Row};
 
-use crate::database::{get_column_decode_error, Database, ID};
+use crate::database::{Database, ID};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum AccountClass {
@@ -11,39 +9,12 @@ pub enum AccountClass {
     Shop,
 }
 
-#[derive(Debug)]
+#[derive(Debug, sqlx::FromRow)]
 pub struct Account {
     pub id: ID,
     pub name: String,
     pub class: AccountClass,
     pub statement_import_config_id: ID,
-}
-
-impl FromRow<'_, SqliteRow> for Account {
-    fn from_row(row: &SqliteRow) -> sqlx::Result<Self> {
-        let id: ID = row.try_get("id")?;
-        let name: String = row.try_get("name")?;
-        let class_json_string = row.try_get("class")?;
-        let class: AccountClass = match serde_json::from_str(class_json_string) {
-            Ok(value) => value,
-            Err(_) => {
-                let details = format!(
-                    "Could not deserialize value into AccountClass: {:?}",
-                    class_json_string
-                );
-                let error = get_column_decode_error(String::from("class"), details);
-                return Err(error);
-            }
-        };
-        let statement_import_config_id: ID = row.try_get("statement_import_config_id")?;
-
-        Ok(Account {
-            id: id,
-            name: name,
-            class: class,
-            statement_import_config_id: statement_import_config_id,
-        })
-    }
 }
 
 impl Account {

@@ -3,6 +3,7 @@ use clap::Parser;
 mod account;
 mod budget;
 mod database;
+mod database_enum;
 mod datetime;
 mod expense;
 mod import;
