@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 use budget::account::{Account, AccountClass};
+use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
 use budget::database::Database;
 use budget::datetime::TZ;
 use budget::record_mapping::{
@@ -25,16 +26,24 @@ async fn main() {
 
     let args = Args::parse();
     let _ = match args.command {
-        Command::Seed => seed_db_for_testing(db).await,
+        Command::Seed => match seed_db_for_testing(db).await {
+            Ok(_) => {}
+            Err(e) => {
+                println!("{:?}", e);
+            }
+        },
     };
 }
 
 async fn seed_db_for_testing(db: Database) -> anyhow::Result<()> {
     add_statement_import_configs(&db).await?;
     add_accounts(&db).await?;
+    add_budget(&db).await?;
 
     print_statement_import_configs(&db).await?;
     print_accounts(&db).await?;
+    print_budget(&db).await?;
+
     Ok(())
 }
 
@@ -142,6 +151,88 @@ async fn print_accounts(db: &Database) -> anyhow::Result<()> {
     for account in accounts {
         println!("{:?}", account);
     }
+
+    Ok(())
+}
+
+async fn add_budget(db: &Database) -> anyhow::Result<()> {
+    let mut items = vec![];
+
+    let mut car = BudgetCategory {
+        id: None,
+        name: String::from("Car"),
+    };
+    car.save(&db).await?;
+
+    let mut shopping = BudgetCategory {
+        id: None,
+        name: String::from("Shopping"),
+    };
+    shopping.save(&db).await?;
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: car.id,
+        name: String::from("Fuel"),
+        amount: BudgetAmount::Weekly { amount: 50. },
+    });
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: car.id,
+        name: String::from("Loan"),
+        amount: BudgetAmount::Monthly { amount: 300. },
+    });
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: car.id,
+        name: String::from("Insurance"),
+        amount: BudgetAmount::Yearly { amount: 1000. },
+    });
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: car.id,
+        name: String::from("Downpayment"),
+        amount: BudgetAmount::EveryXYears {
+            x: 5,
+            amount: 5000.,
+        },
+    });
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: shopping.id,
+        name: String::from("Groceries"),
+        amount: BudgetAmount::Weekly { amount: 100. },
+    });
+
+    items.push(BudgetItem {
+        id: None,
+        category_id: shopping.id,
+        name: String::from("Clothing"),
+        amount: BudgetAmount::Monthly { amount: 200. },
+    });
+
+    for mut item in items {
+        item.save(&db).await?;
+    }
+
+    Ok(())
+}
+
+async fn print_budget(db: &Database) -> anyhow::Result<()> {
+    let categories = BudgetCategory::fetch_all(&db).await?;
+    let items = BudgetItem::fetch_all(&db).await?;
+
+    let budget = Budget {
+        categories: categories,
+        items: items,
+    };
+
+    println!("Yearly amount: {:.2}", budget.per_year());
+    println!("Monthly amount: {:.2}", budget.per_month());
 
     Ok(())
 }

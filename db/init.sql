@@ -21,3 +21,14 @@ CREATE TABLE expenses (
   details TEXT
 );
 
+CREATE TABLE budget_categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE budget_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  amount TEXT NOT NULL
+);
