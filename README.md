@@ -1,5 +1,4 @@
 # Budget app
----
 ## Build
 ### Rust
 ```
@@ -9,7 +8,6 @@ cargo build
 ```
 npm run build
 ```
----
 ## Run
 ### Rust
 ```
