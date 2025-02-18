@@ -1,4 +1,6 @@
 /db/budget.db
+/js/node_modules
 /target
 /test-data
+/www/static/bundle.js
 **/*.swp

@@ -1,4 +1,7 @@
-use clap::Parser;
+#[macro_use]
+extern crate rocket;
+
+use clap::{Parser, Subcommand};
 
 mod account;
 mod budget;
@@ -8,38 +11,66 @@ mod datetime;
 mod expense;
 mod import;
 mod record_mapping;
+mod routes;
+mod server;
 mod statement_import_config;
 
 use crate::account::Account;
 use crate::database::Database;
 use crate::import::process_statement;
 
-#[derive(Parser, Debug)]
+#[derive(Debug, Parser)]
 struct Args {
-    account: String,
-    file: String,
+    #[clap(subcommand)]
+    command: Command,
 }
 
-#[tokio::main]
+#[derive(Debug, Subcommand)]
+enum Command {
+    Import {
+        account_name: String,
+        file_path: String,
+    },
+    Server,
+}
+
+#[rocket::main]
 async fn main() {
     let db = Database::init().await;
 
     let args = Args::parse();
-    let account_name = args.account;
 
-    let account = match Account::fetch_by_name(&db, &account_name).await {
-        Ok(value) => value,
-        _ => {
-            println!("Could not find account '{}'", account_name);
-            return;
-        }
-    };
+    match args.command {
+        Command::Import {
+            account_name,
+            file_path,
+        } => {
+            let account = match Account::fetch_by_name(&db, &account_name).await {
+                Ok(value) => value,
+                _ => {
+                    println!("Could not find account '{}'", account_name);
+                    return;
+                }
+            };
 
-    match process_statement(&db, &account, args.file).await {
-        Ok(_) => {}
-        Err(e) => {
-            println!("{:?}", e);
-            return;
+            match process_statement(&db, &account, file_path).await {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("{:?}", e);
+                    return;
+                }
+            };
         }
-    };
+        Command::Server => {
+            let rocket = server::run().await;
+
+            match rocket {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("{:?}", e);
+                    return;
+                }
+            }
+        }
+    }
 }
