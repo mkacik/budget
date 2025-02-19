@@ -1,3 +1,4 @@
 [env]
 RUST_BACKTRACE="1"
 DATABASE_URL="sqlite:db/budget.db"
+TS_RS_EXPORT_DIR="js/src/types"

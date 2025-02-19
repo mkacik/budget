@@ -4,6 +4,7 @@ extern crate rocket;
 use clap::{Parser, Subcommand};
 
 mod account;
+mod api_routes;
 mod budget;
 mod database;
 mod database_enum;
@@ -36,8 +37,6 @@ enum Command {
 
 #[rocket::main]
 async fn main() {
-    let db = Database::init().await;
-
     let args = Args::parse();
 
     match args.command {
@@ -45,6 +44,7 @@ async fn main() {
             account_name,
             file_path,
         } => {
+            let db = Database::init().await;
             let account = match Account::fetch_by_name(&db, &account_name).await {
                 Ok(value) => value,
                 _ => {

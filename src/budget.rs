@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::database::{Database, ID};
 
@@ -8,13 +9,13 @@ type DollarAmount = f64;
 const WEEKS_PER_YEAR: f64 = 52.0;
 const MONTHS_PER_YEAR: f64 = 12.0;
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct BudgetCategory {
     pub id: ID,
     pub name: String,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct BudgetItem {
     pub id: ID,
     pub category_id: ID,
@@ -22,7 +23,7 @@ pub struct BudgetItem {
     pub amount: BudgetAmount,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, TS)]
 pub enum BudgetAmount {
     Weekly { amount: DollarAmount },
     Monthly { amount: DollarAmount },
@@ -38,28 +39,6 @@ impl BudgetAmount {
             BudgetAmount::Yearly { amount } => amount.clone(),
             BudgetAmount::EveryXYears { x, amount } => amount / (*x as DollarAmount),
         }
-    }
-}
-
-#[derive(Debug, sqlx::FromRow)]
-pub struct Budget {
-    pub categories: Vec<BudgetCategory>,
-    pub items: Vec<BudgetItem>,
-}
-
-// Temporary until UI is implemented
-impl Budget {
-    pub fn per_year(&self) -> DollarAmount {
-        let mut amount: DollarAmount = 0.;
-        for item in &self.items {
-            amount += item.amount.per_year();
-        }
-
-        amount
-    }
-
-    pub fn per_month(&self) -> DollarAmount {
-        self.per_year() / MONTHS_PER_YEAR
     }
 }
 
@@ -123,5 +102,36 @@ impl BudgetItem {
         self.id = Some(id);
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, TS)]
+pub struct Budget {
+    pub categories: Vec<BudgetCategory>,
+    pub items: Vec<BudgetItem>,
+}
+
+impl Budget {
+    pub async fn fetch(db: &Database) -> anyhow::Result<Budget> {
+        let categories = BudgetCategory::fetch_all(&db).await?;
+        let items = BudgetItem::fetch_all(&db).await?;
+
+        Ok(Budget {
+            categories: categories,
+            items: items,
+        })
+    }
+
+    pub fn per_year(&self) -> DollarAmount {
+        let mut amount: DollarAmount = 0.;
+        for item in &self.items {
+            amount += item.amount.per_year();
+        }
+
+        amount
+    }
+
+    pub fn per_month(&self) -> DollarAmount {
+        self.per_year() / MONTHS_PER_YEAR
     }
 }
