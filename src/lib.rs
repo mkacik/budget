@@ -7,4 +7,5 @@ pub mod datetime;
 pub mod expense;
 pub mod record_mapping;
 pub mod routes;
+pub mod statement_import;
 pub mod statement_import_config;

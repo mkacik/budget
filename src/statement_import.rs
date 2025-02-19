@@ -25,7 +25,7 @@ pub async fn process_statement(
         Err(e) => return Err(e),
     };
 
-    let mut expenses = read_expenses(&config.record_mapping, path).await?;
+    let expenses = read_expenses(&config.record_mapping, path).await?;
 
     let mut deduplicated = match Expense::fetch_latest_expenses(&db, account.id).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
