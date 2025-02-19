@@ -23,13 +23,7 @@ pub enum Amount {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum OptionalText {
-    FromColumn { col: ColID },
-    Empty,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum RequiredText {
+pub enum Text {
     FromColumn { col: ColID },
 }
 
@@ -81,23 +75,10 @@ impl Amount {
     }
 }
 
-impl OptionalText {
-    fn from_record(&self, record: &StringRecord) -> anyhow::Result<Option<String>> {
-        match self {
-            OptionalText::FromColumn { col } => {
-                let field = &record[*col];
-
-                Ok(Some(field.to_string()))
-            }
-            OptionalText::Empty => Ok(None),
-        }
-    }
-}
-
-impl RequiredText {
+impl Text {
     fn from_record(&self, record: &StringRecord) -> anyhow::Result<String> {
         match self {
-            RequiredText::FromColumn { col } => {
+            Text::FromColumn { col } => {
                 let field = &record[*col];
 
                 Ok(field.to_string())
@@ -110,9 +91,8 @@ impl RequiredText {
 pub struct RecordMapping {
     pub transaction_date: TransactionDate,
     pub transaction_time: TransactionTime,
-    pub description: RequiredText,
+    pub description: Text,
     pub amount: Amount,
-    pub details: OptionalText,
 }
 
 impl RecordMapping {
@@ -120,8 +100,7 @@ impl RecordMapping {
         let transaction_date = self.transaction_date.from_record(&record)?;
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;
-        let amount: f64 = self.amount.from_record(&record)?;
-        let details = self.details.from_record(&record)?;
+        let amount = self.amount.from_record(&record)?;
 
         let expense = Expense {
             id: None,
@@ -130,7 +109,6 @@ impl RecordMapping {
             transaction_time: transaction_time,
             description: description,
             amount: amount,
-            details: details,
             category_id: None,
         };
 

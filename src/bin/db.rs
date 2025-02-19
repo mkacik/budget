@@ -5,7 +5,7 @@ use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
 use budget::database::Database;
 use budget::datetime::TZ;
 use budget::record_mapping::{
-    Amount, OptionalText, RecordMapping, RequiredText, TransactionDate, TransactionTime,
+    Amount, RecordMapping, Text, TransactionDate, TransactionTime,
 };
 use budget::statement_import_config::StatementImportConfig;
 
@@ -72,9 +72,8 @@ fn get_bank_record_mapping() -> RecordMapping {
             tz: TZ::Local,
         },
         transaction_time: TransactionTime::Empty,
-        description: RequiredText::FromColumn { col: 1 },
+        description: Text::FromColumn { col: 1 },
         amount: Amount::FromColumn { col: 2 },
-        details: OptionalText::Empty,
     }
 }
 
@@ -88,9 +87,8 @@ fn get_shop_record_mapping() -> RecordMapping {
             col: 2,
             tz: TZ::UTC,
         },
-        description: RequiredText::FromColumn { col: 23 },
+        description: Text::FromColumn { col: 23 },
         amount: Amount::FromColumn { col: 10 },
-        details: OptionalText::FromColumn { col: 12 },
     }
 }
 

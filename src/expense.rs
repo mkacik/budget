@@ -19,7 +19,6 @@ pub struct Expense {
     pub transaction_time: Option<String>,
     pub description: String,
     pub amount: f64,
-    pub details: Option<String>,
     pub category_id: ID,
 }
 
@@ -82,15 +81,13 @@ impl Expense {
         transaction_date,
         transaction_time,
         description,
-        amount,
-        details
-      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
+        amount
+      ) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING id",
             self.account_id,
             self.transaction_date,
             self.transaction_time,
             self.description,
             self.amount,
-            self.details
         )
         .fetch_one(&mut *conn)
         .await?;

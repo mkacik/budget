@@ -126,9 +126,6 @@ fn is_duplicate(new: &Expense, old: &Expense) -> bool {
     if new.amount != old.amount {
         return false;
     }
-    if new.details != old.details {
-        return false;
-    }
     return true;
 }
 
@@ -144,7 +141,6 @@ mod tests {
             transaction_time: None,
             description: "Some expense".to_string(),
             amount: 13.99,
-            details: None,
             category_id: Some(5),
         }
     }
