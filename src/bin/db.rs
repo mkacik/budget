@@ -4,9 +4,7 @@ use budget::account::{Account, AccountClass};
 use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
 use budget::database::Database;
 use budget::datetime::TZ;
-use budget::record_mapping::{
-    Amount, RecordMapping, Text, TransactionDate, TransactionTime,
-};
+use budget::record_mapping::{Amount, RecordMapping, Text, TransactionDate, TransactionTime};
 use budget::statement_import_config::StatementImportConfig;
 
 #[derive(Parser, Debug)]
