@@ -21,8 +21,18 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
     let db = Database::init().await;
 
     rocket::build()
-        .mount("/", routes![routes::index])
-        .mount("/api", routes![api_routes::get_budget])
+        .mount(
+            "/",
+            routes![routes::index, routes::favicon, routes::default],
+        )
+        .mount(
+            "/api",
+            routes![
+                api_routes::get_budget,
+                api_routes::get_accounts,
+                api_routes::get_expenses,
+            ],
+        )
         .mount("/static", FileServer::from(relative!("www/static")))
         .manage(db)
         .launch()

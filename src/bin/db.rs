@@ -139,7 +139,7 @@ async fn print_statement_import_configs(db: &Database) -> anyhow::Result<()> {
 
 async fn print_accounts(db: &Database) -> anyhow::Result<()> {
     let accounts = match Account::fetch_all(&db).await {
-        Ok(result) => result,
+        Ok(result) => result.accounts,
         Err(e) => panic!("{}", e),
     };
 

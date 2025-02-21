@@ -1,15 +1,16 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::database::{Database, ID};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub enum AccountClass {
     Bank,
     CreditCard,
     Shop,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct Account {
     pub id: ID,
     pub name: String,
@@ -17,16 +18,21 @@ pub struct Account {
     pub statement_import_config_id: ID,
 }
 
+#[derive(Debug, Serialize, TS)]
+pub struct Accounts {
+    pub accounts: Vec<Account>,
+}
+
 impl Account {
-    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<Account>> {
+    pub async fn fetch_all(db: &Database) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_import_config_id FROM accounts",
+            "SELECT id, name, class, statement_import_config_id FROM accounts ORDER BY name",
         )
         .fetch_all(&mut *conn)
         .await?;
 
-        Ok(results)
+        Ok(Accounts { accounts: results })
     }
 
     pub async fn fetch_by_name(db: &Database, name: &str) -> anyhow::Result<Account> {

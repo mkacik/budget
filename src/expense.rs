@@ -9,9 +9,12 @@ Expense table schema
 Additionally, the table where Amazon purchases are logged should have following:
 - vendor order/transaction id (used for grouping)
 */
+use serde::Serialize;
+use ts_rs::TS;
+
 use crate::database::{Database, ID};
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct Expense {
     pub id: ID,
     pub account_id: ID,
@@ -22,12 +25,30 @@ pub struct Expense {
     pub category_id: ID,
 }
 
+#[derive(Debug, Serialize, TS)]
+pub struct Expenses {
+    pub expenses: Vec<Expense>,
+}
+
 pub struct LatestExpenses {
     pub date: String,
     pub transactions: Vec<Expense>,
 }
 
 impl Expense {
+    pub async fn fetch_by_account_id(db: &Database, account_id: i32) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT * FROM expenses WHERE account_id = ?1 ORDER BY transaction_date, transaction_time DESC",
+        )
+        .bind(account_id)
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
     pub async fn fetch_latest_expenses(
         db: &Database,
         account_id: ID,

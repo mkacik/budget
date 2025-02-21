@@ -82,7 +82,7 @@ export class BudgetView {
   budget: Budget;
 
   constructor(budget: Budget) {
-    let categoriesMap = new Map<number, BudgetCategoryView>();
+    const categoriesMap = new Map<number, BudgetCategoryView>();
     for (const category of budget.categories) {
       const categoryView = new BudgetCategoryView(category);
       categoriesMap.set(categoryView.id, categoryView);
