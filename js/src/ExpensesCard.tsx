@@ -77,11 +77,13 @@ function ExpenseRow({
   active,
   budgetItems,
   bumpUpdates,
+  onClick,
 }: {
   expense: Expense;
   active: boolean;
   budgetItems: BudgetItemDB;
   bumpUpdates: () => void;
+  onClick: () => void;
 }) {
   const budgetItemID = expense.budget_item_id;
   const budgetItemName =
@@ -115,7 +117,7 @@ function ExpenseRow({
   );
 
   return (
-    <div>
+    <div onClick={onClick}>
       <span>{expense.transaction_date}</span>
       {" | "}
       {budgetItemElem}
@@ -146,6 +148,7 @@ function ExpensesTable({
           expense={expense}
           active={idx === activeRow}
           budgetItems={budgetItems}
+          onClick={() => setActiveRow(idx)}
           bumpUpdates={() => {
             setActiveRow(activeRow + 1);
             bumpUpdates();
