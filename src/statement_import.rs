@@ -7,6 +7,8 @@ use crate::expense::{Expense, LatestExpenses};
 use crate::record_mapping::RecordMapping;
 use crate::statement_import_config::StatementImportConfig;
 
+pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
+
 pub async fn process_statement(
     db: &Database,
     account: &Account,

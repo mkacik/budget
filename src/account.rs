@@ -36,6 +36,18 @@ impl Account {
         Ok(Accounts { accounts: results })
     }
 
+    pub async fn fetch_by_id(db: &Database, id: i32) -> anyhow::Result<Account> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_as::<_, Account>(
+            "SELECT id, name, class, statement_import_config_id FROM accounts WHERE id = ?1",
+        )
+        .bind(id)
+        .fetch_one(&mut *conn)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn fetch_by_name(db: &Database, name: &str) -> anyhow::Result<Account> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Account>(

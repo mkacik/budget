@@ -39,6 +39,37 @@ function AccountSelector({
   );
 }
 
+function StatementImportForm({
+  account,
+  bumpUpdates,
+}: {
+  account: Account;
+  bumpUpdates: () => void;
+}) {
+  const onSubmit = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    fetch(`api/accounts/${account.id}/expenses`, {
+      method: "POST",
+      body: new FormData(form),
+    }).then((response) => {
+      form.reset();
+      if (response.ok) {
+        bumpUpdates();
+      } else {
+        console.log(response);
+      }
+    });
+  };
+
+  return (
+    <form name="statement" onSubmit={onSubmit}>
+      <input type="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
+      <input type="submit" value="Submit" />
+    </form>
+  );
+}
+
 function BudgetItemSelector({
   budgetItems,
   selectedBudgetItemID,
@@ -202,8 +233,10 @@ export function ExpensesCard({
         updateAccount={updateAccount}
       />
       <div>
-        <b>{account.name}</b>
+        <h3>{account.name}</h3>
       </div>
+      <StatementImportForm account={account} bumpUpdates={bumpUpdates} />
+      <hr />
       <ExpensesTable
         expenses={expenses}
         budgetItems={budgetItems}

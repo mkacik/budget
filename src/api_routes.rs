@@ -5,10 +5,16 @@ use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use ts_rs::TS;
 
+// statement upload
+use rocket::form::{Form, FromForm};
+use rocket::fs::TempFile;
+use tokio::fs::remove_file;
+
 use crate::account::Account;
 use crate::budget::{Budget, BudgetItem};
 use crate::database::{Database, ID};
 use crate::expense::Expense;
+use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
 
 fn to_json_string<T: Serialize + TS>(serializable: &T) -> Option<(ContentType, String)> {
     match to_string(&serializable) {
@@ -49,6 +55,35 @@ pub async fn get_expenses(db: &State<Database>, account_id: i32) -> Option<(Cont
     let result = Expense::fetch_by_account_id(&db, account_id).await;
 
     result_to_json_string(result)
+}
+
+#[derive(FromForm)]
+pub struct UploadStatementForm<'f> {
+    file: TempFile<'f>,
+}
+
+async fn import_expenses_from_uploaded_statement(
+    db: &Database,
+    account_id: i32,
+    mut form: Form<UploadStatementForm<'_>>,
+) -> anyhow::Result<()> {
+    let account = Account::fetch_by_id(db, account_id).await?;
+    form.file.persist_to(STATEMENT_UPLOAD_PATH).await?;
+    process_statement(&db, &account, String::from(STATEMENT_UPLOAD_PATH)).await?;
+    remove_file(STATEMENT_UPLOAD_PATH).await?;
+    Ok(())
+}
+
+#[post("/accounts/<account_id>/expenses", data = "<form>")]
+pub async fn import_expenses(
+    db: &State<Database>,
+    account_id: i32,
+    form: Form<UploadStatementForm<'_>>,
+) -> Option<(ContentType, String)> {
+    match import_expenses_from_uploaded_statement(db, account_id, form).await {
+        Ok(_) => ok(),
+        Err(_) => None,
+    }
 }
 
 #[derive(Deserialize, Debug)]
