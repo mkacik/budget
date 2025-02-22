@@ -3,7 +3,7 @@ import { BudgetAmount } from "./types/BudgetAmount";
 import { BudgetCategory } from "./types/BudgetCategory";
 import { BudgetItem } from "./types/BudgetItem";
 
-function amount_per_year_from_budget_amount(amount: BudgetAmount): number {
+function getAmountPerYear(amount: BudgetAmount): number {
   const props = Object.keys(amount);
   if (props.length !== 1) {
     throw Error("Incorrect BudgetAmount enum value!");
@@ -27,53 +27,55 @@ function amount_per_year_from_budget_amount(amount: BudgetAmount): number {
 
 export class BudgetItemView {
   item: BudgetItem;
-  amount_per_year: number;
+  displayName: string;
+  amountPerYear: number;
 
-  constructor(item: BudgetItem) {
+  constructor(item: BudgetItem, category: BudgetCategory) {
     this.item = item;
-    this.amount_per_year = amount_per_year_from_budget_amount(item.amount);
+    this.displayName = `${category.name} :: ${item.name}`;
+    this.amountPerYear = getAmountPerYear(item.amount);
   }
 
   get id() {
-    return this.item.id!;
+    return this.item.id;
   }
 
   get categoryId() {
-    return this.item.category_id!;
+    return this.item.category_id;
   }
 
   get name() {
-    return this.item.name!;
+    return this.item.name;
   }
 }
 
 export class BudgetCategoryView {
   category: BudgetCategory;
   items: Array<BudgetItemView>;
-  private _amount_per_year: number | null;
+  private _amountPerYear: number | null;
 
   constructor(category: BudgetCategory) {
     this.category = category;
     this.items = new Array<BudgetItemView>();
-    this._amount_per_year = null;
+    this._amountPerYear = null;
   }
 
   get id() {
-    return this.category.id!;
+    return this.category.id;
   }
 
   get name() {
-    return this.category.name!;
+    return this.category.name;
   }
 
-  get amount_per_year() {
-    if (this._amount_per_year === null) {
-      this._amount_per_year = this.items.reduce(
-        (acc, current) => acc + current.amount_per_year,
+  get amountPerYear() {
+    if (this._amountPerYear === null) {
+      this._amountPerYear = this.items.reduce(
+        (acc, current) => acc + current.amountPerYear,
         0,
       );
     }
-    return this._amount_per_year;
+    return this._amountPerYear;
   }
 }
 
@@ -89,9 +91,10 @@ export class BudgetView {
     }
 
     for (const item of budget.items) {
-      const categoryId = item.category_id!;
-      const itemView = new BudgetItemView(item);
-      categoriesMap.get(categoryId)!.items.push(itemView);
+      const categoryId = item.category_id;
+      const category = categoriesMap.get(categoryId)!;
+      const itemView = new BudgetItemView(item, category.category);
+      category.items.push(itemView);
     }
 
     const sorter = (a, b) => {
@@ -114,10 +117,40 @@ export class BudgetView {
     this.budget = budget;
   }
 
-  get amount_per_year() {
+  get amountPerYear() {
     return this.categories.reduce(
-      (acc, current) => acc + current.amount_per_year,
+      (acc, current) => acc + current.amountPerYear,
       0,
     );
+  }
+
+  getBudgetItemsForCategorization(): BudgetItemDB {
+    const items = new Array<BudgetItemView>();
+    for (const category of this.categories) {
+      for (const item of category.items) {
+        items.push(item);
+      }
+    }
+    return new BudgetItemDB(items);
+  }
+}
+
+export class BudgetItemDB {
+  items: Array<BudgetItemView>;
+  itemsByID: Map<number, BudgetItemView>;
+
+  constructor(items: Array<BudgetItemView>) {
+    this.items = items;
+    this.itemsByID = new Map(items.map((item) => [item.id, item]));
+  }
+
+  get(budgetItemID: number): BudgetItemView {
+    const item = this.itemsByID.get(budgetItemID);
+    if (item === null || item === undefined) {
+      throw new Error(
+        `Something fucky happened in db - can't find budget item id: ${budgetItemID}`,
+      );
+    }
+    return item;
   }
 }

@@ -31,6 +31,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 api_routes::get_budget,
                 api_routes::get_accounts,
                 api_routes::get_expenses,
+                api_routes::update_expense,
             ],
         )
         .mount("/static", FileServer::from(relative!("www/static")))

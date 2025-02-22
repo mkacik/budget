@@ -47,9 +47,18 @@ function App() {
     }
   }, [accounts, setAccounts]);
 
-  const budgetCard = budget !== null ? <BudgetCard budget={budget} /> : null;
+  if (budget === null) {
+    return null;
+  }
+
+  const budgetCard = <BudgetCard budget={budget} />;
   const expensesCard =
-    accounts !== null ? <ExpensesCard allAccounts={accounts} /> : null;
+    accounts !== null ? (
+      <ExpensesCard
+        allAccounts={accounts}
+        budgetItems={budget.getBudgetItemsForCategorization()}
+      />
+    ) : null;
   return (
     <div>
       <div>

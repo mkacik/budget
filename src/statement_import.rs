@@ -141,7 +141,7 @@ mod tests {
             transaction_time: None,
             description: "Some expense".to_string(),
             amount: 13.99,
-            category_id: Some(5),
+            budget_item_id: Some(5),
         }
     }
 
@@ -157,7 +157,7 @@ mod tests {
         let mut expense_a = get_expense();
         expense_a.id = None;
         expense_a.account_id = None;
-        expense_a.category_id = None;
+        expense_a.budget_item_id = None;
 
         let expense_b = get_expense();
 

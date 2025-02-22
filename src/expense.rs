@@ -16,13 +16,15 @@ use crate::database::{Database, ID};
 
 #[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct Expense {
+    #[ts(type = "number")]
     pub id: ID,
+    #[ts(type = "number")]
     pub account_id: ID,
     pub transaction_date: String,
     pub transaction_time: Option<String>,
     pub description: String,
     pub amount: f64,
-    pub category_id: ID,
+    pub budget_item_id: ID,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -36,11 +38,22 @@ pub struct LatestExpenses {
 }
 
 impl Expense {
+    pub async fn fetch_by_id(db: &Database, id: i32) -> anyhow::Result<Expense> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        let result = sqlx::query_as::<_, Expense>("SELECT * FROM expenses WHERE id = ?1")
+            .bind(id)
+            .fetch_one(&mut *conn)
+            .await?;
+
+        Ok(result)
+    }
+
     pub async fn fetch_by_account_id(db: &Database, account_id: i32) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
 
         let results = sqlx::query_as::<_, Expense>(
-            "SELECT * FROM expenses WHERE account_id = ?1 ORDER BY transaction_date, transaction_time DESC",
+            "SELECT * FROM expenses WHERE account_id = ?1 ORDER BY transaction_date DESC, transaction_time DESC",
         )
         .bind(account_id)
         .fetch_all(&mut *conn)
@@ -119,18 +132,22 @@ impl Expense {
         Ok(())
     }
 
-    pub async fn set_category(&mut self, db: &Database, category_id: ID) -> anyhow::Result<()> {
+    pub async fn set_budget_item(
+        &mut self,
+        db: &Database,
+        budget_item_id: ID,
+    ) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
         self.assert_id_set()?;
         sqlx::query!(
-            "UPDATE expenses SET category_id = ?1 WHERE id = ?2",
-            category_id,
+            "UPDATE expenses SET budget_item_id = ?1 WHERE id = ?2",
+            budget_item_id,
             self.id
         )
         .execute(&mut *conn)
         .await?;
-        self.category_id = category_id;
+        self.budget_item_id = budget_item_id;
 
         Ok(())
     }

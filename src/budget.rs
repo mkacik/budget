@@ -11,13 +11,16 @@ const MONTHS_PER_YEAR: f64 = 12.0;
 
 #[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct BudgetCategory {
+    #[ts(type = "number")]
     pub id: ID,
     pub name: String,
 }
 
 #[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct BudgetItem {
+    #[ts(type = "number")]
     pub id: ID,
+    #[ts(type = "number")]
     pub category_id: ID,
     pub name: String,
     pub amount: BudgetAmount,
@@ -84,9 +87,20 @@ impl BudgetItem {
         Ok(results)
     }
 
+    pub async fn fetch_by_id(db: &Database, id: i32) -> anyhow::Result<BudgetItem> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_as::<_, BudgetItem>(
+            "SELECT id, category_id, name, amount FROM budget_items WHERE id = ?1",
+        )
+        .bind(id)
+        .fetch_one(&mut *conn)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn save(&mut self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
-
         let amount = serde_json::to_string(&self.amount)?;
         let result = sqlx::query_scalar!(
             "INSERT INTO budget_items (category_id, name, amount)

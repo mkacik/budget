@@ -12,6 +12,7 @@ pub enum AccountClass {
 
 #[derive(Debug, sqlx::FromRow, Serialize, TS)]
 pub struct Account {
+    #[ts(type = "number")]
     pub id: ID,
     pub name: String,
     pub class: AccountClass,

@@ -5,7 +5,7 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 function BudgetItemCard({ item }: { item: BudgetItemView }) {
   return (
     <div>
-      {item.name} - {item.amount_per_year}
+      {item.name} - {item.amountPerYear}
     </div>
   );
 }
@@ -15,7 +15,7 @@ function BudgetCategoryCard({ category }: { category: BudgetCategoryView }) {
     <div>
       <div>
         <b>
-          {category.name} - {category.amount_per_year}
+          {category.name} - {category.amountPerYear}
         </b>
       </div>
       {category.items.map((item, index) => (
@@ -28,7 +28,7 @@ function BudgetCategoryCard({ category }: { category: BudgetCategoryView }) {
 export function BudgetCard({ budget }: { budget: BudgetView }) {
   return (
     <div>
-      <div>Total - {budget.amount_per_year}</div>
+      <div>Total - {budget.amountPerYear}</div>
       <div>
         {budget.categories.map((category, index) => (
           <BudgetCategoryCard key={index} category={category} />

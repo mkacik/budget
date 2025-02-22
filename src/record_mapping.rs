@@ -109,7 +109,7 @@ impl RecordMapping {
             transaction_time: transaction_time,
             description: description,
             amount: amount,
-            category_id: None,
+            budget_item_id: None,
         };
 
         Ok(expense)
