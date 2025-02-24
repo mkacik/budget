@@ -14,7 +14,7 @@ const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
   "Shop",
 ];
 
-function createAccount(fields: AccountFields) {
+function createAccountRequest(fields: AccountFields) {
   return fetch("/api/accounts", {
     method: "POST",
     headers: JSON_HEADERS,
@@ -22,7 +22,7 @@ function createAccount(fields: AccountFields) {
   });
 }
 
-function updateAccount(account: Account, fields: AccountFields) {
+function updateAccountRequest(account: Account, fields: AccountFields) {
   const updated = { ...account, ...fields };
   return fetch(`/api/accounts/${account.id}`, {
     method: "POST",
@@ -31,18 +31,27 @@ function updateAccount(account: Account, fields: AccountFields) {
   });
 }
 
+function deleteAccountRequest(account: Account) {
+  return fetch(`/api/accounts/${account.id}`, {
+    method: "DELETE",
+    headers: JSON_HEADERS,
+  });
+}
+
 function AccountForm({
   account,
+  hideEditForm,
   refreshAccounts,
 }: {
   account: Account | null;
+  hideEditForm: () => void;
   refreshAccounts: () => void;
 }) {
-  let [errorMessage, setErrorCard] = useState<string | null>(null);
+  let [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const clearErrorCard = () => {
+  const clearErrorMessage = () => {
     if (errorMessage !== null) {
-      setErrorCard(null);
+      setErrorMessage(null);
     }
   };
 
@@ -58,22 +67,24 @@ function AccountForm({
         statement_import_config_id: formHelper.getNumberOrNull("importConfig"),
       } as AccountFields;
       // if nothing threw by this point, mark any validation errors as cleared
-      clearErrorCard();
+      clearErrorMessage();
 
       const request =
         account === null
-          ? createAccount(accountFields)
-          : updateAccount(account, accountFields);
+          ? createAccountRequest(accountFields)
+          : updateAccountRequest(account, accountFields);
       request.then((result) => {
         if (result.ok) {
           refreshAccounts();
+          hideEditForm();
         } else {
           console.log(result);
+          setErrorMessage("Something went wrong!");
         }
       });
     } catch (error) {
       if (error instanceof Error) {
-        setErrorCard(error.message);
+        setErrorMessage(error.message);
       } else {
         console.log(error);
       }
@@ -91,10 +102,31 @@ function AccountForm({
     </option>
   ));
 
+  let maybeDeleteButton: React.ReactNode = null;
+  if (account !== null) {
+    const deleteAccount = () => {
+      deleteAccountRequest(account).then((response) => {
+        if (response.ok) {
+          refreshAccounts();
+          hideEditForm();
+        } else {
+          console.log(response);
+          setErrorMessage("Something went wrong!");
+        }
+      });
+    };
+
+    maybeDeleteButton = (
+      <div>
+        <button onClick={deleteAccount}>[delete]</button>
+      </div>
+    );
+  }
+
   return (
     <div>
       {maybeErrorCard}
-      <form onSubmit={onSubmit} key={accountName}>
+      <form onSubmit={onSubmit}>
         <div>
           <label htmlFor="name">Account Name</label>
           <input type="text" name="name" defaultValue={accountName} />
@@ -116,6 +148,7 @@ function AccountForm({
           <input type="submit" value={account === null ? "Create" : "Update"} />
         </div>
       </form>
+      {maybeDeleteButton}
     </div>
   );
 }
@@ -156,7 +189,9 @@ export function AccountsCard({
 
       <ModalCard visible={modalVisible}>
         <AccountForm
+          key={activeAccount?.name}
           account={activeAccount}
+          hideEditForm={hideEditModal}
           refreshAccounts={refreshAccounts}
         />
       </ModalCard>

@@ -57,6 +57,15 @@ impl Account {
         Account::fetch_by_id(db, id).await
     }
 
+    pub async fn delete_by_id(db: &Database, id: i32) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!("DELETE FROM accounts WHERE id = ?1", id,)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Account>(

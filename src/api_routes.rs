@@ -1,6 +1,6 @@
 use rocket::http::ContentType;
 use rocket::serde::json::Json;
-use rocket::{get, post, State};
+use rocket::{delete, get, post, State};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use ts_rs::TS;
@@ -62,14 +62,40 @@ pub async fn add_account(
     }
 }
 
-#[post("/accounts/<_account_id>", format = "json", data = "<request>")]
+#[post("/accounts/<account_id>", format = "json", data = "<request>")]
 pub async fn update_account(
     db: &State<Database>,
-    _account_id: i32,
+    account_id: i32,
     request: Json<Account>,
 ) -> Option<(ContentType, String)> {
     let account = request.into_inner();
+    if account_id != account.id {
+        return None;
+    }
     match account.update(&db).await {
+        Ok(_) => ok(),
+        Err(_) => None,
+    }
+}
+
+async fn delete_account_by_id(db: &Database, account_id: i32) -> anyhow::Result<()> {
+    let result = Expense::fetch_by_account_id(db, account_id).await?;
+    if result.expenses.len() > 0 {
+        return Err(anyhow::anyhow!(
+            "Can't delete account that has expenses in db"
+        ));
+    }
+    Account::delete_by_id(db, account_id).await?;
+
+    Ok(())
+}
+
+#[delete("/accounts/<account_id>")]
+pub async fn delete_account(
+    db: &State<Database>,
+    account_id: i32,
+) -> Option<(ContentType, String)> {
+    match delete_account_by_id(db, account_id).await {
         Ok(_) => ok(),
         Err(_) => None,
     }
