@@ -14,13 +14,13 @@ pub async fn process_statement(
     account: &Account,
     path: String,
 ) -> anyhow::Result<()> {
-    let config_id = account.statement_import_config_id;
+    let config_id = account.fields.statement_import_config_id;
     let config = match StatementImportConfig::fetch_by_id(&db, config_id).await {
         Ok(Some(value)) => value,
         Ok(None) => {
             let err = anyhow::anyhow!(
                 "Statement Import Config for account '{}' not found",
-                account.name,
+                account.fields.name,
             );
             return Err(err);
         }
@@ -29,7 +29,7 @@ pub async fn process_statement(
 
     let expenses = read_expenses(&config.record_mapping, path).await?;
 
-    let mut deduplicated = match Expense::fetch_latest_expenses(&db, account.id).await? {
+    let mut deduplicated = match Expense::fetch_latest_expenses(&db, Some(account.id)).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
         None => expenses,
     };
@@ -40,7 +40,7 @@ pub async fn process_statement(
     });
 
     for mut expense in deduplicated {
-        expense.account_id = account.id;
+        expense.account_id = Some(account.id);
         expense.save(&db).await?;
         println!("{:?}", expense);
     }

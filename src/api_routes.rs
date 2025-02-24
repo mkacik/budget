@@ -10,7 +10,7 @@ use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
 use tokio::fs::remove_file;
 
-use crate::account::Account;
+use crate::account::{Account, AccountFields};
 use crate::budget::{Budget, BudgetItem};
 use crate::database::{Database, ID};
 use crate::expense::Expense;
@@ -48,6 +48,31 @@ pub async fn get_accounts(db: &State<Database>) -> Option<(ContentType, String)>
     let result = Account::fetch_all(&db).await;
 
     result_to_json_string(result)
+}
+
+#[post("/accounts", format = "json", data = "<request>")]
+pub async fn add_account(
+    db: &State<Database>,
+    request: Json<AccountFields>,
+) -> Option<(ContentType, String)> {
+    let fields = request.into_inner();
+    match Account::create(&db, fields).await {
+        Ok(_) => ok(),
+        Err(_) => None,
+    }
+}
+
+#[post("/accounts/<_account_id>", format = "json", data = "<request>")]
+pub async fn update_account(
+    db: &State<Database>,
+    _account_id: i32,
+    request: Json<Account>,
+) -> Option<(ContentType, String)> {
+    let account = request.into_inner();
+    match account.update(&db).await {
+        Ok(_) => ok(),
+        Err(_) => None,
+    }
 }
 
 #[get("/accounts/<account_id>/expenses")]

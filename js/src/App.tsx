@@ -7,10 +7,12 @@ import { Budget } from "./types/Budget";
 
 import { BudgetCard } from "./BudgetCard";
 import { BudgetView } from "./BudgetView";
+import { AccountsCard } from "./AccountsCard";
 import { ExpensesCard } from "./ExpensesCard";
 
 enum Tab {
   Budget,
+  Accounts,
   Expenses,
 }
 
@@ -36,38 +38,51 @@ function App() {
     }
   }, [budget, setBudget]);
 
+  const fetchAccounts = () => {
+    fetch("/api/accounts")
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setAccounts(result as Accounts);
+      });
+  };
+
   useEffect(() => {
     if (accounts === null) {
-      fetch("/api/accounts")
-        .then((response) => response.json())
-        .then((result) => {
-          console.log(result);
-          setAccounts(result as Accounts);
-        });
+      fetchAccounts();
     }
   }, [accounts, setAccounts]);
 
-  if (budget === null) {
+  if (budget === null || accounts === null) {
     return null;
   }
 
   const budgetCard = <BudgetCard budget={budget} />;
-  const expensesCard =
-    accounts !== null ? (
-      <ExpensesCard
-        allAccounts={accounts}
-        budgetItems={budget.getBudgetItemsForCategorization()}
-      />
-    ) : null;
+  const expensesCard = (
+    <ExpensesCard
+      allAccounts={accounts}
+      budgetItems={budget.getBudgetItemsForCategorization()}
+    />
+  );
+  const accountsCard = (
+    <AccountsCard
+      accounts={accounts.accounts}
+      refreshAccounts={fetchAccounts}
+    />
+  );
+
   return (
     <div>
       <div>
         <span onClick={() => setTab(Tab.Budget)}>💰 Budget</span>
         {" | "}
         <span onClick={() => setTab(Tab.Expenses)}>Expenses</span>
+        {" | "}
+        <span onClick={() => setTab(Tab.Accounts)}>Accounts</span>
       </div>
       {render_if(tab == Tab.Budget, budgetCard)}
       {render_if(tab == Tab.Expenses, expensesCard)}
+      {render_if(tab == Tab.Accounts, accountsCard)}
     </div>
   );
 }

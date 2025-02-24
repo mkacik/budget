@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use budget::account::{Account, AccountClass};
+use budget::account::{Account, AccountClass, AccountFields};
 use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
 use budget::database::Database;
 use budget::datetime::TZ;
@@ -91,38 +91,39 @@ fn get_shop_record_mapping() -> RecordMapping {
 }
 
 async fn add_accounts(db: &Database) -> anyhow::Result<()> {
-    let mut bank_account = Account {
-        id: None,
-        name: String::from("bank"),
-        class: AccountClass::Bank,
-        statement_import_config_id: None,
-    };
-    bank_account.save(&db).await?;
+    let mut bank_account = Account::create(
+        db,
+        AccountFields {
+            name: String::from("big bank"),
+            class: AccountClass::Bank,
+            statement_import_config_id: None,
+        },
+    )
+    .await?;
+    bank_account.fields.statement_import_config_id =
+        StatementImportConfig::fetch_by_name(&db, "bank").await?.id;
+    bank_account.update(db).await?;
 
-    let bank_statement_import_config = StatementImportConfig::fetch_by_name(&db, "bank").await?;
-    bank_account.statement_import_config_id = bank_statement_import_config.id;
-    bank_account.save(&db).await?;
-
-    let mut shop_account = Account {
-        id: None,
-        name: String::from("shop"),
-        class: AccountClass::Shop,
-        statement_import_config_id: None,
-    };
-    shop_account.save(&db).await?;
-
-    let shop_statement_import_config = StatementImportConfig::fetch_by_name(&db, "shop").await?;
-    shop_account.statement_import_config_id = shop_statement_import_config.id;
-    shop_account.save(&db).await?;
+    Account::create(
+        db,
+        AccountFields {
+            name: String::from("some shop"),
+            class: AccountClass::Shop,
+            statement_import_config_id: StatementImportConfig::fetch_by_name(&db, "shop").await?.id,
+        },
+    )
+    .await?;
 
     // Leave one account without statement_import_config
-    let mut cc_account = Account {
-        id: None,
-        name: String::from("cc"),
-        class: AccountClass::CreditCard,
-        statement_import_config_id: None,
-    };
-    cc_account.save(&db).await?;
+    Account::create(
+        db,
+        AccountFields {
+            name: String::from("credit card"),
+            class: AccountClass::CreditCard,
+            statement_import_config_id: None,
+        },
+    )
+    .await?;
 
     Ok(())
 }

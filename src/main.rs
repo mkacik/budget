@@ -28,8 +28,10 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
         .mount(
             "/api",
             routes![
-                api_routes::get_budget,
                 api_routes::get_accounts,
+                api_routes::add_account,
+                api_routes::update_account,
+                api_routes::get_budget,
                 api_routes::get_expenses,
                 api_routes::import_expenses,
                 api_routes::update_expense,
