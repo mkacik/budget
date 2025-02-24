@@ -4,7 +4,6 @@ use rocket::fs::{relative, FileServer};
 use rocket::{Error as RocketError, Ignite, Rocket};
 
 mod account;
-mod api_routes;
 mod budget;
 mod database;
 mod database_enum;
@@ -23,19 +22,23 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
     rocket::build()
         .mount(
             "/",
-            routes![routes::index, routes::favicon, routes::default],
+            routes![
+                routes::base::index,
+                routes::base::favicon,
+                routes::base::default
+            ],
         )
         .mount(
             "/api",
             routes![
-                api_routes::get_accounts,
-                api_routes::add_account,
-                api_routes::update_account,
-                api_routes::delete_account,
-                api_routes::get_budget,
-                api_routes::get_expenses,
-                api_routes::import_expenses,
-                api_routes::update_expense,
+                routes::api::get_accounts,
+                routes::api::add_account,
+                routes::api::update_account,
+                routes::api::delete_account,
+                routes::api::get_budget,
+                routes::api::get_expenses,
+                routes::api::import_expenses,
+                routes::api::update_expense,
             ],
         )
         .mount("/static", FileServer::from(relative!("www/static")))

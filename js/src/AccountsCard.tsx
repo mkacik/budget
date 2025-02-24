@@ -1,9 +1,8 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { Account, AccountFields, AccountClass } from "./types/Account";
 
-import { AccountSelector } from "./AccountSelector";
 import { FormHelper } from "./FormHelper";
 import { ErrorCard, ModalCard } from "./CommonUI";
 import { JSON_HEADERS } from "./Common";
@@ -47,7 +46,7 @@ function AccountForm({
   hideEditForm: () => void;
   refreshAccounts: () => void;
 }) {
-  let [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const clearErrorMessage = () => {
     if (errorMessage !== null) {
@@ -73,13 +72,21 @@ function AccountForm({
         account === null
           ? createAccountRequest(accountFields)
           : updateAccountRequest(account, accountFields);
-      request.then((result) => {
-        if (result.ok) {
+      request.then((response) => {
+        if (response.ok) {
           refreshAccounts();
           hideEditForm();
         } else {
-          console.log(result);
-          setErrorMessage("Something went wrong!");
+          response
+            .json()
+            .then((json) => {
+              const message = json.error ?? "Something went wrong!";
+              setErrorMessage(message);
+            })
+            .catch((error) => {
+              console.log(response, error);
+              setErrorMessage("Something went wrong.");
+            });
         }
       });
     } catch (error) {
@@ -110,8 +117,16 @@ function AccountForm({
           refreshAccounts();
           hideEditForm();
         } else {
-          console.log(response);
-          setErrorMessage("Something went wrong!");
+          response
+            .json()
+            .then((json) => {
+              const message = json.error ?? "Something went wrong!";
+              setErrorMessage(message);
+            })
+            .catch((error) => {
+              console.log(response, error);
+              setErrorMessage("Something went wrong.");
+            });
         }
       });
     };
@@ -169,7 +184,7 @@ export function AccountsCard({
     setModalVisible(true);
   };
 
-  const rows = accounts.map((account, idx) => {
+  const rows = accounts.map((account) => {
     return (
       <div key={account.id}>
         <span>{account.name}</span>

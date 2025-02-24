@@ -1,9 +1,7 @@
-use rocket::http::ContentType;
+use rocket::http::{ContentType, Status};
 use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
-use serde::{Deserialize, Serialize};
-use serde_json::to_string;
-use ts_rs::TS;
+use serde::Deserialize;
 
 // statement upload
 use rocket::form::{Form, FromForm};
@@ -14,27 +12,12 @@ use crate::account::{Account, AccountFields};
 use crate::budget::{Budget, BudgetItem};
 use crate::database::{Database, ID};
 use crate::expense::Expense;
+use crate::routes::common::{
+    failure, failure_server_error, query_result_to_api_response, success_empty, success_with_data,
+    ApiResponse,
+};
+use crate::routes::common::{ok_empty, result_to_json_string};
 use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
-
-fn to_json_string<T: Serialize + TS>(serializable: &T) -> Option<(ContentType, String)> {
-    match to_string(&serializable) {
-        Ok(json) => Some((ContentType::JSON, json)),
-        Err(_) => None,
-    }
-}
-
-fn result_to_json_string<T: Serialize + TS>(
-    result: Result<T, anyhow::Error>,
-) -> Option<(ContentType, String)> {
-    match result {
-        Ok(value) => to_json_string(&value),
-        Err(_) => None,
-    }
-}
-
-fn ok() -> Option<(ContentType, String)> {
-    Some((ContentType::JSON, String::from("{}")))
-}
 
 #[get("/budget")]
 pub async fn get_budget(db: &State<Database>) -> Option<(ContentType, String)> {
@@ -57,7 +40,7 @@ pub async fn add_account(
 ) -> Option<(ContentType, String)> {
     let fields = request.into_inner();
     match Account::create(&db, fields).await {
-        Ok(_) => ok(),
+        Ok(_) => ok_empty(),
         Err(_) => None,
     }
 }
@@ -73,39 +56,34 @@ pub async fn update_account(
         return None;
     }
     match account.update(&db).await {
-        Ok(_) => ok(),
+        Ok(_) => ok_empty(),
         Err(_) => None,
     }
-}
-
-async fn delete_account_by_id(db: &Database, account_id: i32) -> anyhow::Result<()> {
-    let result = Expense::fetch_by_account_id(db, account_id).await?;
-    if result.expenses.len() > 0 {
-        return Err(anyhow::anyhow!(
-            "Can't delete account that has expenses in db"
-        ));
-    }
-    Account::delete_by_id(db, account_id).await?;
-
-    Ok(())
 }
 
 #[delete("/accounts/<account_id>")]
-pub async fn delete_account(
-    db: &State<Database>,
-    account_id: i32,
-) -> Option<(ContentType, String)> {
-    match delete_account_by_id(db, account_id).await {
-        Ok(_) => ok(),
-        Err(_) => None,
+pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiResponse {
+    let expenses = match Expense::fetch_by_account_id(db, account_id).await {
+        Ok(value) => value,
+        Err(_) => return failure_server_error(),
+    };
+    if expenses.expenses.len() > 0 {
+        return failure(
+            Status::BadRequest,
+            "Can't delete account that has expenses attached.",
+        );
+    }
+    match Account::delete_by_id(db, account_id).await {
+        Ok(_) => success_empty(),
+        Err(_) => failure_server_error(),
     }
 }
 
 #[get("/accounts/<account_id>/expenses")]
-pub async fn get_expenses(db: &State<Database>, account_id: i32) -> Option<(ContentType, String)> {
+pub async fn get_expenses(db: &State<Database>, account_id: i32) -> ApiResponse {
     let result = Expense::fetch_by_account_id(&db, account_id).await;
 
-    result_to_json_string(result)
+    query_result_to_api_response(result)
 }
 
 #[derive(FromForm)]
@@ -122,6 +100,7 @@ async fn import_expenses_from_uploaded_statement(
     form.file.persist_to(STATEMENT_UPLOAD_PATH).await?;
     process_statement(&db, &account, String::from(STATEMENT_UPLOAD_PATH)).await?;
     remove_file(STATEMENT_UPLOAD_PATH).await?;
+
     Ok(())
 }
 
@@ -132,7 +111,7 @@ pub async fn import_expenses(
     form: Form<UploadStatementForm<'_>>,
 ) -> Option<(ContentType, String)> {
     match import_expenses_from_uploaded_statement(db, account_id, form).await {
-        Ok(_) => ok(),
+        Ok(_) => ok_empty(),
         Err(_) => None,
     }
 }
@@ -167,7 +146,7 @@ pub async fn update_expense(
     request: Json<UpdateExpenseRequest>,
 ) -> Option<(ContentType, String)> {
     match update_expense_budget_item_id(&db, expense_id, request.budget_item_id).await {
-        Ok(_) => ok(),
+        Ok(_) => ok_empty(),
         Err(_) => None,
     }
 }

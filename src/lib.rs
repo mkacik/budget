@@ -1,5 +1,4 @@
 pub mod account;
-pub mod api_routes;
 pub mod budget;
 pub mod database;
 pub mod database_enum;

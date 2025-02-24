@@ -11,5 +11,5 @@ export function ModalCard({
 }
 
 export function ErrorCard({ message }: { message: string }) {
-  return <div style={{ color: "red" }}>❌{message}</div>;
+  return <div style={{ color: "red" }}>❌ {message}</div>;
 }
