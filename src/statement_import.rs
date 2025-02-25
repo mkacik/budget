@@ -9,27 +9,17 @@ use crate::statement_import_config::StatementImportConfig;
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
 
+type ID = i32;
+
 pub async fn process_statement(
     db: &Database,
-    account: &Account,
+    account_id: ID,
+    config: StatementImportConfig,
     path: String,
 ) -> anyhow::Result<()> {
-    let config_id = account.fields.statement_import_config_id;
-    let config = match StatementImportConfig::fetch_by_id(&db, config_id).await {
-        Ok(Some(value)) => value,
-        Ok(None) => {
-            let err = anyhow::anyhow!(
-                "Statement Import Config for account '{}' not found",
-                account.fields.name,
-            );
-            return Err(err);
-        }
-        Err(e) => return Err(e),
-    };
+    let expenses = read_expenses(&config.fields.record_mapping, path).await?;
 
-    let expenses = read_expenses(&config.record_mapping, path).await?;
-
-    let mut deduplicated = match Expense::fetch_latest_expenses(&db, Some(account.id)).await? {
+    let mut deduplicated = match Expense::fetch_latest_expenses(&db, Some(account_id)).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
         None => expenses,
     };
@@ -40,7 +30,7 @@ pub async fn process_statement(
     });
 
     for mut expense in deduplicated {
-        expense.account_id = Some(account.id);
+        expense.account_id = Some(account_id);
         expense.save(&db).await?;
         println!("{:?}", expense);
     }

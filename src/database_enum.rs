@@ -80,20 +80,14 @@ impl sqlx::Type<sqlx::Sqlite> for BudgetAmount {
     }
 }
 
-impl<'r, DB: sqlx::Database> sqlx::Decode<'r, DB> for RecordMapping
-where
-    &'r str: sqlx::Decode<'r, DB>,
-{
-    fn decode(
-        value: <DB as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<RecordMapping, Box<dyn std::error::Error + 'static + Send + Sync>> {
-        let json_string = <&str as sqlx::Decode<DB>>::decode(value)?;
+impl<'r> Decode<'r, Sqlite> for RecordMapping {
+    fn decode(value: <Sqlite as SqlxDatabase>::ValueRef<'r>) -> Result<RecordMapping, BoxDynError> {
+        let json_string = <&str as Decode<Sqlite>>::decode(value)?;
 
         let value: RecordMapping = match serde_json::from_str(json_string) {
             Ok(value) => value,
             Err(e) => {
-                let err: Box<dyn std::error::Error + 'static + Send + Sync> =
-                    format!("{:?}", e).into();
+                let err: BoxDynError = format!("{:?}", e).into();
                 return Err(err);
             }
         };
@@ -102,8 +96,22 @@ where
     }
 }
 
-impl sqlx::Type<sqlx::Sqlite> for RecordMapping {
-    fn type_info() -> <sqlx::Sqlite as sqlx::Database>::TypeInfo {
-        <&str as sqlx::Type<sqlx::Sqlite>>::type_info()
+impl Type<Sqlite> for RecordMapping {
+    fn type_info() -> <Sqlite as SqlxDatabase>::TypeInfo {
+        <&str as Type<Sqlite>>::type_info()
+    }
+}
+
+impl<'q> Encode<'q, Sqlite> for RecordMapping {
+    fn encode_by_ref(&self, buf: &mut Vec<SqliteArgumentValue<'q>>) -> Result<IsNull, BoxDynError> {
+        let string = match serde_json::to_string(&self) {
+            Ok(value) => value,
+            Err(e) => {
+                let err: BoxDynError = format!("{:?}", e).into();
+                return Err(err);
+            }
+        };
+
+        Encode::<Sqlite>::encode(string, buf)
     }
 }

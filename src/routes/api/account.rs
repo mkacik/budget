@@ -17,10 +17,7 @@ pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
 }
 
 #[post("/accounts", format = "json", data = "<request>")]
-pub async fn add_account(
-    db: &State<Database>,
-    request: Json<AccountFields>,
-) -> ApiResponse {
+pub async fn add_account(db: &State<Database>, request: Json<AccountFields>) -> ApiResponse {
     let fields = request.into_inner();
 
     match Account::create(&db, fields).await {
@@ -37,7 +34,9 @@ pub async fn update_account(
 ) -> ApiResponse {
     let account = request.into_inner();
     if account_id != account.id {
-        return ApiResponse::BadRequest { message: String::from("IDs for update don't match") };
+        return ApiResponse::BadRequest {
+            message: String::from("IDs for update don't match"),
+        };
     }
 
     match account.update(&db).await {
@@ -54,7 +53,7 @@ pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiRespons
     };
     if expenses.expenses.len() > 0 {
         return ApiResponse::BadRequest {
-          message: String::from("Can't delete account that has expenses attached."),
+            message: String::from("Can't delete account that has expenses attached."),
         };
     }
 

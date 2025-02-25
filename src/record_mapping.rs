@@ -1,28 +1,29 @@
 use csv::StringRecord;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::datetime::{to_local_date, to_local_time, TZ};
 use crate::expense::Expense;
 
 type ColID = usize;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub enum TransactionDate {
     FromColumn { col: ColID, tz: TZ },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub enum TransactionTime {
     FromColumn { col: ColID, tz: TZ },
     Empty,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub enum Amount {
     FromColumn { col: ColID },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub enum Text {
     FromColumn { col: ColID },
 }
@@ -87,7 +88,7 @@ impl Text {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 pub struct RecordMapping {
     pub transaction_date: TransactionDate,
     pub transaction_time: TransactionTime,

@@ -5,7 +5,7 @@ use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
 use budget::database::Database;
 use budget::datetime::TZ;
 use budget::record_mapping::{Amount, RecordMapping, Text, TransactionDate, TransactionTime};
-use budget::statement_import_config::StatementImportConfig;
+use budget::statement_import_config::{StatementImportConfig, StatementImportConfigFields};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -46,19 +46,23 @@ async fn seed_db_for_testing(db: Database) -> anyhow::Result<()> {
 }
 
 async fn add_statement_import_configs(db: &Database) -> anyhow::Result<()> {
-    let mut bank = StatementImportConfig {
-        id: None,
-        name: String::from("bank"),
-        record_mapping: get_bank_record_mapping(),
-    };
-    bank.save(db).await?;
+    StatementImportConfig::create(
+        db,
+        StatementImportConfigFields {
+            name: String::from("bank"),
+            record_mapping: get_bank_record_mapping(),
+        },
+    )
+    .await?;
 
-    let mut shop = StatementImportConfig {
-        id: None,
-        name: String::from("shop"),
-        record_mapping: get_shop_record_mapping(),
-    };
-    shop.save(db).await?;
+    StatementImportConfig::create(
+        db,
+        StatementImportConfigFields {
+            name: String::from("shop"),
+            record_mapping: get_shop_record_mapping(),
+        },
+    )
+    .await?;
 
     Ok(())
 }
@@ -101,7 +105,7 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
     )
     .await?;
     bank_account.fields.statement_import_config_id =
-        StatementImportConfig::fetch_by_name(&db, "bank").await?.id;
+        Some(StatementImportConfig::fetch_by_id(&db, 1).await?.id);
     bank_account.update(db).await?;
 
     Account::create(
@@ -109,7 +113,7 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         AccountFields {
             name: String::from("some shop"),
             class: AccountClass::Shop,
-            statement_import_config_id: StatementImportConfig::fetch_by_name(&db, "shop").await?.id,
+            statement_import_config_id: Some(StatementImportConfig::fetch_by_id(&db, 2).await?.id),
         },
     )
     .await?;
