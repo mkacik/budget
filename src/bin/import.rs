@@ -3,7 +3,7 @@ use clap::Parser;
 use budget::account::Account;
 use budget::database::Database;
 use budget::statement_import::process_statement;
-use budget::statement_import_config::StatementImportConfig;
+use budget::statement_schema::StatementSchema;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -33,8 +33,8 @@ async fn main() {
 
     let account = &accounts[0];
 
-    let config = match account.fields.statement_import_config_id {
-        Some(value) => StatementImportConfig::fetch_by_id(&db, value)
+    let config = match account.fields.statement_schema_id {
+        Some(value) => StatementSchema::fetch_by_id(&db, value)
             .await
             .expect("Fetching config failed."),
         None => {

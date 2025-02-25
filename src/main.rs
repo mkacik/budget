@@ -12,7 +12,7 @@ mod expense;
 mod record_mapping;
 mod routes;
 mod statement_import;
-mod statement_import_config;
+mod statement_schema;
 
 use crate::database::Database;
 

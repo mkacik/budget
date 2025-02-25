@@ -5,17 +5,18 @@ use crate::account::Account;
 use crate::database::{Database, ID};
 use crate::expense::{Expense, ExpenseFields, LatestExpenses};
 use crate::record_mapping::RecordMapping;
-use crate::statement_import_config::StatementImportConfig;
+use crate::statement_schema::StatementSchema;
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
 
 pub async fn process_statement(
     db: &Database,
     account_id: ID,
-    config: StatementImportConfig,
+    statement_schema: StatementSchema,
     path: String,
 ) -> anyhow::Result<()> {
-    let expenses = read_expenses(&config.fields.record_mapping, account_id, path).await?;
+    let record_mapping = statement_schema.fields.record_mapping;
+    let expenses = read_expenses(&record_mapping, account_id, path).await?;
 
     let mut deduplicated = match Expense::fetch_latest_expenses(&db, account_id).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),

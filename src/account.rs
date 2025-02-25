@@ -17,7 +17,7 @@ pub enum AccountClass {
 pub struct AccountFields {
     pub name: String,
     pub class: AccountClass,
-    pub statement_import_config_id: Option<ID>,
+    pub statement_schema_id: Option<ID>,
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
@@ -40,11 +40,11 @@ impl Account {
     pub async fn create(db: &Database, fields: AccountFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO accounts (name, class, statement_import_config_id)
+            "INSERT INTO accounts (name, class, statement_schema_id)
             VALUES (?1, ?2, ?3) RETURNING id",
             fields.name,
             fields.class,
-            fields.statement_import_config_id,
+            fields.statement_schema_id,
         )
         .fetch_one(&mut *conn)
         .await?
@@ -66,7 +66,7 @@ impl Account {
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_import_config_id FROM accounts ORDER BY name",
+            "SELECT id, name, class, statement_schema_id FROM accounts ORDER BY name",
         )
         .fetch_all(&mut *conn)
         .await?;
@@ -77,7 +77,7 @@ impl Account {
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<Account> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_import_config_id FROM accounts WHERE id = ?1",
+            "SELECT id, name, class, statement_schema_id FROM accounts WHERE id = ?1",
         )
         .bind(id)
         .fetch_one(&mut *conn)
@@ -89,7 +89,7 @@ impl Account {
     pub async fn fetch_by_name(db: &Database, name: &str) -> anyhow::Result<Account> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_import_config_id FROM accounts WHERE name = ?1",
+            "SELECT id, name, class, statement_schema_id FROM accounts WHERE name = ?1",
         )
         .bind(name)
         .fetch_one(&mut *conn)
@@ -105,12 +105,12 @@ impl Account {
             "UPDATE accounts SET
                 name = ?2,
                 class = ?3,
-                statement_import_config_id = ?4
+                statement_schema_id = ?4
             WHERE id = ?1",
             self.id,
             self.fields.name,
             self.fields.class,
-            self.fields.statement_import_config_id
+            self.fields.statement_schema_id
         )
         .execute(&mut *conn)
         .await?;

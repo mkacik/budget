@@ -7,7 +7,7 @@ use budget::budget::{
 use budget::database::Database;
 use budget::datetime::TZ;
 use budget::record_mapping::{Amount, RecordMapping, Text, TransactionDate, TransactionTime};
-use budget::statement_import_config::{StatementImportConfig, StatementImportConfigFields};
+use budget::statement_schema::{StatementSchema, StatementSchemaFields};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -36,30 +36,30 @@ async fn main() {
 }
 
 async fn seed_db_for_testing(db: Database) -> anyhow::Result<()> {
-    add_statement_import_configs(&db).await?;
+    add_statement_schemas(&db).await?;
     add_accounts(&db).await?;
     add_budget(&db).await?;
 
-    print_statement_import_configs(&db).await?;
+    print_statement_schemas(&db).await?;
     print_accounts(&db).await?;
     print_budget(&db).await?;
 
     Ok(())
 }
 
-async fn add_statement_import_configs(db: &Database) -> anyhow::Result<()> {
-    StatementImportConfig::create(
+async fn add_statement_schemas(db: &Database) -> anyhow::Result<()> {
+    StatementSchema::create(
         db,
-        StatementImportConfigFields {
+        StatementSchemaFields {
             name: String::from("bank"),
             record_mapping: get_bank_record_mapping(),
         },
     )
     .await?;
 
-    StatementImportConfig::create(
+    StatementSchema::create(
         db,
-        StatementImportConfigFields {
+        StatementSchemaFields {
             name: String::from("shop"),
             record_mapping: get_shop_record_mapping(),
         },
@@ -102,14 +102,13 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         AccountFields {
             name: String::from("big bank"),
             class: AccountClass::Bank,
-            statement_import_config_id: None,
+            statement_schema_id: None,
         },
     )
     .await?;
 
     let mut bank_account = Account::fetch_by_id(&db, bank_account_id).await?;
-    bank_account.fields.statement_import_config_id =
-        Some(StatementImportConfig::fetch_by_id(&db, 1).await?.id);
+    bank_account.fields.statement_schema_id = Some(StatementSchema::fetch_by_id(&db, 1).await?.id);
     bank_account.update(db).await?;
 
     Account::create(
@@ -117,18 +116,18 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         AccountFields {
             name: String::from("some shop"),
             class: AccountClass::Shop,
-            statement_import_config_id: Some(StatementImportConfig::fetch_by_id(&db, 2).await?.id),
+            statement_schema_id: Some(StatementSchema::fetch_by_id(&db, 2).await?.id),
         },
     )
     .await?;
 
-    // Leave one account without statement_import_config
+    // Leave one account without statement_schema
     Account::create(
         db,
         AccountFields {
             name: String::from("credit card"),
             class: AccountClass::CreditCard,
-            statement_import_config_id: None,
+            statement_schema_id: None,
         },
     )
     .await?;
@@ -136,9 +135,9 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn print_statement_import_configs(db: &Database) -> anyhow::Result<()> {
-    let configs = StatementImportConfig::fetch_all(&db).await?;
-    println!("*** Statement Import Configs");
+async fn print_statement_schemas(db: &Database) -> anyhow::Result<()> {
+    let configs = StatementSchema::fetch_all(&db).await?;
+    println!("*** Statement Schemas");
     for config in configs {
         println!("{:?}", config);
     }

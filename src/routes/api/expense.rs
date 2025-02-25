@@ -11,7 +11,7 @@ use crate::database::{Database, ID};
 use crate::expense::Expense;
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
-use crate::statement_import_config::StatementImportConfig;
+use crate::statement_schema::StatementSchema;
 
 #[get("/accounts/<account_id>/expenses")]
 pub async fn get_expenses(db: &State<Database>, account_id: ID) -> ApiResponse {
@@ -43,30 +43,26 @@ pub async fn import_expenses(
         }
     };
 
-    let statement_import_config_id = match account.fields.statement_import_config_id {
+    let statement_schema_id = match account.fields.statement_schema_id {
         Some(value) => value,
         None => {
             return ApiResponse::BadRequest {
                 message: format!(
-                    "Account '{}' does not have import config attached.",
+                    "Account '{}' does not have import schema attached.",
                     account.fields.name
                 ),
             }
         }
     };
 
-    let statement_import_config =
-        match StatementImportConfig::fetch_by_id(&db, statement_import_config_id).await {
-            Ok(value) => value,
-            Err(_) => {
-                return ApiResponse::BadRequest {
-                    message: format!(
-                        "StatementImportConfig with id {} could not be found.",
-                        account_id
-                    ),
-                }
+    let statement_schema = match StatementSchema::fetch_by_id(&db, statement_schema_id).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: format!("StatementSchema with id {} could not be found.", account_id),
             }
-        };
+        }
+    };
 
     if form.file.persist_to(STATEMENT_UPLOAD_PATH).await.is_err() {
         return ApiResponse::ServerError;
@@ -75,7 +71,7 @@ pub async fn import_expenses(
     let result = process_statement(
         &db,
         account_id,
-        statement_import_config,
+        statement_schema,
         String::from(STATEMENT_UPLOAD_PATH),
     )
     .await;
