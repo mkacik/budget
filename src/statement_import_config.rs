@@ -2,10 +2,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
-use crate::database::Database;
+use crate::database::{Database, ID};
 use crate::record_mapping::RecordMapping;
-
-type ID = i32;
 
 #[derive(Debug, FromRow, Deserialize, TS)]
 #[ts(export_to = "StatementImportConfig.ts")]
@@ -25,12 +23,9 @@ pub struct StatementImportConfig {
 }
 
 impl StatementImportConfig {
-    pub async fn create(
-        db: &Database,
-        fields: StatementImportConfigFields,
-    ) -> anyhow::Result<StatementImportConfig> {
+    pub async fn create(db: &Database, fields: StatementImportConfigFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
-        let id: i32 = sqlx::query_scalar!(
+        let id: ID = sqlx::query_scalar!(
             "INSERT INTO statement_import_configs (name, record_mapping)
             VALUES (?1, ?2) RETURNING id",
             fields.name,
@@ -41,7 +36,7 @@ impl StatementImportConfig {
         .try_into()
         .unwrap();
 
-        StatementImportConfig::fetch_by_id(db, id).await
+        return Ok(id);
     }
 
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<StatementImportConfig>> {

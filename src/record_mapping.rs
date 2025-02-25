@@ -2,8 +2,9 @@ use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::database::ID;
 use crate::datetime::{to_local_date, to_local_time, TZ};
-use crate::expense::Expense;
+use crate::expense::ExpenseFields;
 
 type ColID = usize;
 
@@ -97,20 +98,22 @@ pub struct RecordMapping {
 }
 
 impl RecordMapping {
-    pub fn record_to_expense(&self, record: StringRecord) -> anyhow::Result<Expense> {
+    pub fn record_to_expense(
+        &self,
+        record: StringRecord,
+        account_id: ID,
+    ) -> anyhow::Result<ExpenseFields> {
         let transaction_date = self.transaction_date.from_record(&record)?;
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;
         let amount = self.amount.from_record(&record)?;
 
-        let expense = Expense {
-            id: None,
-            account_id: None,
+        let expense = ExpenseFields {
+            account_id: account_id,
             transaction_date: transaction_date,
             transaction_time: transaction_time,
             description: description,
             amount: amount,
-            budget_item_id: None,
         };
 
         Ok(expense)

@@ -1,7 +1,9 @@
 use clap::{Parser, Subcommand};
 
 use budget::account::{Account, AccountClass, AccountFields};
-use budget::budget::{Budget, BudgetAmount, BudgetCategory, BudgetItem};
+use budget::budget::{
+    Budget, BudgetAmount, BudgetCategory, BudgetCategoryFields, BudgetItem, BudgetItemFields,
+};
 use budget::database::Database;
 use budget::datetime::TZ;
 use budget::record_mapping::{Amount, RecordMapping, Text, TransactionDate, TransactionTime};
@@ -95,7 +97,7 @@ fn get_shop_record_mapping() -> RecordMapping {
 }
 
 async fn add_accounts(db: &Database) -> anyhow::Result<()> {
-    let mut bank_account = Account::create(
+    let bank_account_id = Account::create(
         db,
         AccountFields {
             name: String::from("big bank"),
@@ -104,6 +106,8 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         },
     )
     .await?;
+
+    let mut bank_account = Account::fetch_by_id(&db, bank_account_id).await?;
     bank_account.fields.statement_import_config_id =
         Some(StatementImportConfig::fetch_by_id(&db, 1).await?.id);
     bank_account.update(db).await?;
@@ -157,68 +161,84 @@ async fn print_accounts(db: &Database) -> anyhow::Result<()> {
 }
 
 async fn add_budget(db: &Database) -> anyhow::Result<()> {
-    let mut items = vec![];
-
-    let mut car = BudgetCategory {
-        id: None,
-        name: String::from("Car"),
-    };
-    car.save(&db).await?;
-
-    let mut shopping = BudgetCategory {
-        id: None,
-        name: String::from("Shopping"),
-    };
-    shopping.save(&db).await?;
-
-    items.push(BudgetItem {
-        id: None,
-        category_id: car.id,
-        name: String::from("Fuel"),
-        amount: BudgetAmount::Weekly { amount: 50. },
-    });
-
-    items.push(BudgetItem {
-        id: None,
-        category_id: car.id,
-        name: String::from("Loan"),
-        amount: BudgetAmount::Monthly { amount: 300. },
-    });
-
-    items.push(BudgetItem {
-        id: None,
-        category_id: car.id,
-        name: String::from("Insurance"),
-        amount: BudgetAmount::Yearly { amount: 1000. },
-    });
-
-    items.push(BudgetItem {
-        id: None,
-        category_id: car.id,
-        name: String::from("Downpayment"),
-        amount: BudgetAmount::EveryXYears {
-            x: 5,
-            amount: 5000.,
+    let car_id = BudgetCategory::create(
+        &db,
+        BudgetCategoryFields {
+            name: String::from("Car"),
         },
-    });
+    )
+    .await?;
 
-    items.push(BudgetItem {
-        id: None,
-        category_id: shopping.id,
-        name: String::from("Groceries"),
-        amount: BudgetAmount::Weekly { amount: 100. },
-    });
+    let shopping_id = BudgetCategory::create(
+        &db,
+        BudgetCategoryFields {
+            name: String::from("Shopping"),
+        },
+    )
+    .await?;
 
-    items.push(BudgetItem {
-        id: None,
-        category_id: shopping.id,
-        name: String::from("Clothing"),
-        amount: BudgetAmount::Monthly { amount: 200. },
-    });
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: car_id,
+            name: String::from("Fuel"),
+            amount: BudgetAmount::Weekly { amount: 50. },
+        },
+    )
+    .await?;
 
-    for mut item in items {
-        item.save(&db).await?;
-    }
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: car_id,
+            name: String::from("Loan"),
+            amount: BudgetAmount::Monthly { amount: 300. },
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: car_id,
+            name: String::from("Insurance"),
+            amount: BudgetAmount::Yearly { amount: 1000. },
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: car_id,
+            name: String::from("Downpayment"),
+            amount: BudgetAmount::EveryXYears {
+                x: 5,
+                amount: 5000.,
+            },
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: shopping_id,
+            name: String::from("Groceries"),
+            amount: BudgetAmount::Weekly { amount: 100. },
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: shopping_id,
+            name: String::from("Clothing"),
+            amount: BudgetAmount::Monthly { amount: 200. },
+        },
+    )
+    .await?;
 
     Ok(())
 }
@@ -232,8 +252,7 @@ async fn print_budget(db: &Database) -> anyhow::Result<()> {
         items: items,
     };
 
-    println!("Yearly amount: {:.2}", budget.per_year());
-    println!("Monthly amount: {:.2}", budget.per_month());
+    println!("{:?}", budget);
 
     Ok(())
 }

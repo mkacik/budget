@@ -2,9 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
-use crate::database::Database;
-
-type ID = i32;
+use crate::database::{Database, ID};
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export_to = "Account.ts")]
@@ -25,7 +23,6 @@ pub struct AccountFields {
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
 #[ts(export_to = "Account.ts")]
 pub struct Account {
-    #[ts(type = "number")]
     pub id: ID,
     #[serde(flatten)]
     #[sqlx(flatten)]
@@ -40,9 +37,9 @@ pub struct Accounts {
 }
 
 impl Account {
-    pub async fn create(db: &Database, fields: AccountFields) -> anyhow::Result<Account> {
+    pub async fn create(db: &Database, fields: AccountFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
-        let id: i32 = sqlx::query_scalar!(
+        let id: ID = sqlx::query_scalar!(
             "INSERT INTO accounts (name, class, statement_import_config_id)
             VALUES (?1, ?2, ?3) RETURNING id",
             fields.name,
@@ -54,10 +51,10 @@ impl Account {
         .try_into()
         .unwrap();
 
-        Account::fetch_by_id(db, id).await
+        Ok(id)
     }
 
-    pub async fn delete_by_id(db: &Database, id: i32) -> anyhow::Result<()> {
+    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!("DELETE FROM accounts WHERE id = ?1", id,)
             .execute(&mut *conn)
@@ -77,7 +74,7 @@ impl Account {
         Ok(Accounts { accounts: results })
     }
 
-    pub async fn fetch_by_id(db: &Database, id: i32) -> anyhow::Result<Account> {
+    pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<Account> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Account>(
             "SELECT id, name, class, statement_import_config_id FROM accounts WHERE id = ?1",

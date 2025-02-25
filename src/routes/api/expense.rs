@@ -7,16 +7,14 @@ use tokio::fs::remove_file;
 
 use crate::account::Account;
 use crate::budget::BudgetItem;
-use crate::database::Database;
+use crate::database::{Database, ID};
 use crate::expense::Expense;
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
 use crate::statement_import_config::StatementImportConfig;
 
-type ID = i32;
-
 #[get("/accounts/<account_id>/expenses")]
-pub async fn get_expenses(db: &State<Database>, account_id: i32) -> ApiResponse {
+pub async fn get_expenses(db: &State<Database>, account_id: ID) -> ApiResponse {
     let result = Expense::fetch_by_account_id(&db, account_id).await;
 
     match serialize_result(result) {
@@ -99,7 +97,7 @@ pub struct UpdateExpenseRequest {
 #[post("/expenses/<expense_id>", format = "json", data = "<request>")]
 pub async fn update_expense(
     db: &State<Database>,
-    expense_id: i32,
+    expense_id: ID,
     request: Json<UpdateExpenseRequest>,
 ) -> ApiResponse {
     let budget_item_id = request.budget_item_id;

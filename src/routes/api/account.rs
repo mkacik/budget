@@ -2,7 +2,7 @@ use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
 
 use crate::account::{Account, AccountFields};
-use crate::database::Database;
+use crate::database::{Database, ID};
 use crate::expense::Expense;
 use crate::routes::common::{serialize_result, ApiResponse};
 
@@ -29,7 +29,7 @@ pub async fn add_account(db: &State<Database>, request: Json<AccountFields>) -> 
 #[post("/accounts/<account_id>", format = "json", data = "<request>")]
 pub async fn update_account(
     db: &State<Database>,
-    account_id: i32,
+    account_id: ID,
     request: Json<Account>,
 ) -> ApiResponse {
     let account = request.into_inner();
@@ -46,7 +46,7 @@ pub async fn update_account(
 }
 
 #[delete("/accounts/<account_id>")]
-pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiResponse {
+pub async fn delete_account(db: &State<Database>, account_id: ID) -> ApiResponse {
     let expenses = match Expense::fetch_by_account_id(db, account_id).await {
         Ok(value) => value,
         Err(_) => return ApiResponse::ServerError,

@@ -3,6 +3,7 @@ use clap::Parser;
 use budget::account::Account;
 use budget::database::Database;
 use budget::statement_import::process_statement;
+use budget::statement_import_config::StatementImportConfig;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -18,15 +19,34 @@ async fn main() {
     let file_path = args.file_path;
 
     let db = Database::init().await;
-    let account = match Account::fetch_by_name(&db, &account_name).await {
-        Ok(value) => value,
-        _ => {
-            println!("Could not find account '{}'", account_name);
+
+    let mut accounts = Account::fetch_all(&db)
+        .await
+        .expect("Fetching accounts from db failed")
+        .accounts;
+    accounts.retain(|account| account.fields.name == account_name);
+
+    if accounts.len() != 1 {
+        println!("Could not find account '{}'", account_name);
+        return;
+    }
+
+    let account = &accounts[0];
+
+    let config = match account.fields.statement_import_config_id {
+        Some(value) => StatementImportConfig::fetch_by_id(&db, value)
+            .await
+            .expect("Fetching config failed."),
+        None => {
+            println!(
+                "Account {} does not have import config attached",
+                account_name
+            );
             return;
         }
     };
 
-    match process_statement(&db, &account, file_path).await {
+    match process_statement(&db, account.id, config, file_path).await {
         Ok(_) => {}
         Err(e) => {
             println!("{:?}", e);

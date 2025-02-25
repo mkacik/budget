@@ -6,7 +6,7 @@ use std::env;
 const DATABASE_URL_ENV_VAR: &str = "DATABASE_URL";
 
 // All primary keys will be this type
-pub type ID = Option<i32>;
+pub type ID = i32;
 
 pub async fn get_db_pool() -> SqlitePool {
     let database_url = env::var(DATABASE_URL_ENV_VAR).unwrap();

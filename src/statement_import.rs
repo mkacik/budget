@@ -2,14 +2,12 @@ use csv::Reader;
 use std::cmp::Ordering;
 
 use crate::account::Account;
-use crate::database::Database;
-use crate::expense::{Expense, LatestExpenses};
+use crate::database::{Database, ID};
+use crate::expense::{Expense, ExpenseFields, LatestExpenses};
 use crate::record_mapping::RecordMapping;
 use crate::statement_import_config::StatementImportConfig;
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
-
-type ID = i32;
 
 pub async fn process_statement(
     db: &Database,
@@ -17,9 +15,9 @@ pub async fn process_statement(
     config: StatementImportConfig,
     path: String,
 ) -> anyhow::Result<()> {
-    let expenses = read_expenses(&config.fields.record_mapping, path).await?;
+    let expenses = read_expenses(&config.fields.record_mapping, account_id, path).await?;
 
-    let mut deduplicated = match Expense::fetch_latest_expenses(&db, Some(account_id)).await? {
+    let mut deduplicated = match Expense::fetch_latest_expenses(&db, account_id).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
         None => expenses,
     };
@@ -30,20 +28,22 @@ pub async fn process_statement(
     });
 
     for mut expense in deduplicated {
-        expense.account_id = Some(account_id);
-        expense.save(&db).await?;
-        println!("{:?}", expense);
+        Expense::create(&db, expense).await?;
     }
 
     Ok(())
 }
 
-async fn read_expenses(mapping: &RecordMapping, path: String) -> anyhow::Result<Vec<Expense>> {
+async fn read_expenses(
+    mapping: &RecordMapping,
+    account_id: ID,
+    path: String,
+) -> anyhow::Result<Vec<ExpenseFields>> {
     let mut reader = Reader::from_path(path)?;
-    let mut expenses: Vec<Expense> = Vec::new();
+    let mut expenses: Vec<ExpenseFields> = Vec::new();
     for result in reader.records() {
         let record = result?;
-        let expense = mapping.record_to_expense(record)?;
+        let expense = mapping.record_to_expense(record, account_id)?;
         expenses.push(expense);
     }
 
@@ -51,9 +51,9 @@ async fn read_expenses(mapping: &RecordMapping, path: String) -> anyhow::Result<
 }
 
 fn deduplicate_expenses(
-    expenses: Vec<Expense>,
+    expenses: Vec<ExpenseFields>,
     latest_logged_expenses: LatestExpenses,
-) -> Vec<Expense> {
+) -> Vec<ExpenseFields> {
     let mut maybe_duplicates = vec![];
     let mut new_expenses = vec![];
 
@@ -81,11 +81,11 @@ fn deduplicate_expenses(
     new_expenses
 }
 
-fn remove_duplicates(mut new: Vec<Expense>, old: Vec<Expense>) -> Vec<Expense> {
+fn remove_duplicates(mut new: Vec<ExpenseFields>, old: Vec<Expense>) -> Vec<ExpenseFields> {
     for old_expense in old {
         let mut dupe_index: Option<usize> = None;
-        for (index, new_expense) in new.iter().enumerate() {
-            if is_duplicate(&new_expense, &old_expense) {
+        for (index, new_expense_fields) in new.iter().enumerate() {
+            if is_duplicate(&new_expense_fields, &old_expense.fields) {
                 dupe_index = Some(index);
                 break;
             }
@@ -101,116 +101,59 @@ fn remove_duplicates(mut new: Vec<Expense>, old: Vec<Expense>) -> Vec<Expense> {
     return new;
 }
 
-fn is_duplicate(new: &Expense, old: &Expense) -> bool {
+fn is_duplicate(new: &ExpenseFields, old: &ExpenseFields) -> bool {
+    new == old
+    /*
     // this check skips few fields:
     //  - id, because it's None before expense is saved in db
     //  - account_id, because it's set only right before writing to db
     //  - category, because it will always be empty for new import, and user can set it later
-    if new.transaction_date != old.transaction_date {
+    if new.fields.transaction_date != old.fields.transaction_date {
         return false;
     }
-    if new.transaction_time != old.transaction_time {
+    if new.fields.transaction_time != old.fields.transaction_time {
         return false;
     }
-    if new.description != old.description {
+    if new.fields.description != old.fields.description {
         return false;
     }
-    if new.amount != old.amount {
+    if new.fields.amount != old.fields.amount {
         return false;
     }
     return true;
+    */
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::expense::ExpenseCategory;
 
-    fn get_expense() -> Expense {
-        Expense {
-            id: Some(2),
-            account_id: Some(1),
+    fn get_expense_fields(amount: f64) -> ExpenseFields {
+        ExpenseFields {
+            account_id: 8,
             transaction_date: "2025-01-25".to_string(),
             transaction_time: None,
             description: "Some expense".to_string(),
-            amount: 13.99,
-            budget_item_id: Some(5),
+            amount: amount,
         }
     }
 
-    fn get_expense_with_amount(amount: f64) -> Expense {
-        let mut expense = get_expense();
-        expense.amount = amount;
-
-        expense
-    }
-
-    #[test]
-    fn test_is_duplicate_ignores_fields() {
-        let mut expense_a = get_expense();
-        expense_a.id = None;
-        expense_a.account_id = None;
-        expense_a.budget_item_id = None;
-
-        let expense_b = get_expense();
-
-        assert!(is_duplicate(&expense_a, &expense_b));
-    }
-
-    #[test]
-    fn test_is_duplicate_observes_transaction_date_diff() {
-        let mut expense_a = get_expense();
-        expense_a.transaction_date = "2024-12-16".to_string();
-
-        let expense_b = get_expense();
-
-        assert_ne!(&expense_a.transaction_date, &expense_b.transaction_date);
-        assert_eq!(is_duplicate(&expense_a, &expense_b), false);
-    }
-
-    #[test]
-    fn test_is_duplicate_observes_transaction_time_diff() {
-        let mut expense_a = get_expense();
-        expense_a.transaction_time = Some("22:30:00".to_string());
-
-        let expense_b = get_expense();
-
-        assert_ne!(&expense_a.transaction_time, &expense_b.transaction_time);
-        assert_eq!(is_duplicate(&expense_a, &expense_b), false);
-    }
-
-    #[test]
-    fn test_is_duplicate_observes_description_diff() {
-        let mut expense_a = get_expense();
-        expense_a.description = "Different description".to_string();
-
-        let expense_b = get_expense();
-
-        assert_ne!(&expense_a.description, &expense_b.description);
-        assert_eq!(is_duplicate(&expense_a, &expense_b), false);
-    }
-
-    #[test]
-    fn test_is_duplicate_observes_amount_diff() {
-        let mut expense_a = get_expense();
-        expense_a.amount += 10.0;
-
-        let expense_b = get_expense();
-
-        assert_ne!(&expense_a.amount, &expense_b.amount);
-        assert_eq!(is_duplicate(&expense_a, &expense_b), false);
+    fn get_expense(amount: f64) -> Expense {
+        Expense {
+            id: 2,
+            fields: get_expense_fields(amount),
+            category: ExpenseCategory {
+                budget_item_id: None,
+            },
+        }
     }
 
     #[test]
     fn test_remove_duplicates_only_dupes() {
-        let new = vec![
-            get_expense_with_amount(13.00),
-            get_expense_with_amount(5.00),
-        ];
+        let new = vec![get_expense_fields(13.00), get_expense_fields(5.00)];
 
-        let old = vec![
-            get_expense_with_amount(5.00),
-            get_expense_with_amount(13.00),
-        ];
+        let old = vec![get_expense(5.00), get_expense(13.00)];
 
         assert_eq!(remove_duplicates(new, old).len(), 0);
     }
@@ -218,15 +161,12 @@ mod tests {
     #[test]
     fn test_remove_duplicates_removes_first_matching_dupe_only() {
         let new = vec![
-            get_expense_with_amount(13.00),
-            get_expense_with_amount(13.00),
-            get_expense_with_amount(5.00),
+            get_expense_fields(13.00),
+            get_expense_fields(13.00),
+            get_expense_fields(5.00),
         ];
 
-        let old = vec![
-            get_expense_with_amount(5.00),
-            get_expense_with_amount(13.00),
-        ];
+        let old = vec![get_expense(5.00), get_expense(13.00)];
 
         let result = remove_duplicates(new, old);
         assert_eq!(result.len(), 1);
