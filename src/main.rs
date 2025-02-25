@@ -31,14 +31,14 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
         .mount(
             "/api",
             routes![
-                routes::api::get_accounts,
-                routes::api::add_account,
-                routes::api::update_account,
-                routes::api::delete_account,
-                routes::api::get_budget,
-                routes::api::get_expenses,
-                routes::api::import_expenses,
-                routes::api::update_expense,
+                routes::api::account::get_accounts,
+                routes::api::account::add_account,
+                routes::api::account::update_account,
+                routes::api::account::delete_account,
+                routes::api::budget::get_budget,
+                routes::api::expense::get_expenses,
+                routes::api::expense::import_expenses,
+                routes::api::expense::update_expense,
             ],
         )
         .mount("/static", FileServer::from(relative!("www/static")))

@@ -1,86 +1,16 @@
+use rocket::{get, post, State};
 use rocket::serde::json::Json;
-use rocket::{delete, get, post, State};
-use serde::Deserialize;
-
-// statement upload
 use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
+use serde::Deserialize;
 use tokio::fs::remove_file;
 
-use crate::account::{Account, AccountFields};
-use crate::budget::{Budget, BudgetItem};
+use crate::account::{Account};
+use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
 use crate::expense::Expense;
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
-
-#[get("/budget")]
-pub async fn get_budget(db: &State<Database>) -> ApiResponse {
-    let result = Budget::fetch(&db).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
-}
-
-#[get("/accounts")]
-pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
-    let result = Account::fetch_all(&db).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
-}
-
-#[post("/accounts", format = "json", data = "<request>")]
-pub async fn add_account(
-    db: &State<Database>,
-    request: Json<AccountFields>,
-) -> ApiResponse {
-    let fields = request.into_inner();
-
-    match Account::create(&db, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
-    }
-}
-
-#[post("/accounts/<account_id>", format = "json", data = "<request>")]
-pub async fn update_account(
-    db: &State<Database>,
-    account_id: i32,
-    request: Json<Account>,
-) -> ApiResponse {
-    let account = request.into_inner();
-    if account_id != account.id {
-        return ApiResponse::BadRequest { message: String::from("IDs for update don't match") };
-    }
-
-    match account.update(&db).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
-    }
-}
-
-#[delete("/accounts/<account_id>")]
-pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiResponse {
-    let expenses = match Expense::fetch_by_account_id(db, account_id).await {
-        Ok(value) => value,
-        Err(_) => return ApiResponse::ServerError,
-    };
-    if expenses.expenses.len() > 0 {
-        return ApiResponse::BadRequest {
-          message: String::from("Can't delete account that has expenses attached."),
-        };
-    }
-
-    match Account::delete_by_id(db, account_id).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
-    }
-}
 
 #[get("/accounts/<account_id>/expenses")]
 pub async fn get_expenses(db: &State<Database>, account_id: i32) -> ApiResponse {
