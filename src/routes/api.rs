@@ -1,4 +1,3 @@
-use rocket::http::{ContentType, Status};
 use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
 use serde::Deserialize;
@@ -12,36 +11,39 @@ use crate::account::{Account, AccountFields};
 use crate::budget::{Budget, BudgetItem};
 use crate::database::{Database, ID};
 use crate::expense::Expense;
-use crate::routes::common::{
-    failure, failure_server_error, query_result_to_api_response, success_empty, success_with_data,
-    ApiResponse,
-};
-use crate::routes::common::{ok_empty, result_to_json_string};
+use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
 
 #[get("/budget")]
-pub async fn get_budget(db: &State<Database>) -> Option<(ContentType, String)> {
+pub async fn get_budget(db: &State<Database>) -> ApiResponse {
     let result = Budget::fetch(&db).await;
 
-    result_to_json_string(result)
+    match serialize_result(result) {
+        Ok(value) => ApiResponse::SuccessWithData { data: value },
+        Err(_) => ApiResponse::ServerError,
+    }
 }
 
 #[get("/accounts")]
-pub async fn get_accounts(db: &State<Database>) -> Option<(ContentType, String)> {
+pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
     let result = Account::fetch_all(&db).await;
 
-    result_to_json_string(result)
+    match serialize_result(result) {
+        Ok(value) => ApiResponse::SuccessWithData { data: value },
+        Err(_) => ApiResponse::ServerError,
+    }
 }
 
 #[post("/accounts", format = "json", data = "<request>")]
 pub async fn add_account(
     db: &State<Database>,
     request: Json<AccountFields>,
-) -> Option<(ContentType, String)> {
+) -> ApiResponse {
     let fields = request.into_inner();
+
     match Account::create(&db, fields).await {
-        Ok(_) => ok_empty(),
-        Err(_) => None,
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
     }
 }
 
@@ -50,14 +52,15 @@ pub async fn update_account(
     db: &State<Database>,
     account_id: i32,
     request: Json<Account>,
-) -> Option<(ContentType, String)> {
+) -> ApiResponse {
     let account = request.into_inner();
     if account_id != account.id {
-        return None;
+        return ApiResponse::BadRequest { message: String::from("IDs for update don't match") };
     }
+
     match account.update(&db).await {
-        Ok(_) => ok_empty(),
-        Err(_) => None,
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
     }
 }
 
@@ -65,17 +68,17 @@ pub async fn update_account(
 pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiResponse {
     let expenses = match Expense::fetch_by_account_id(db, account_id).await {
         Ok(value) => value,
-        Err(_) => return failure_server_error(),
+        Err(_) => return ApiResponse::ServerError,
     };
     if expenses.expenses.len() > 0 {
-        return failure(
-            Status::BadRequest,
-            "Can't delete account that has expenses attached.",
-        );
+        return ApiResponse::BadRequest {
+          message: String::from("Can't delete account that has expenses attached."),
+        };
     }
+
     match Account::delete_by_id(db, account_id).await {
-        Ok(_) => success_empty(),
-        Err(_) => failure_server_error(),
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
     }
 }
 
@@ -83,7 +86,10 @@ pub async fn delete_account(db: &State<Database>, account_id: i32) -> ApiRespons
 pub async fn get_expenses(db: &State<Database>, account_id: i32) -> ApiResponse {
     let result = Expense::fetch_by_account_id(&db, account_id).await;
 
-    query_result_to_api_response(result)
+    match serialize_result(result) {
+        Ok(value) => ApiResponse::SuccessWithData { data: value },
+        Err(_) => ApiResponse::ServerError,
+    }
 }
 
 #[derive(FromForm)]
@@ -109,10 +115,10 @@ pub async fn import_expenses(
     db: &State<Database>,
     account_id: i32,
     form: Form<UploadStatementForm<'_>>,
-) -> Option<(ContentType, String)> {
+) -> ApiResponse {
     match import_expenses_from_uploaded_statement(db, account_id, form).await {
-        Ok(_) => ok_empty(),
-        Err(_) => None,
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
     }
 }
 
@@ -144,9 +150,9 @@ pub async fn update_expense(
     db: &State<Database>,
     expense_id: i32,
     request: Json<UpdateExpenseRequest>,
-) -> Option<(ContentType, String)> {
+) -> ApiResponse {
     match update_expense_budget_item_id(&db, expense_id, request.budget_item_id).await {
-        Ok(_) => ok_empty(),
-        Err(_) => None,
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
     }
 }

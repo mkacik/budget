@@ -1,92 +1,66 @@
 use rocket::http::{ContentType, Status};
+use rocket::request::Request;
+use rocket::response::{self, Response, Responder};
 use serde::Serialize;
-use serde_json::to_string;
+use serde_json::{json, to_string};
 use ts_rs::TS;
 
-pub type ApiResponse = (Status, (ContentType, String));
-
-#[derive(Serialize)]
-struct ErrorMessage {
-    error: String,
+pub enum ApiResponse {
+  Success, 
+  SuccessWithData { data: String },
+  BadRequest { message: String },
+  ServerError,
 }
 
-impl ErrorMessage {
-    fn to_json_string(&self) -> String {
-        to_string(self).expect("Serializing ErrorMessage should never fail.")
-    }
-}
+impl<'r> Responder<'r, 'static> for ApiResponse {
+    fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
+        match self {
+            ApiResponse::Success => {
+              Response::build_from("{}".respond_to(req)?)
+                .status(Status::Ok)
+                .header(ContentType::JSON)
+                .ok()
+            },
 
-fn to_json_string<T: Serialize + TS>(serializable: &T) -> Option<(ContentType, String)> {
-    match to_string(&serializable) {
-        Ok(json) => Some((ContentType::JSON, json)),
-        Err(_) => None,
-    }
-}
+            ApiResponse::SuccessWithData { data } => {
+              Response::build_from(data.respond_to(req)?)
+                .status(Status::Ok)
+                .header(ContentType::JSON)
+                .ok()
+            },
 
-pub fn result_to_json_string<T: Serialize + TS>(
-    result: Result<T, anyhow::Error>,
-) -> Option<(ContentType, String)> {
-    match result {
-        Ok(value) => to_json_string(&value),
-        Err(_) => None,
-    }
-}
+            ApiResponse::ServerError => {
+              let error = error_from_str("Encountered server error while processing request.");
 
-pub fn ok_empty() -> Option<(ContentType, String)> {
-    Some((ContentType::JSON, String::from("{}")))
-}
+              Response::build_from(error.respond_to(req)?)
+                .status(Status::InternalServerError)
+                .header(ContentType::new("application", "problem+json"))
+                .ok() 
+            },
 
-pub fn failure(status: Status, message: &str) -> ApiResponse {
-    let error = ErrorMessage {
-        error: String::from(message),
-    };
+            ApiResponse::BadRequest { message } => {
+              let error = error_from_str(&message);
 
-    (
-        status,
-        (
-            ContentType::new("application", "problem+json"),
-            error.to_json_string(),
-        ),
-    )
-}
-
-pub fn failure_server_error() -> ApiResponse {
-    failure(
-        Status::InternalServerError,
-        "Encountered server error while processing request.",
-    )
-}
-
-pub fn success_with_data(content: String) -> ApiResponse {
-    (Status::Ok, (ContentType::JSON, content))
-}
-
-pub fn success_empty() -> ApiResponse {
-    (Status::Ok, (ContentType::JSON, String::from("{}")))
-}
-
-pub fn query_result_to_api_response<T: Serialize + TS>(
-    query_result: Result<T, anyhow::Error>,
-) -> ApiResponse {
-    let serializable = match query_result {
-        Ok(value) => value,
-        Err(_) => {
-            return failure(
-                Status::BadRequest,
-                "Encoutered error while processing data, check your request.",
-            )
+              Response::build_from(error.respond_to(req)?)
+                .status(Status::BadRequest)
+                .header(ContentType::new("application", "problem+json"))
+                .ok()
+            },
         }
-    };
+    }
+}
 
-    let json_string = match to_string(&serializable) {
-        Ok(value) => value,
-        Err(_) => {
-            return failure(
-                Status::InternalServerError,
-                "Error while serializing query result.",
-            )
-        }
-    };
+fn error_from_str(error_message: &str) -> String {
+  let error = json!({
+    "error": error_message,
+  });
 
-    success_with_data(json_string)
+  error.to_string()
+}
+
+pub fn serialize_result<T: Serialize + TS>(result: anyhow::Result<T>) -> anyhow::Result<String> {
+    let serializable = result?;
+    let serialized = to_string(&serializable)?;
+
+    Ok(serialized)
 }
