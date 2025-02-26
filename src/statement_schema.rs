@@ -5,14 +5,14 @@ use ts_rs::TS;
 use crate::database::{Database, ID};
 use crate::record_mapping::RecordMapping;
 
-#[derive(Debug, FromRow, Deserialize, TS)]
+#[derive(Debug, FromRow, Serialize, Deserialize, TS)]
 #[ts(export_to = "StatementSchema.ts")]
 pub struct StatementSchemaFields {
     pub name: String,
     pub record_mapping: RecordMapping,
 }
 
-#[derive(Debug, FromRow, Deserialize, TS)]
+#[derive(Debug, FromRow, Serialize, Deserialize, TS)]
 #[ts(export_to = "StatementSchema.ts")]
 pub struct StatementSchema {
     pub id: ID,
@@ -20,6 +20,12 @@ pub struct StatementSchema {
     #[sqlx(flatten)]
     #[ts(flatten)]
     pub fields: StatementSchemaFields,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export_to = "StatementSchema.ts")]
+pub struct StatementSchemas {
+    schemas: Vec<StatementSchema>,
 }
 
 impl StatementSchema {
@@ -36,10 +42,19 @@ impl StatementSchema {
         .try_into()
         .unwrap();
 
-        return Ok(id);
+        Ok(id)
     }
 
-    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<StatementSchema>> {
+    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!("DELETE FROM statement_schemas WHERE id = ?1", id,)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn fetch_all(db: &Database) -> anyhow::Result<StatementSchemas> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, StatementSchema>(
             "SELECT id, name, record_mapping FROM statement_schemas ORDER BY name",
@@ -47,7 +62,7 @@ impl StatementSchema {
         .fetch_all(&mut *conn)
         .await?;
 
-        Ok(results)
+        Ok(StatementSchemas { schemas: results})
     }
 
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<StatementSchema> {
@@ -60,5 +75,23 @@ impl StatementSchema {
         .await?;
 
         Ok(result)
+    }
+
+    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE statement_schemas SET
+                name = ?2,
+                record_mapping = ?3
+            WHERE id = ?1",
+            self.id,
+            self.fields.name,
+            self.fields.record_mapping,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
     }
 }

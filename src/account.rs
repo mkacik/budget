@@ -86,16 +86,17 @@ impl Account {
         Ok(result)
     }
 
-    pub async fn fetch_by_name(db: &Database, name: &str) -> anyhow::Result<Account> {
+    pub async fn fetch_by_schema_id(db: &Database, id: ID) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
-        let result = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_schema_id FROM accounts WHERE name = ?1",
+        let results = sqlx::query_as::<_, Account>(
+            "SELECT id, name, class, statement_schema_id FROM accounts
+            WHERE statement_schema_id = ?1",
         )
-        .bind(name)
-        .fetch_one(&mut *conn)
+        .bind(id)
+        .fetch_all(&mut *conn)
         .await?;
 
-        Ok(result)
+        Ok(Accounts { accounts: results })
     }
 
     pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
