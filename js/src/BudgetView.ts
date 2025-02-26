@@ -1,7 +1,4 @@
-import { Budget } from "./types/Budget";
-import { BudgetAmount } from "./types/BudgetAmount";
-import { BudgetCategory } from "./types/BudgetCategory";
-import { BudgetItem } from "./types/BudgetItem";
+import { Budget, BudgetAmount, BudgetCategory, BudgetItem } from "./types/Budget";
 
 function getAmountPerYear(amount: BudgetAmount): number {
   const props = Object.keys(amount);

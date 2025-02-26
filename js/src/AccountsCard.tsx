@@ -63,7 +63,7 @@ function AccountForm({
       const accountFields: AccountFields = {
         name: formHelper.getString("name"),
         class: formHelper.getString("class") as AccountClass,
-        statement_import_config_id: formHelper.getNumberOrNull("importConfig"),
+        statement_schema_id: formHelper.getNumberOrNull("importConfig"),
       } as AccountFields;
       // if nothing threw by this point, mark any validation errors as cleared
       clearErrorMessage();
@@ -100,7 +100,7 @@ function AccountForm({
 
   const accountName = account?.name;
   const accountClass = account?.class ?? ACCOUNT_CLASS_OPTIONS[0];
-  const importConfig = account?.statement_import_config_id ?? FormHelper.EMPTY;
+  const importConfig = account?.statement_schema_id ?? FormHelper.EMPTY;
   const maybeErrorCard =
     errorMessage !== null ? <ErrorCard message={errorMessage} /> : null;
   const accountClassOptions = ACCOUNT_CLASS_OPTIONS.map((value, idx) => (
@@ -189,7 +189,7 @@ export function AccountsCard({
       <div key={account.id}>
         <span>{account.name}</span>
         <span>{account.class}</span>
-        <span>{account.statement_import_config_id ?? "-"}</span>
+        <span>{account.statement_schema_id ?? "-"}</span>
         <span onClick={() => showEditModal(account)}>[edit]</span>
       </div>
     );

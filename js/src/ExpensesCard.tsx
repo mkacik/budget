@@ -1,10 +1,8 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { Account } from "./types/Account";
-import { Accounts } from "./types/Accounts";
-import { Expense } from "./types/Expense";
-import { Expenses } from "./types/Expenses";
+import { Account, Accounts } from "./types/Account";
+import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetItemDB } from "./BudgetView";
 import { AccountSelector } from "./AccountSelector";

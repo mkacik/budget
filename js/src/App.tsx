@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 
-import { Accounts } from "./types/Accounts";
+import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
 
 import { BudgetCard } from "./BudgetCard";
