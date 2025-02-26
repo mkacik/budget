@@ -9,8 +9,8 @@ use crate::account::Account;
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
 use crate::expense::Expense;
+use crate::import::{process_statement, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
-use crate::statement_import::{process_statement, STATEMENT_UPLOAD_PATH};
 use crate::statement_schema::StatementSchema;
 
 #[get("/accounts/<account_id>/expenses")]

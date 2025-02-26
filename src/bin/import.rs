@@ -2,7 +2,7 @@ use clap::Parser;
 
 use budget::account::Account;
 use budget::database::Database;
-use budget::statement_import::process_statement;
+use budget::import::process_statement;
 use budget::statement_schema::StatementSchema;
 
 #[derive(Debug, Parser)]

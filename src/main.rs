@@ -9,9 +9,9 @@ mod database;
 mod database_enum;
 mod datetime;
 mod expense;
+mod import;
 mod record_mapping;
 mod routes;
-mod statement_import;
 mod statement_schema;
 
 use crate::database::Database;
