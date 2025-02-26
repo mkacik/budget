@@ -9,30 +9,43 @@ use crate::expense::ExpenseFields;
 type ColID = usize;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-pub enum TransactionDate {
+#[ts(export_to = "RecordMapping.ts")]
+pub enum DateField {
     FromColumn { col: ColID, tz: TZ },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-pub enum TransactionTime {
+#[ts(export_to = "RecordMapping.ts")]
+pub enum TimeField {
     FromColumn { col: ColID, tz: TZ },
     Empty,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-pub enum Amount {
+#[ts(export_to = "RecordMapping.ts")]
+pub enum AmountField {
     FromColumn { col: ColID },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-pub enum Text {
+#[ts(export_to = "RecordMapping.ts")]
+pub enum TextField {
     FromColumn { col: ColID },
 }
 
-impl TransactionDate {
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export_to = "RecordMapping.ts")]
+pub struct RecordMapping {
+    pub transaction_date: DateField,
+    pub transaction_time: TimeField,
+    pub description: TextField,
+    pub amount: AmountField,
+}
+
+impl DateField {
     fn from_record(&self, record: &StringRecord) -> anyhow::Result<String> {
         match self {
-            TransactionDate::FromColumn { col, tz } => {
+            DateField::FromColumn { col, tz } => {
                 let field = &record[*col];
                 let date = to_local_date(field, tz)?;
 
@@ -42,24 +55,24 @@ impl TransactionDate {
     }
 }
 
-impl TransactionTime {
+impl TimeField {
     fn from_record(&self, record: &StringRecord) -> anyhow::Result<Option<String>> {
         match self {
-            TransactionTime::FromColumn { col, tz } => {
+            TimeField::FromColumn { col, tz } => {
                 let field = &record[*col];
                 let time = to_local_time(field, tz)?;
 
                 Ok(Some(time))
             }
-            TransactionTime::Empty => Ok(None),
+            TimeField::Empty => Ok(None),
         }
     }
 }
 
-impl Amount {
+impl AmountField {
     fn from_record(&self, record: &StringRecord) -> anyhow::Result<f64> {
         match self {
-            Amount::FromColumn { col } => {
+            AmountField::FromColumn { col } => {
                 let field = &record[*col];
                 let value = match field.parse::<f64>() {
                     Ok(value) => value,
@@ -77,24 +90,16 @@ impl Amount {
     }
 }
 
-impl Text {
+impl TextField {
     fn from_record(&self, record: &StringRecord) -> anyhow::Result<String> {
         match self {
-            Text::FromColumn { col } => {
+            TextField::FromColumn { col } => {
                 let field = &record[*col];
 
                 Ok(field.to_string())
             }
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, TS)]
-pub struct RecordMapping {
-    pub transaction_date: TransactionDate,
-    pub transaction_time: TransactionTime,
-    pub description: Text,
-    pub amount: Amount,
 }
 
 impl RecordMapping {

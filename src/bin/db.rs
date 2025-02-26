@@ -6,7 +6,8 @@ use budget::budget::{
 };
 use budget::database::Database;
 use budget::datetime::TZ;
-use budget::record_mapping::{Amount, RecordMapping, Text, TransactionDate, TransactionTime};
+use budget::record_mapping::RecordMapping;
+use budget::record_mapping::{AmountField, DateField, TextField, TimeField};
 use budget::statement_schema::{StatementSchema, StatementSchemaFields};
 
 #[derive(Parser, Debug)]
@@ -71,28 +72,28 @@ async fn add_statement_schemas(db: &Database) -> anyhow::Result<()> {
 
 fn get_bank_record_mapping() -> RecordMapping {
     RecordMapping {
-        transaction_date: TransactionDate::FromColumn {
+        transaction_date: DateField::FromColumn {
             col: 0,
             tz: TZ::Local,
         },
-        transaction_time: TransactionTime::Empty,
-        description: Text::FromColumn { col: 1 },
-        amount: Amount::FromColumn { col: 2 },
+        transaction_time: TimeField::Empty,
+        description: TextField::FromColumn { col: 1 },
+        amount: AmountField::FromColumn { col: 2 },
     }
 }
 
 fn get_shop_record_mapping() -> RecordMapping {
     RecordMapping {
-        transaction_date: TransactionDate::FromColumn {
+        transaction_date: DateField::FromColumn {
             col: 2,
             tz: TZ::UTC,
         },
-        transaction_time: TransactionTime::FromColumn {
+        transaction_time: TimeField::FromColumn {
             col: 2,
             tz: TZ::UTC,
         },
-        description: Text::FromColumn { col: 23 },
-        amount: Amount::FromColumn { col: 10 },
+        description: TextField::FromColumn { col: 23 },
+        amount: AmountField::FromColumn { col: 10 },
     }
 }
 
@@ -136,10 +137,10 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
 }
 
 async fn print_statement_schemas(db: &Database) -> anyhow::Result<()> {
-    let configs = StatementSchema::fetch_all(&db).await?;
+    let schemas = StatementSchema::fetch_all(&db).await?;
     println!("*** Statement Schemas");
-    for config in configs {
-        println!("{:?}", config);
+    for schema in schemas.schemas {
+        println!("{:?}", schema);
     }
 
     Ok(())

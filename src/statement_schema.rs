@@ -25,7 +25,7 @@ pub struct StatementSchema {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export_to = "StatementSchema.ts")]
 pub struct StatementSchemas {
-    schemas: Vec<StatementSchema>,
+    pub schemas: Vec<StatementSchema>,
 }
 
 impl StatementSchema {
@@ -62,7 +62,7 @@ impl StatementSchema {
         .fetch_all(&mut *conn)
         .await?;
 
-        Ok(StatementSchemas { schemas: results})
+        Ok(StatementSchemas { schemas: results })
     }
 
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<StatementSchema> {

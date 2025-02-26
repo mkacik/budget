@@ -2,9 +2,9 @@ use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
 
 use crate::account::Account;
-use crate::statement_schema::{StatementSchema, StatementSchemaFields};
 use crate::database::{Database, ID};
 use crate::routes::common::{serialize_result, ApiResponse};
+use crate::statement_schema::{StatementSchema, StatementSchemaFields};
 
 #[get("/schemas")]
 pub async fn get_schemas(db: &State<Database>) -> ApiResponse {
@@ -17,10 +17,7 @@ pub async fn get_schemas(db: &State<Database>) -> ApiResponse {
 }
 
 #[post("/schemas", format = "json", data = "<request>")]
-pub async fn add_schema(
-    db: &State<Database>,
-    request: Json<StatementSchemaFields>,
-) -> ApiResponse {
+pub async fn add_schema(db: &State<Database>, request: Json<StatementSchemaFields>) -> ApiResponse {
     let fields = request.into_inner();
 
     match StatementSchema::create(&db, fields).await {

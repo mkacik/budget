@@ -4,16 +4,19 @@ import { createRoot } from "react-dom/client";
 
 import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
+import { StatementSchemas } from "./types/StatementSchema";
 
 import { BudgetCard } from "./BudgetCard";
 import { BudgetView } from "./BudgetView";
 import { AccountsCard } from "./AccountsCard";
 import { ExpensesCard } from "./ExpensesCard";
+import { StatementSchemasCard } from "./StatementSchemasCard";
 
 enum Tab {
   Budget,
   Accounts,
   Expenses,
+  Schemas,
 }
 
 function render_if(condition: boolean, element: React.ReactNode) {
@@ -23,6 +26,7 @@ function render_if(condition: boolean, element: React.ReactNode) {
 function App() {
   const [budget, setBudget] = useState<BudgetView | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
+  const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
 
   const [tab, setTab] = useState<Tab>(Tab.Expenses);
 
@@ -53,7 +57,22 @@ function App() {
     }
   }, [accounts, setAccounts]);
 
-  if (budget === null || accounts === null) {
+  const fetchSchemas = () => {
+    fetch("/api/schemas")
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setSchemas(result as StatementSchemas);
+      });
+  };
+
+  useEffect(() => {
+    if (schemas === null) {
+      fetchSchemas();
+    }
+  }, [schemas, setSchemas]);
+
+  if (budget === null || accounts === null || schemas === null) {
     return null;
   }
 
@@ -70,6 +89,12 @@ function App() {
       refreshAccounts={fetchAccounts}
     />
   );
+  const schemasCard = (
+    <StatementSchemasCard
+      statementSchemas={schemas.schemas}
+      refreshStatementSchemas={fetchSchemas}
+    />
+  );
 
   return (
     <div>
@@ -79,10 +104,13 @@ function App() {
         <span onClick={() => setTab(Tab.Expenses)}>Expenses</span>
         {" | "}
         <span onClick={() => setTab(Tab.Accounts)}>Accounts</span>
+        {" | "}
+        <span onClick={() => setTab(Tab.Schemas)}>Schemas</span>
       </div>
       {render_if(tab == Tab.Budget, budgetCard)}
       {render_if(tab == Tab.Expenses, expensesCard)}
       {render_if(tab == Tab.Accounts, accountsCard)}
+      {render_if(tab == Tab.Schemas, schemasCard)}
     </div>
   );
 }
