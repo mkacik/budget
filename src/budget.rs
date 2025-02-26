@@ -7,9 +7,6 @@ use crate::database::{Database, ID};
 // helper PRIVATE type to not have to fuck with changing all places that use f64.
 type DollarAmount = f64;
 
-const WEEKS_PER_YEAR: f64 = 52.0;
-const MONTHS_PER_YEAR: f64 = 12.0;
-
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetCategoryFields {

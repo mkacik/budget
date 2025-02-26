@@ -1,7 +1,6 @@
 use csv::Reader;
 use std::cmp::Ordering;
 
-use crate::account::Account;
 use crate::database::{Database, ID};
 use crate::expense::{Expense, ExpenseFields, LatestExpenses};
 use crate::record_mapping::RecordMapping;
@@ -28,7 +27,7 @@ pub async fn process_statement(
         other => other,
     });
 
-    for mut expense in deduplicated {
+    for expense in deduplicated {
         Expense::create(&db, expense).await?;
     }
 
@@ -86,43 +85,18 @@ fn remove_duplicates(mut new: Vec<ExpenseFields>, old: Vec<Expense>) -> Vec<Expe
     for old_expense in old {
         let mut dupe_index: Option<usize> = None;
         for (index, new_expense_fields) in new.iter().enumerate() {
-            if is_duplicate(&new_expense_fields, &old_expense.fields) {
+            if new_expense_fields == &old_expense.fields {
                 dupe_index = Some(index);
                 break;
             }
         }
-        match dupe_index {
-            None => {}
-            Some(index) => {
-                new.remove(index);
-            }
+
+        if let Some(index) = dupe_index {
+            new.remove(index);
         }
     }
 
     return new;
-}
-
-fn is_duplicate(new: &ExpenseFields, old: &ExpenseFields) -> bool {
-    new == old
-    /*
-    // this check skips few fields:
-    //  - id, because it's None before expense is saved in db
-    //  - account_id, because it's set only right before writing to db
-    //  - category, because it will always be empty for new import, and user can set it later
-    if new.fields.transaction_date != old.fields.transaction_date {
-        return false;
-    }
-    if new.fields.transaction_time != old.fields.transaction_time {
-        return false;
-    }
-    if new.fields.description != old.fields.description {
-        return false;
-    }
-    if new.fields.amount != old.fields.amount {
-        return false;
-    }
-    return true;
-    */
 }
 
 #[cfg(test)]

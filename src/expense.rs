@@ -25,7 +25,7 @@ pub struct ExpenseFields {
     pub amount: f64,
 }
 
-#[derive(Debug, FromRow, Serialize, TS)]
+#[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = "Expense.ts")]
 pub struct ExpenseCategory {
     pub budget_item_id: Option<ID>,
