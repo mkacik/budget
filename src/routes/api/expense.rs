@@ -9,7 +9,7 @@ use crate::account::Account;
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
 use crate::expense::Expense;
-use crate::import::{process_statement, STATEMENT_UPLOAD_PATH};
+use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_schema::StatementSchema;
 
@@ -68,16 +68,22 @@ pub async fn import_expenses(
         return ApiResponse::ServerError;
     };
 
-    let result = process_statement(
-        &db,
+    let expenses_or_error = read_expenses(
         account_id,
-        statement_schema,
         String::from(STATEMENT_UPLOAD_PATH),
+        &statement_schema.fields.record_mapping,
     )
     .await;
 
     // clean up the temp file before return, regardless of whether import succeeded
     let _ = remove_file(STATEMENT_UPLOAD_PATH).await;
+
+    let expenses = match expenses_or_error {
+        Ok(value) => value,
+        Err(e) => return ApiResponse::BadRequest { message: e.message },
+    };
+
+    let result = save_expenses(account_id, expenses, &db).await;
 
     match result {
         Ok(_) => ApiResponse::Success,

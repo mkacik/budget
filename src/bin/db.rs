@@ -78,7 +78,10 @@ fn get_bank_record_mapping() -> RecordMapping {
         },
         transaction_time: TimeField::Empty,
         description: TextField::FromColumn { col: 1 },
-        amount: AmountField::FromColumn { col: 2 },
+        amount: AmountField::FromColumn {
+            col: 2,
+            invert: false,
+        },
     }
 }
 
@@ -93,7 +96,10 @@ fn get_shop_record_mapping() -> RecordMapping {
             tz: TZ::UTC,
         },
         description: TextField::FromColumn { col: 23 },
-        amount: AmountField::FromColumn { col: 10 },
+        amount: AmountField::FromColumn {
+            col: 10,
+            invert: false,
+        },
     }
 }
 

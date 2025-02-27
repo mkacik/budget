@@ -2,7 +2,7 @@ use clap::Parser;
 
 use budget::account::Account;
 use budget::database::Database;
-use budget::import::process_statement;
+use budget::import::{read_expenses, save_expenses};
 use budget::statement_schema::StatementSchema;
 
 #[derive(Debug, Parser)]
@@ -33,20 +33,28 @@ async fn main() {
 
     let account = &accounts[0];
 
-    let config = match account.fields.statement_schema_id {
+    let schema = match account.fields.statement_schema_id {
         Some(value) => StatementSchema::fetch_by_id(&db, value)
             .await
-            .expect("Fetching config failed."),
+            .expect("Fetching schema failed."),
         None => {
             println!(
-                "Account {} does not have import config attached",
+                "Account {} does not have import schema attached",
                 account_name
             );
             return;
         }
     };
 
-    match process_statement(&db, account.id, config, file_path).await {
+    let expenses = match read_expenses(account.id, file_path, &schema.fields.record_mapping).await {
+        Ok(value) => value,
+        Err(e) => {
+            println!("{:?}", e);
+            return;
+        }
+    };
+
+    match save_expenses(account.id, expenses, &db).await {
         Ok(_) => {}
         Err(e) => {
             println!("{:?}", e);

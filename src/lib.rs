@@ -3,6 +3,7 @@ pub mod budget;
 pub mod database;
 pub mod database_enum;
 pub mod datetime;
+pub mod error;
 pub mod expense;
 pub mod import;
 pub mod record_mapping;

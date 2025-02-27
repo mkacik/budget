@@ -5,36 +5,36 @@ import { Account, Accounts } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetItemDB } from "./BudgetView";
-import { AccountSelector } from "./AccountSelector";
+import { ErrorCard, ModalCard } from "./CommonUI";
 
-function StatementImportForm({
-  account,
-  bumpUpdates,
+export function AccountSelector({
+  accounts,
+  selected,
+  updateAccount,
 }: {
-  account: Account;
-  bumpUpdates: () => void;
+  accounts: Array<Account>;
+  selected: Account;
+  updateAccount: (Account) => void;
 }) {
-  const onSubmit = (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    fetch(`api/accounts/${account.id}/expenses`, {
-      method: "POST",
-      body: new FormData(form),
-    }).then((response) => {
-      form.reset();
-      if (response.ok) {
-        bumpUpdates();
-      } else {
-        console.log(response);
-      }
-    });
+  const accountsByID = new Map(
+    accounts.map((account) => [account.id, account]),
+  );
+
+  const onSelectChange = (e: React.SyntheticEvent) => {
+    const elem = e.target as HTMLSelectElement;
+    const id = Number(elem.value);
+    const newAccount = accountsByID.get(id)!;
+    updateAccount(newAccount);
   };
 
   return (
-    <form name="statement" onSubmit={onSubmit}>
-      <input type="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
-      <input type="submit" value="Submit" />
-    </form>
+    <select onChange={onSelectChange} value={selected.id}>
+      {accounts.map((account, idx) => (
+        <option key={idx} value={account.id}>
+          {account.name}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -68,6 +68,69 @@ function BudgetItemSelector({
       <option value={UNSET}>-</option>
       {options}
     </select>
+  );
+}
+
+function StatementImportForm({
+  account,
+  hideImportForm,
+  bumpUpdates,
+}: {
+  account: Account;
+  hideImportForm: () => void;
+  bumpUpdates: () => void;
+}) {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const clearErrorMessage = () => {
+    if (errorMessage !== null) {
+      setErrorMessage(null);
+    }
+  };
+
+  const onSubmit = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    setLoading(true);
+    fetch(`api/accounts/${account.id}/expenses`, {
+      method: "POST",
+      body: new FormData(form),
+    }).then((response) => {
+      setLoading(false);
+      form.reset();
+      if (response.ok) {
+        bumpUpdates(); // triggers data refetch
+        clearErrorMessage();
+        hideImportForm();
+      } else {
+        response
+          .json()
+          .then((json) => {
+            const message = json.error ?? "Something went wrong!";
+            setErrorMessage(message);
+          })
+          .catch((error) => {
+            console.log(response, error);
+            setErrorMessage("Something went wrong.");
+          });
+      }
+    });
+  };
+
+  if (loading) {
+    return "LOADING";
+  }
+
+  return (
+    <>
+      <ErrorCard message={errorMessage} />
+      <form name="statement" onSubmit={onSubmit}>
+        <input type="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
+        <input type="submit" value="Submit" />
+      </form>
+      <span onClick={hideImportForm}>[cancel]</span>
+    </>
   );
 }
 
@@ -170,6 +233,7 @@ export function ExpensesCard({
   const [account, setAccount] = useState<Account>(accounts[0]!);
   const [expenses, setExpenses] = useState<Array<Expense>>([]);
   const [updates, setUpdates] = useState<number>(0);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const fetchExpenses = () => {
     fetch(`/api/accounts/${account.id}/expenses`)
@@ -203,7 +267,16 @@ export function ExpensesCard({
       <div>
         <h3>{account.name}</h3>
       </div>
-      <StatementImportForm account={account} bumpUpdates={bumpUpdates} />
+      <div>
+        <span onClick={() => setModalVisible(true)}>[import statement]</span>
+      </div>
+      <ModalCard visible={modalVisible}>
+        <StatementImportForm
+          account={account}
+          hideImportForm={() => setModalVisible(false)}
+          bumpUpdates={bumpUpdates}
+        />
+      </ModalCard>
       <hr />
       <ExpensesTable
         expenses={expenses}

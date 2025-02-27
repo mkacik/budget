@@ -8,6 +8,7 @@ mod budget;
 mod database;
 mod database_enum;
 mod datetime;
+mod error;
 mod expense;
 mod import;
 mod record_mapping;

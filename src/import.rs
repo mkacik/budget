@@ -2,21 +2,46 @@ use csv::Reader;
 use std::cmp::Ordering;
 
 use crate::database::{Database, ID};
+use crate::error::ImportError;
 use crate::expense::{Expense, ExpenseFields, LatestExpenses};
 use crate::record_mapping::RecordMapping;
-use crate::statement_schema::StatementSchema;
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
 
-pub async fn process_statement(
-    db: &Database,
+pub async fn read_expenses(
     account_id: ID,
-    statement_schema: StatementSchema,
     path: String,
-) -> anyhow::Result<()> {
-    let record_mapping = statement_schema.fields.record_mapping;
-    let expenses = read_expenses(&record_mapping, account_id, path).await?;
+    mapping: &RecordMapping,
+) -> anyhow::Result<Vec<ExpenseFields>, ImportError> {
+    let mut reader = match Reader::from_path(path) {
+        Ok(value) => value,
+        Err(_) => {
+            return Err(ImportError::new(format!(
+                "Statement could not be read for import."
+            )))
+        }
+    };
+    let mut expenses: Vec<ExpenseFields> = Vec::new();
+    for result in reader.records() {
+        let record = match result {
+            Ok(value) => value,
+            Err(_) => return Err(ImportError::new(format!("Malformed row in statement."))),
+        };
+        let expense = match mapping.record_to_expense(record, account_id) {
+            Ok(value) => value,
+            Err(e) => return Err(e),
+        };
+        expenses.push(expense);
+    }
 
+    Ok(expenses)
+}
+
+pub async fn save_expenses(
+    account_id: ID,
+    expenses: Vec<ExpenseFields>,
+    db: &Database,
+) -> anyhow::Result<()> {
     let mut deduplicated = match Expense::fetch_latest_expenses(&db, account_id).await? {
         Some(latest_transactions) => deduplicate_expenses(expenses, latest_transactions),
         None => expenses,
@@ -32,22 +57,6 @@ pub async fn process_statement(
     }
 
     Ok(())
-}
-
-async fn read_expenses(
-    mapping: &RecordMapping,
-    account_id: ID,
-    path: String,
-) -> anyhow::Result<Vec<ExpenseFields>> {
-    let mut reader = Reader::from_path(path)?;
-    let mut expenses: Vec<ExpenseFields> = Vec::new();
-    for result in reader.records() {
-        let record = result?;
-        let expense = mapping.record_to_expense(record, account_id)?;
-        expenses.push(expense);
-    }
-
-    Ok(expenses)
 }
 
 fn deduplicate_expenses(

@@ -4,6 +4,7 @@ use ts_rs::TS;
 
 use crate::database::ID;
 use crate::datetime::{to_local_date, to_local_time, TZ};
+use crate::error::ImportError;
 use crate::expense::ExpenseFields;
 
 type ColID = usize;
@@ -24,7 +25,16 @@ pub enum TimeField {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export_to = "RecordMapping.ts")]
 pub enum AmountField {
-    FromColumn { col: ColID },
+    FromColumn {
+        col: ColID,
+        invert: bool,
+    },
+    FromCreditDebitColumns {
+        first: ColID,
+        invert_first: bool,
+        second: ColID,
+        invert_second: bool,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -42,27 +52,48 @@ pub struct RecordMapping {
     pub amount: AmountField,
 }
 
+fn get_col(record: &StringRecord, col: ColID) -> Result<&str, ImportError> {
+    match record.get(col) {
+        Some(value) => Ok(value),
+        None => Err(ImportError::new(format!(
+            "Requested 0-indexed column {} but row only had {} fields",
+            col,
+            record.len()
+        ))),
+    }
+}
+
 impl DateField {
-    fn from_record(&self, record: &StringRecord) -> anyhow::Result<String> {
+    fn from_record(&self, record: &StringRecord) -> Result<String, ImportError> {
         match self {
             DateField::FromColumn { col, tz } => {
-                let field = &record[*col];
-                let date = to_local_date(field, tz)?;
+                let field = get_col(&record, *col)?;
 
-                Ok(date)
+                match to_local_date(field, tz) {
+                    Ok(value) => Ok(value),
+                    Err(_) => Err(ImportError::new(format!(
+                        "Could not parse '{}' into a date",
+                        field
+                    ))),
+                }
             }
         }
     }
 }
 
 impl TimeField {
-    fn from_record(&self, record: &StringRecord) -> anyhow::Result<Option<String>> {
+    fn from_record(&self, record: &StringRecord) -> Result<Option<String>, ImportError> {
         match self {
             TimeField::FromColumn { col, tz } => {
-                let field = &record[*col];
-                let time = to_local_time(field, tz)?;
+                let field = get_col(&record, *col)?;
 
-                Ok(Some(time))
+                match to_local_time(field, tz) {
+                    Ok(value) => Ok(Some(value)),
+                    Err(_) => Err(ImportError::new(format!(
+                        "Could not parse '{}' into a time",
+                        field
+                    ))),
+                }
             }
             TimeField::Empty => Ok(None),
         }
@@ -70,31 +101,59 @@ impl TimeField {
 }
 
 impl AmountField {
-    fn from_record(&self, record: &StringRecord) -> anyhow::Result<f64> {
+    fn from_record(&self, record: &StringRecord) -> Result<f64, ImportError> {
         match self {
-            AmountField::FromColumn { col } => {
-                let field = &record[*col];
-                let value = match field.parse::<f64>() {
-                    Ok(value) => value,
-                    Err(_) => {
-                        return Err(anyhow::anyhow!(
-                            "Could not parse {:?} into f64, check your import config.",
-                            field
-                        ))
-                    }
+            AmountField::FromColumn { col, invert } => {
+                let field = get_col(&record, *col)?;
+
+                AmountField::parse_from_str(field, *invert)
+            }
+            AmountField::FromCreditDebitColumns {
+                first,
+                invert_first,
+                second,
+                invert_second,
+            } => {
+                let first_col = get_col(&record, *first)?;
+                let second_col = get_col(&record, *second)?;
+
+                let (field, invert) = if first_col != "" {
+                    (first_col, invert_first)
+                } else {
+                    (second_col, invert_second)
                 };
 
-                Ok(value)
+                AmountField::parse_from_str(field, *invert)
             }
         }
+    }
+
+    fn parse_from_str(field: &str, invert: bool) -> Result<f64, ImportError> {
+        let value = match field.parse::<f64>() {
+            Ok(value) => {
+                if invert {
+                    -value
+                } else {
+                    value
+                }
+            }
+            Err(_) => {
+                return Err(ImportError::new(format!(
+                    "Could not parse '{}' into f64",
+                    field
+                )))
+            }
+        };
+
+        Ok(value)
     }
 }
 
 impl TextField {
-    fn from_record(&self, record: &StringRecord) -> anyhow::Result<String> {
+    fn from_record(&self, record: &StringRecord) -> Result<String, ImportError> {
         match self {
             TextField::FromColumn { col } => {
-                let field = &record[*col];
+                let field = get_col(&record, *col)?;
 
                 Ok(field.to_string())
             }
@@ -107,7 +166,7 @@ impl RecordMapping {
         &self,
         record: StringRecord,
         account_id: ID,
-    ) -> anyhow::Result<ExpenseFields> {
+    ) -> Result<ExpenseFields, ImportError> {
         let transaction_date = self.transaction_date.from_record(&record)?;
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;
@@ -122,5 +181,26 @@ impl RecordMapping {
         };
 
         Ok(expense)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_text_field() {
+        let record = StringRecord::from(vec!["ab", "cd", "ef"]);
+        let result = TextField::FromColumn { col: 1 }.from_record(&record);
+        assert!(result.is_ok());
+        assert_eq!(&result.unwrap(), "cd");
+    }
+
+    #[test]
+    fn test_text_field_empty_string() {
+        let record = StringRecord::from(vec!["", "", ""]);
+        let result = TextField::FromColumn { col: 1 }.from_record(&record);
+        assert!(result.is_ok());
+        assert_eq!(&result.unwrap(), "");
     }
 }
