@@ -66,6 +66,15 @@ impl BudgetCategory {
         Ok(id)
     }
 
+    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!("DELETE FROM budget_categories WHERE id = ?1", id,)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetCategory>> {
         let mut conn = db.acquire_db_conn().await?;
 
@@ -76,6 +85,21 @@ impl BudgetCategory {
         .await?;
 
         Ok(results)
+    }
+
+    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE budget_categories SET name = ?2
+            WHERE id = ?1",
+            self.id,
+            self.fields.name,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
     }
 }
 
@@ -95,6 +119,15 @@ impl BudgetItem {
         .unwrap();
 
         Ok(id)
+    }
+
+    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!("DELETE FROM budget_items WHERE id = ?1", id,)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
     }
 
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetItem>> {
@@ -118,6 +151,44 @@ impl BudgetItem {
         .await?;
 
         Ok(result)
+    }
+
+    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE budget_items SET
+                category_id = ?2,
+                name = ?3,
+                amount = ?4
+            WHERE id = ?1",
+            self.id,
+            self.fields.category_id,
+            self.fields.name,
+            self.fields.amount
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn any_has_budget_category_id(
+        db: &Database,
+        budget_category_id: ID,
+    ) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT 1 FROM budget_items WHERE category_id = ?1 LIMIT 1",
+            budget_category_id,
+        )
+        .fetch_optional(&mut *conn)
+        .await?;
+
+        match result {
+            Some(_) => Ok(true),
+            None => Ok(false),
+        }
     }
 }
 

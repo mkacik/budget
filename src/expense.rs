@@ -158,4 +158,19 @@ impl Expense {
 
         Ok(())
     }
+
+    pub async fn any_has_budget_item_id(db: &Database, budget_item_id: ID) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT 1 FROM expenses WHERE budget_item_id = ?1 LIMIT 1",
+            budget_item_id,
+        )
+        .fetch_optional(&mut *conn)
+        .await?;
+
+        match result {
+            Some(_) => Ok(true),
+            None => Ok(false),
+        }
+    }
 }
