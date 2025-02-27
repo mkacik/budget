@@ -1,61 +1,50 @@
 import React from "react";
 
-import { TimeField } from "../types/RecordMapping";
+import { DateField } from "../types/RecordMapping";
 import {
   OptionParamsFromColumnWithTZ as OptionParamsFromColumn,
   FromColumnFormWithTZ as FromColumnForm,
 } from "./FromColumn";
 
-type OptionName = "Empty" | "FromColumn";
-type OptionParamsEmpty = null;
-type OptionParams = OptionParamsEmpty | OptionParamsFromColumn;
+type OptionName = "FromColumn";
+type OptionParams = OptionParamsFromColumn;
 
-function getOptionName(field: TimeField): OptionName {
-  if (field === "Empty") {
-    return "Empty";
-  } else if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
+function getOptionName(field: DateField): OptionName {
+  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
     return "FromColumn";
   }
-  throw new Error("Unexpected shape of TimeField");
+  throw new Error("Unexpected shape of DateField");
 }
 
-function getOptionParams(field: TimeField): OptionParams {
-  if (field === "Empty") {
-    return null;
-  } else if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
+function getOptionParams(field: DateField): OptionParams {
+  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
     return field.FromColumn!;
   }
-  throw new Error("Unexpected shape of TimeField");
+  throw new Error("Unexpected shape of DateField");
 }
 
 function getDefaultOptionParams(optionName: OptionName): OptionParams {
   switch (optionName) {
-    case "Empty":
-      return null;
     case "FromColumn":
       return { col: 0, tz: "Local" };
   }
-  throw new Error("Unexpected shape of TimeField");
+  throw new Error("Unexpected shape of DateField");
 }
 
-export function TimeFieldForm({
-  time,
-  updateTime,
+export function DateFieldForm({
+  date,
+  updateDate,
 }: {
-  time: TimeField;
-  updateTime: (TimeField) => void;
+  date: DateField;
+  updateDate: (DateField) => void;
 }) {
-  const optionName = getOptionName(time);
-  const optionParams = getOptionParams(time);
+  const optionName = getOptionName(date);
+  const optionParams = getOptionParams(date);
 
   const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
     switch (newOptionName) {
       case "FromColumn": {
-        updateTime({ FromColumn: newOptionParams });
-        break;
-      }
-      case "Empty": {
-        updateTime("Empty");
+        updateDate({ FromColumn: newOptionParams });
         break;
       }
       default:
@@ -83,16 +72,13 @@ export function TimeFieldForm({
       );
       break;
     }
-    case "Empty":
-      break;
     default:
-      throw new Error("Unexpected shape of TimeField");
+      throw new Error("Unexpected shape of DateField");
   }
 
   return (
     <>
       <select value={optionName} onChange={onOptionNameChange}>
-        <option value="Empty">Empty</option>
         <option value="FromColumn">FromColumn</option>
       </select>
       {optionParamsSelector}

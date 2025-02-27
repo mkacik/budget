@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 
 import {
   AmountField,
@@ -9,37 +8,10 @@ import {
   RecordMapping,
 } from "./types/RecordMapping";
 
+import { AmountFieldForm } from "./schema/AmountFieldForm";
+import { DateFieldForm } from "./schema/DateFieldForm";
 import { TimeFieldForm } from "./schema/TimeFieldForm";
-
-function DateFieldForm({
-  date,
-  updateDate,
-}: {
-  date: DateField;
-  updateDate: (DateField) => void;
-}) {
-  return <div>{JSON.stringify(date)}</div>;
-}
-
-function TextFieldForm({
-  text,
-  updateText,
-}: {
-  text: TextField;
-  updateText: (TextField) => void;
-}) {
-  return <div>{JSON.stringify(text)}</div>;
-}
-
-function AmountFieldForm({
-  amount,
-  updateAmount,
-}: {
-  amount: AmountField;
-  updateAmount: (AmountField) => void;
-}) {
-  return <div>{JSON.stringify(amount)}</div>;
-}
+import { TextFieldForm } from "./schema/TextFieldForm";
 
 export function getDefaultRecordMapping(): RecordMapping {
   const recordMapping: RecordMapping = {
@@ -63,37 +35,52 @@ export function RecordMappingForm({
   recordMapping: RecordMapping;
   updateRecordMapping: (newRecordMapping: RecordMapping) => void;
 }) {
-  const [transactionDate, setTransactionDate] = useState<DateField>(
-    recordMapping.transaction_date,
-  );
-  const [description, setDescription] = useState<TextField>(
-    recordMapping.description,
-  );
-  const [amount, setAmount] = useState<AmountField>(recordMapping.amount);
+  const updateAmount = (value: AmountField) => {
+    updateRecordMapping({ ...recordMapping, amount: value });
+  };
+
+  const updateTransactionDate = (value: DateField) => {
+    updateRecordMapping({ ...recordMapping, transaction_date: value });
+  };
 
   const updateTransactionTime = (value: TimeField) => {
     updateRecordMapping({ ...recordMapping, transaction_time: value });
   };
 
+  const updateDescription = (value: TextField) => {
+    updateRecordMapping({ ...recordMapping, description: value });
+  };
+
   return (
     <>
-      <span>Transaction Date</span>
-      <DateFieldForm
-        date={transactionDate}
-        updateDate={(val) => setTransactionDate(val)}
-      />
-      <span>Transaction Time</span>
-      <TimeFieldForm
-        time={recordMapping.transaction_time}
-        updateTime={updateTransactionTime}
-      />
-      <span>Description</span>
-      <TextFieldForm
-        text={description}
-        updateText={(val) => setDescription(val)}
-      />
-      <span>Amount</span>
-      <AmountFieldForm amount={amount} updateAmount={(val) => setAmount(val)} />
+      <div>
+        Transaction Date
+        <DateFieldForm
+          date={recordMapping.transaction_date}
+          updateDate={updateTransactionDate}
+        />
+      </div>
+      <div>
+        Transaction Time
+        <TimeFieldForm
+          time={recordMapping.transaction_time}
+          updateTime={updateTransactionTime}
+        />
+      </div>
+      <div>
+        Description
+        <TextFieldForm
+          text={recordMapping.description}
+          updateText={updateDescription}
+        />
+      </div>
+      <div>
+        Amount
+        <AmountFieldForm
+          amount={recordMapping.amount}
+          updateAmount={updateAmount}
+        />
+      </div>
     </>
   );
 }
