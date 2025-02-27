@@ -7,7 +7,10 @@ import {
   StatementSchemaFields,
 } from "./types/StatementSchema";
 
-import { RecordMappingForm } from "./RecordMappingForm";
+import {
+  getDefaultRecordMapping,
+  RecordMappingForm,
+} from "./RecordMappingForm";
 import { FormHelper } from "./FormHelper";
 import { ErrorCard, ModalCard } from "./CommonUI";
 import { JSON_HEADERS } from "./Common";
@@ -49,8 +52,8 @@ function StatementSchemaForm({
   refreshStatementSchemas: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [recordMapping, setRecordMapping] = useState<RecordMapping | null>(
-    schema?.record_mapping ?? null,
+  const [recordMapping, setRecordMapping] = useState<RecordMapping>(
+    schema?.record_mapping ?? getDefaultRecordMapping(),
   );
 
   const clearErrorMessage = () => {
