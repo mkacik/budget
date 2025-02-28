@@ -4,7 +4,7 @@ use std::io;
 use ts_rs::{ExportError, TS};
 
 use budget::account::{AccountFields, Accounts};
-use budget::budget::Budget;
+use budget::budget::{Budget, BudgetCategoryFields, BudgetItemFields};
 use budget::expense::Expenses;
 use budget::statement_schema::{StatementSchemaFields, StatementSchemas};
 
@@ -14,6 +14,8 @@ fn export() -> Result<(), ExportError> {
     Accounts::export_all()?;
 
     Budget::export_all()?;
+    BudgetCategoryFields::export_all()?;
+    BudgetItemFields::export_all()?;
 
     Expenses::export_all()?;
 
