@@ -1,20 +1,22 @@
 import React from "react";
 
 import { TextField } from "../types/RecordMapping";
-import { OptionParamsFromColumn, FromColumnForm } from "./FromColumn";
+import { FromColumn, FromColumnForm } from "./FromColumn";
 
-type OptionName = "FromColumn";
-type OptionParams = OptionParamsFromColumn;
+const FROM_COLUMN = "FromColumn";
+
+type OptionName = typeof FROM_COLUMN;
+type OptionParams = FromColumn;
 
 function getOptionName(field: TextField): OptionName {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
-    return "FromColumn";
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
+    return FROM_COLUMN;
   }
   throw new Error("Unexpected shape of TextField");
 }
 
 function getOptionParams(field: TextField): OptionParams {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
     return field.FromColumn!;
   }
   throw new Error("Unexpected shape of TextField");
@@ -22,7 +24,7 @@ function getOptionParams(field: TextField): OptionParams {
 
 function getDefaultOptionParams(optionName: OptionName): OptionParams {
   switch (optionName) {
-    case "FromColumn":
+    case FROM_COLUMN:
       return { col: 1 };
   }
   throw new Error("Unexpected shape of TextField");
@@ -40,7 +42,7 @@ export function TextFieldForm({
 
   const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
     switch (newOptionName) {
-      case "FromColumn": {
+      case FROM_COLUMN: {
         updateText({ FromColumn: newOptionParams });
         break;
       }
@@ -58,12 +60,12 @@ export function TextFieldForm({
 
   let optionParamsSelector: React.ReactNode = null;
   switch (optionName) {
-    case "FromColumn": {
+    case FROM_COLUMN: {
       optionParamsSelector = (
         <FromColumnForm
-          params={optionParams as OptionParamsFromColumn}
-          updateParams={(newParams: OptionParamsFromColumn) =>
-            update("FromColumn", newParams)
+          params={optionParams as FromColumn}
+          updateParams={(newParams: OptionParams) =>
+            update(FROM_COLUMN, newParams)
           }
         />
       );
@@ -76,7 +78,7 @@ export function TextFieldForm({
   return (
     <>
       <select value={optionName} onChange={onOptionNameChange}>
-        <option value="FromColumn">FromColumn</option>
+        <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
       </select>
       {optionParamsSelector}
     </>

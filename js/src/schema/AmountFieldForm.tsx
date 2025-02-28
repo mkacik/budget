@@ -1,29 +1,45 @@
 import React from "react";
 
 import { AmountField } from "../types/RecordMapping";
-import { OptionParamsFromColumn, FromColumnForm } from "./FromColumn";
+import {
+  FromColumnWithInvert,
+  FromColumnWithInvertForm,
+  FromCreditDebitColumns,
+  FromCreditDebitColumnsForm,
+} from "./FromColumn";
 
-type OptionName = "FromColumn";
-type OptionParams = OptionParamsFromColumn;
+const FROM_COLUMN: string = "FromColumn";
+const FROM_CREDIT_DEBIT_COLUMNS: string = "FromCreditDebitColumns";
+
+type OptionName = typeof FROM_COLUMN | typeof FROM_CREDIT_DEBIT_COLUMNS;
+type OptionParams = FromColumnWithInvert | FromCreditDebitColumns;
 
 function getOptionName(field: AmountField): OptionName {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
-    return "FromColumn";
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
+    return FROM_COLUMN;
+  }
+  if (Object.prototype.hasOwnProperty.call(field, FROM_CREDIT_DEBIT_COLUMNS)) {
+    return FROM_CREDIT_DEBIT_COLUMNS;
   }
   throw new Error("Unexpected shape of AmountField");
 }
 
 function getOptionParams(field: AmountField): OptionParams {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
-    return field.FromColumn!;
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
+    return field[FROM_COLUMN]!;
+  }
+  if (Object.prototype.hasOwnProperty.call(field, FROM_CREDIT_DEBIT_COLUMNS)) {
+    return field[FROM_CREDIT_DEBIT_COLUMNS]!;
   }
   throw new Error("Unexpected shape of AmountField");
 }
 
 function getDefaultOptionParams(optionName: OptionName): OptionParams {
   switch (optionName) {
-    case "FromColumn":
-      return { col: 2 };
+    case FROM_COLUMN:
+      return { col: 2, invert: false };
+    case FROM_CREDIT_DEBIT_COLUMNS:
+      return { first: 2, invert_first: false, second: 3, invert_second: true };
   }
   throw new Error("Unexpected shape of AmountField");
 }
@@ -40,8 +56,12 @@ export function AmountFieldForm({
 
   const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
     switch (newOptionName) {
-      case "FromColumn": {
+      case FROM_COLUMN: {
         updateAmount({ FromColumn: newOptionParams });
+        break;
+      }
+      case FROM_CREDIT_DEBIT_COLUMNS: {
+        updateAmount({ FromCreditDebitColumns: newOptionParams });
         break;
       }
       default:
@@ -58,12 +78,23 @@ export function AmountFieldForm({
 
   let optionParamsSelector: React.ReactNode = null;
   switch (optionName) {
-    case "FromColumn": {
+    case FROM_COLUMN: {
       optionParamsSelector = (
-        <FromColumnForm
-          params={optionParams as OptionParamsFromColumn}
-          updateParams={(newParams: OptionParamsFromColumn) =>
-            update("FromColumn", newParams)
+        <FromColumnWithInvertForm
+          params={optionParams as FromColumnWithInvert}
+          updateParams={(newParams: OptionParams) =>
+            update(FROM_COLUMN, newParams)
+          }
+        />
+      );
+      break;
+    }
+    case FROM_CREDIT_DEBIT_COLUMNS: {
+      optionParamsSelector = (
+        <FromCreditDebitColumnsForm
+          params={optionParams as FromCreditDebitColumns}
+          updateParams={(newParams: OptionParams) =>
+            update(FROM_CREDIT_DEBIT_COLUMNS, newParams)
           }
         />
       );
@@ -76,7 +107,10 @@ export function AmountFieldForm({
   return (
     <>
       <select value={optionName} onChange={onOptionNameChange}>
-        <option value="FromColumn">FromColumn</option>
+        <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
+        <option value={FROM_CREDIT_DEBIT_COLUMNS}>
+          {FROM_CREDIT_DEBIT_COLUMNS}
+        </option>
       </select>
       {optionParamsSelector}
     </>

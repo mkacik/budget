@@ -18,7 +18,7 @@ export function getDefaultRecordMapping(): RecordMapping {
     transaction_date: { FromColumn: { col: 0, tz: "Local" } },
     transaction_time: "Empty",
     description: { FromColumn: { col: 1 } },
-    amount: { FromColumn: { col: 2 } },
+    amount: { FromColumn: { col: 2, invert: false } },
   } as RecordMapping;
 
   return recordMapping;

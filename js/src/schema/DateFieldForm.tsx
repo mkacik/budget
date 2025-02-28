@@ -1,31 +1,30 @@
 import React from "react";
 
 import { DateField } from "../types/RecordMapping";
-import {
-  OptionParamsFromColumnWithTZ as OptionParamsFromColumn,
-  FromColumnFormWithTZ as FromColumnForm,
-} from "./FromColumn";
+import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
 
-type OptionName = "FromColumn";
-type OptionParams = OptionParamsFromColumn;
+const FROM_COLUMN: string = "FromColumn";
+
+type OptionName = typeof FROM_COLUMN;
+type OptionParams = FromColumnWithTZ;
 
 function getOptionName(field: DateField): OptionName {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
-    return "FromColumn";
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
+    return FROM_COLUMN;
   }
   throw new Error("Unexpected shape of DateField");
 }
 
 function getOptionParams(field: DateField): OptionParams {
-  if (Object.prototype.hasOwnProperty.call(field, "FromColumn")) {
-    return field.FromColumn!;
+  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
+    return field[FROM_COLUMN]!;
   }
   throw new Error("Unexpected shape of DateField");
 }
 
 function getDefaultOptionParams(optionName: OptionName): OptionParams {
   switch (optionName) {
-    case "FromColumn":
+    case FROM_COLUMN:
       return { col: 0, tz: "Local" };
   }
   throw new Error("Unexpected shape of DateField");
@@ -43,7 +42,7 @@ export function DateFieldForm({
 
   const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
     switch (newOptionName) {
-      case "FromColumn": {
+      case FROM_COLUMN: {
         updateDate({ FromColumn: newOptionParams });
         break;
       }
@@ -61,12 +60,12 @@ export function DateFieldForm({
 
   let optionParamsSelector: React.ReactNode = null;
   switch (optionName) {
-    case "FromColumn": {
+    case FROM_COLUMN: {
       optionParamsSelector = (
-        <FromColumnForm
-          params={optionParams as OptionParamsFromColumn}
-          updateParams={(newParams: OptionParamsFromColumn) =>
-            update("FromColumn", newParams)
+        <FromColumnWithTZForm
+          params={optionParams as FromColumnWithTZ}
+          updateParams={(newParams: OptionParams) =>
+            update(FROM_COLUMN, newParams)
           }
         />
       );
@@ -79,7 +78,7 @@ export function DateFieldForm({
   return (
     <>
       <select value={optionName} onChange={onOptionNameChange}>
-        <option value="FromColumn">FromColumn</option>
+        <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
       </select>
       {optionParamsSelector}
     </>
