@@ -3,9 +3,8 @@ import { useState } from "react";
 
 import { Account, AccountFields, AccountClass } from "./types/Account";
 
-import { FormHelper } from "./FormHelper";
 import { ErrorCard, ModalCard } from "./CommonUI";
-import { JSON_HEADERS } from "./Common";
+import { FormHelper, JSON_HEADERS } from "./Common";
 
 const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
   "Bank",

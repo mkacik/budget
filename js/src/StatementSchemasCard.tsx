@@ -11,9 +11,8 @@ import {
   getDefaultRecordMapping,
   RecordMappingForm,
 } from "./RecordMappingForm";
-import { FormHelper } from "./FormHelper";
 import { ErrorCard, ModalCard } from "./CommonUI";
-import { JSON_HEADERS } from "./Common";
+import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields) {
   return fetch("/api/schemas", {

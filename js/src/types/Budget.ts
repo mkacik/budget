@@ -6,4 +6,8 @@ export type BudgetAmount = { "Weekly": { amount: number, } } | { "Monthly": { am
 
 export type BudgetCategory = { id: number, name: string, };
 
+export type BudgetCategoryFields = { name: string, };
+
 export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount, };
+
+export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount, };

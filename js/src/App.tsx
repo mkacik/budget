@@ -30,15 +30,19 @@ function App() {
 
   const [tab, setTab] = useState<Tab>(Tab.Expenses);
 
+  const fetchBudget = () => {
+    fetch("/api/budget")
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        const budget = new BudgetView(result as Budget);
+        setBudget(budget);
+      });
+  };
+
   useEffect(() => {
     if (budget === null) {
-      fetch("/api/budget")
-        .then((response) => response.json())
-        .then((result) => {
-          console.log(result);
-          const budget = new BudgetView(result as Budget);
-          setBudget(budget);
-        });
+      fetchBudget();
     }
   }, [budget, setBudget]);
 
@@ -76,7 +80,7 @@ function App() {
     return null;
   }
 
-  const budgetCard = <BudgetCard budget={budget} />;
+  const budgetCard = <BudgetCard budget={budget} refreshBudget={fetchBudget} />;
   const expensesCard = (
     <ExpensesCard
       allAccounts={accounts}
