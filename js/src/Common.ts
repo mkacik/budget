@@ -21,16 +21,21 @@ export class FormHelper {
     return value;
   }
 
+  getString(fieldName: string): string {
+    const value = this.getStringOrNull(fieldName);
+    if (value === null || value === FormHelper.EMPTY) {
+      throw new Error(`Required field '${fieldName}' was empty`);
+    }
+    return value;
+  }
+
   getNumberOrNull(fieldName: string): number | null {
     const value = this.getStringOrNull(fieldName);
     return value === null || value === FormHelper.EMPTY ? null : Number(value);
   }
 
-  getString(fieldName: string): string {
-    const value = this.getStringOrNull(fieldName);
-    if (value === null || value === FormHelper.EMPTY) {
-      throw new Error(`Required field ${fieldName} was empty`);
-    }
-    return value;
+  getNumber(fieldName: string): number {
+    const value = this.getString(fieldName);
+    return Number(value);
   }
 }

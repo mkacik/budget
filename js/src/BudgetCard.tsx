@@ -4,12 +4,20 @@ import { useState } from "react";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
+import { BudgetItemForm } from "./BudgetItemForm";
 import { ModalCard } from "./CommonUI";
 
-function BudgetItemCard({ item }: { item: BudgetItemView }) {
+function BudgetItemCard({
+  item,
+  editItem,
+}: {
+  item: BudgetItemView;
+  editItem: () => void;
+}) {
   return (
     <div>
       {item.name} - {item.amountPerYear}
+      <span onClick={editItem}>[edit]</span>
     </div>
   );
 }
@@ -82,12 +90,25 @@ export function BudgetCard({
       break;
     }
     case ModalMode.ITEM: {
-      modalContent = "TBD";
+      modalContent = (
+        <BudgetItemForm
+          key={editedItem?.name}
+          budgetItem={editedItem?.item ?? null}
+          hideEditForm={closeModal}
+          refreshBudget={refreshBudget}
+          allCategories={budget.categories}
+        />
+      );
       break;
     }
     default:
       break;
   }
+
+  const maybeAddNewItemButton =
+    budget.categories.length > 0 ? (
+      <span onClick={() => editItem(null)}>[add new item]</span>
+    ) : null;
 
   return (
     <div>
@@ -100,17 +121,22 @@ export function BudgetCard({
             category={category}
           >
             {category.items.map((item, index) => (
-              <BudgetItemCard key={index} item={item} />
+              <BudgetItemCard
+                key={index}
+                item={item}
+                editItem={() => editItem(item)}
+              />
             ))}
           </BudgetCategoryCard>
         ))}
       </div>
+
       <div>
         <span onClick={() => editCategory(null)}>[add new category]</span>
       </div>
-      <div>
-        <span>[add new item]</span>
-      </div>
+
+      <div>{maybeAddNewItemButton}</div>
+
       <ModalCard visible={modalMode != ModalMode.HIDDEN}>
         {modalContent}
       </ModalCard>
