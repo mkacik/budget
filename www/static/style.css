@@ -1,0 +1,37 @@
+:root {
+  --color-main: #ffbf00;
+  --color-hover: #ffd34f;
+  --border-radius: 5px;
+}
+
+body {
+  margin: 0;
+  font-family: Ubuntu,Roboto,Helvetica,sans-serif;
+  font-size: 1rem;
+
+  display: block;
+}
+
+.header {
+  background-color: var(--color-main);
+  font-size: 1.2rem;
+
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;;
+}
+
+.header > span {
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+
+  &:hover {
+    background-color: var(--color-hover);
+    cursor: pointer;
+  }
+}
+
+
+.main {
+  padding: 0.5rem;
+}

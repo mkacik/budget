@@ -101,21 +101,20 @@ function App() {
   );
 
   return (
-    <div>
-      <div>
-        <span onClick={() => setTab(Tab.Budget)}>💰 Budget</span>
-        {" | "}
+    <>
+      <div className="header">
+        <span onClick={() => setTab(Tab.Budget)}>Budget</span>
         <span onClick={() => setTab(Tab.Expenses)}>Expenses</span>
-        {" | "}
         <span onClick={() => setTab(Tab.Accounts)}>Accounts</span>
-        {" | "}
         <span onClick={() => setTab(Tab.Schemas)}>Schemas</span>
       </div>
-      {render_if(tab == Tab.Budget, budgetCard)}
-      {render_if(tab == Tab.Expenses, expensesCard)}
-      {render_if(tab == Tab.Accounts, accountsCard)}
-      {render_if(tab == Tab.Schemas, schemasCard)}
-    </div>
+      <div className="main">
+        {render_if(tab == Tab.Budget, budgetCard)}
+        {render_if(tab == Tab.Expenses, expensesCard)}
+        {render_if(tab == Tab.Accounts, accountsCard)}
+        {render_if(tab == Tab.Schemas, schemasCard)}
+      </div>
+    </>
   );
 }
 
