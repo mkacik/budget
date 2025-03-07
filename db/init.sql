@@ -18,6 +18,7 @@ CREATE TABLE expenses (
   transaction_time TEXT,
   description TEXT NOT NULL,
   amount DOUBLE NOT NULL,
+  raw_csv TEXT NOT NULL,
   budget_item_id INTEGER
 );
 

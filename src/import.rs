@@ -120,6 +120,7 @@ mod tests {
             transaction_time: None,
             description: "Some expense".to_string(),
             amount: amount,
+            raw_csv: None,
         }
     }
 

@@ -23,6 +23,8 @@ pub struct ExpenseFields {
     pub transaction_time: Option<String>,
     pub description: String,
     pub amount: f64,
+    #[ts(skip)]
+    pub raw_csv: Option<String>,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -66,13 +68,15 @@ impl Expense {
               transaction_date,
               transaction_time,
               description,
-              amount
-            ) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING id",
+              amount,
+              raw_csv
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
             fields.account_id,
             fields.transaction_date,
             fields.transaction_time,
             fields.description,
             fields.amount,
+            fields.raw_csv,
         )
         .fetch_one(&mut *conn)
         .await?

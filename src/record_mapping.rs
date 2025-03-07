@@ -161,6 +161,16 @@ impl TextField {
     }
 }
 
+fn record_to_string(record: &StringRecord) -> String {
+    let mut strings: Vec<String> = vec![];
+    for n in 0..record.len() {
+        let field = &record[n];
+        strings.push(field.to_string());
+    }
+
+    strings.join(",")
+}
+
 impl RecordMapping {
     pub fn record_to_expense(
         &self,
@@ -171,6 +181,7 @@ impl RecordMapping {
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;
         let amount = self.amount.from_record(&record)?;
+        let raw_csv = Some(record_to_string(&record));
 
         let expense = ExpenseFields {
             account_id: account_id,
@@ -178,6 +189,7 @@ impl RecordMapping {
             transaction_time: transaction_time,
             description: description,
             amount: amount,
+            raw_csv: raw_csv,
         };
 
         Ok(expense)
