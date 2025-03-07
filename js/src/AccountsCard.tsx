@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { Account, AccountFields, AccountClass } from "./types/Account";
 
-import { ErrorCard, ModalCard } from "./CommonUI";
+import { Card, ErrorCard, ModalCard } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
@@ -183,17 +183,17 @@ export function AccountsCard({
 
   const rows = accounts.map((account) => {
     return (
-      <div key={account.id}>
+      <Card key={account.id}>
         <span>{account.name}</span>
         <span>{account.class}</span>
         <span>{account.statement_schema_id ?? "-"}</span>
         <span onClick={() => showEditModal(account)}>[edit]</span>
-      </div>
+      </Card>
     );
   });
 
   return (
-    <div>
+    <>
       {rows}
       <div>
         <span onClick={() => showEditModal(null)}>[add new]</span>
@@ -207,6 +207,6 @@ export function AccountsCard({
           refreshAccounts={refreshAccounts}
         />
       </ModalCard>
-    </div>
+    </>
   );
 }

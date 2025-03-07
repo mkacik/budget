@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
 
-import { ErrorCard } from "./CommonUI";
+import { ErrorCard } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetCategoryRequest(fields: BudgetCategoryFields) {

@@ -1,6 +1,9 @@
 :root {
   --color-main: #ffbf00;
   --color-hover: #ffd34f;
+  --color-card-background: #f9f9fb;
+  --color-card-border: #cdcdcd;
+
   --border-radius: 5px;
 }
 
@@ -31,7 +34,18 @@ body {
   }
 }
 
-
 .main {
   padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.card {
+  padding: 0.5rem;
+  border: solid;
+  border-width: 1px;
+  border-radius: var(--border-radius);
+  border-color: var(--color-card-border);
+  background-color: var(--color-card-background);
 }

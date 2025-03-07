@@ -11,7 +11,7 @@ import {
   getDefaultRecordMapping,
   RecordMappingForm,
 } from "./RecordMappingForm";
-import { ErrorCard, ModalCard } from "./CommonUI";
+import { Card, ErrorCard, ModalCard } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields) {
@@ -186,15 +186,15 @@ export function StatementSchemasCard({
 
   const rows = statementSchemas.map((schema) => {
     return (
-      <div key={schema.id}>
+      <Card key={schema.id}>
         <span>{schema.name}</span>
         <span onClick={() => showEditModal(schema)}>[edit]</span>
-      </div>
+      </Card>
     );
   });
 
   return (
-    <div>
+    <>
       {rows}
       <div>
         <span onClick={() => showEditModal(null)}>[add new]</span>
@@ -208,6 +208,6 @@ export function StatementSchemasCard({
           refreshStatementSchemas={refreshStatementSchemas}
         />
       </ModalCard>
-    </div>
+    </>
   );
 }

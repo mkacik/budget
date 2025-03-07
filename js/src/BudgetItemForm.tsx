@@ -5,7 +5,7 @@ import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
 import { BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
-import { ErrorCard } from "./CommonUI";
+import { ErrorCard } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetItemRequest(fields: BudgetItemFields) {

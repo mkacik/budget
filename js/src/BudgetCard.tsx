@@ -5,7 +5,7 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
-import { ModalCard } from "./CommonUI";
+import { ModalCard } from "./ui/Common";
 
 function BudgetItemCard({
   item,

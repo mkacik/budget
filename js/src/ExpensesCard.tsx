@@ -5,7 +5,7 @@ import { Account, Accounts } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetItemDB } from "./BudgetView";
-import { ErrorCard, ModalCard } from "./CommonUI";
+import { ErrorCard, ModalCard } from "./ui/Common";
 
 export function AccountSelector({
   accounts,

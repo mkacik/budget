@@ -16,3 +16,7 @@ export function ErrorCard({ message }: { message: string | null }) {
   }
   return <div style={{ color: "red" }}>❌ {message}</div>;
 }
+
+export function Card({ children }: { children: React.ReactNode }) {
+  return <div className="card">{children}</div>;
+}
