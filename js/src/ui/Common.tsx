@@ -7,14 +7,14 @@ export function ModalCard({
   visible: boolean;
   children: React.ReactNode;
 }) {
-  return visible ? <div className="modal">{children}</div> : null;
+  return visible ? <div className="card modal">{children}</div> : null;
 }
 
 export function ErrorCard({ message }: { message: string | null }) {
   if (message === null) {
     return null;
   }
-  return <div style={{ color: "red" }}>❌ {message}</div>;
+  return <div className="card card-error">❌ {message}</div>;
 }
 
 export function Card({ children }: { children: React.ReactNode }) {

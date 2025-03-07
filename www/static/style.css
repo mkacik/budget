@@ -3,13 +3,17 @@
   --color-hover: #ffd34f;
   --color-card-background: #f9f9fb;
   --color-card-border: #cdcdcd;
+  --color-card-error-background: #fbe7e7;
+  --color-card-error-border: #d27676;
+  --color-text-error: #af2323;
 
   --border-radius: 5px;
+  --font-family: Ubuntu,Roboto,Helvetica,sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: Ubuntu,Roboto,Helvetica,sans-serif;
+  font-family: var(--font-family);
   font-size: 1rem;
 
   display: block;
@@ -35,7 +39,7 @@ body {
 }
 
 .main {
-  padding: 0.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -48,4 +52,15 @@ body {
   border-radius: var(--border-radius);
   border-color: var(--color-card-border);
   background-color: var(--color-card-background);
+}
+
+.card-error {
+  color: var(--color-text-error);
+  border-color: var(--color-card-error-border);
+  background-color: var(--color-card-error-background);
+}
+
+input, select, button {
+  font-family: var(--font-family);
+  font-size: 1rem;
 }
