@@ -7,6 +7,8 @@ use crate::datetime::{to_local_date, to_local_time, TZ};
 use crate::error::ImportError;
 use crate::expense::ExpenseFields;
 
+const SEPARATOR: &str = "\u{241F}";
+
 type ColID = usize;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -168,7 +170,7 @@ fn record_to_string(record: &StringRecord) -> String {
         strings.push(field.to_string());
     }
 
-    strings.join(",")
+    strings.join(SEPARATOR)
 }
 
 impl RecordMapping {
@@ -214,5 +216,15 @@ mod tests {
         let result = TextField::FromColumn { col: 1 }.from_record(&record);
         assert!(result.is_ok());
         assert_eq!(&result.unwrap(), "");
+    }
+
+    #[test]
+    fn record_to_string_result_can_be_reconstructed_to_original_record() {
+        let input_record =
+            StringRecord::from(vec!["", "2025-02-04T23:41:32.506Z", "Lamp 64\"", "79.99"]);
+        let output_string = record_to_string(&input_record);
+        let output_fields: Vec<&str> = output_string.split(SEPARATOR).collect();
+        let reconstructed_record = StringRecord::from(output_fields);
+        assert_eq!(input_record, reconstructed_record);
     }
 }

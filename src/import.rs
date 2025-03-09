@@ -22,6 +22,7 @@ pub async fn read_expenses(
         }
     };
     let mut expenses: Vec<ExpenseFields> = Vec::new();
+    let mut index = 0;
     for result in reader.records() {
         let record = match result {
             Ok(value) => value,
@@ -29,9 +30,13 @@ pub async fn read_expenses(
         };
         let expense = match mapping.record_to_expense(record, account_id) {
             Ok(value) => value,
-            Err(e) => return Err(e),
+            Err(e) => {
+                let error = ImportError::new(format!("{} in row {}", e.message, index));
+                return Err(error);
+            }
         };
         expenses.push(expense);
+        index += 1;
     }
 
     Ok(expenses)
