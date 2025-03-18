@@ -38,4 +38,9 @@ export class FormHelper {
     const value = this.getString(fieldName);
     return Number(value);
   }
+
+  getBool(fieldName: string): boolean {
+    const value = this.formData.get(fieldName);
+    return value === "on";
+  }
 }

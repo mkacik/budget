@@ -11,6 +11,7 @@ type DollarAmount = f64;
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetCategoryFields {
     pub name: String,
+    pub ignored: bool,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -28,7 +29,7 @@ pub struct BudgetCategory {
 pub struct BudgetItemFields {
     pub category_id: ID,
     pub name: String,
-    pub amount: BudgetAmount,
+    pub amount: Option<BudgetAmount>,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -55,8 +56,9 @@ impl BudgetCategory {
         let mut conn = db.acquire_db_conn().await?;
 
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO budget_categories (name) VALUES (?1) RETURNING id",
+            "INSERT INTO budget_categories (name, ignored) VALUES (?1, ?2) RETURNING id",
             fields.name,
+            fields.ignored,
         )
         .fetch_one(&mut *conn)
         .await?
@@ -78,11 +80,10 @@ impl BudgetCategory {
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetCategory>> {
         let mut conn = db.acquire_db_conn().await?;
 
-        let results = sqlx::query_as::<_, BudgetCategory>(
-            "SELECT id, name FROM budget_categories ORDER BY name",
-        )
-        .fetch_all(&mut *conn)
-        .await?;
+        let results =
+            sqlx::query_as::<_, BudgetCategory>("SELECT * FROM budget_categories ORDER BY name")
+                .fetch_all(&mut *conn)
+                .await?;
 
         Ok(results)
     }
@@ -91,10 +92,11 @@ impl BudgetCategory {
         let mut conn = db.acquire_db_conn().await?;
 
         sqlx::query!(
-            "UPDATE budget_categories SET name = ?2
+            "UPDATE budget_categories SET name = ?2, ignored = ?3
             WHERE id = ?1",
             self.id,
             self.fields.name,
+            self.fields.ignored,
         )
         .execute(&mut *conn)
         .await?;

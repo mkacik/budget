@@ -38,12 +38,10 @@ function deleteAccountRequest(account: Account) {
 
 function AccountForm({
   account,
-  hideEditForm,
-  refreshAccounts,
+  onSuccess,
 }: {
   account: Account | null;
-  hideEditForm: () => void;
-  refreshAccounts: () => void;
+  onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -73,8 +71,7 @@ function AccountForm({
           : updateAccountRequest(account, accountFields);
       request.then((response) => {
         if (response.ok) {
-          refreshAccounts();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -111,8 +108,7 @@ function AccountForm({
     const deleteAccount = () => {
       deleteAccountRequest(account).then((response) => {
         if (response.ok) {
-          refreshAccounts();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -175,10 +171,14 @@ export function AccountsCard({
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
 
-  const hideEditModal = () => setModalVisible(false);
   const showEditModal = (account: Account | null) => {
     setActiveAccount(account);
     setModalVisible(true);
+  };
+  const hideEditModal = () => setModalVisible(false);
+  const onEditSuccess = () => {
+    refreshAccounts();
+    hideEditModal();
   };
 
   const rows = accounts.map((account) => {
@@ -199,12 +199,11 @@ export function AccountsCard({
         <span onClick={() => showEditModal(null)}>[add new]</span>
       </div>
 
-      <ModalCard visible={modalVisible}>
+      <ModalCard visible={modalVisible} hideModal={hideEditModal}>
         <AccountForm
           key={activeAccount?.name}
           account={activeAccount}
-          hideEditForm={hideEditModal}
-          refreshAccounts={refreshAccounts}
+          onSuccess={onEditSuccess}
         />
       </ModalCard>
     </>

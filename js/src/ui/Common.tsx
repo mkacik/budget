@@ -2,12 +2,28 @@ import React from "react";
 
 export function ModalCard({
   visible,
+  hideModal,
   children,
 }: {
   visible: boolean;
+  hideModal: () => void;
   children: React.ReactNode;
 }) {
-  return visible ? <div className="card modal">{children}</div> : null;
+  if (!visible) {
+    return null;
+  }
+
+  const preventParentOnClick = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
+  return (
+    <div className="modal-container" onClick={hideModal}>
+      <div className="card modal" onClick={preventParentOnClick}>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export function ErrorCard({ message }: { message: string | null }) {

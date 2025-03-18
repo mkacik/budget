@@ -35,12 +35,10 @@ function deleteBudgetCategoryRequest(budgetCategory: BudgetCategory) {
 
 export function BudgetCategoryForm({
   budgetCategory,
-  hideEditForm,
-  refreshBudget,
+  onSuccess,
 }: {
   budgetCategory: BudgetCategory | null;
-  hideEditForm: () => void;
-  refreshBudget: () => void;
+  onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -58,6 +56,7 @@ export function BudgetCategoryForm({
     try {
       const budgetCategoryFields: BudgetCategoryFields = {
         name: formHelper.getString("name"),
+        ignored: formHelper.getBool("ignored"),
       } as BudgetCategoryFields;
       // if nothing threw by this point, mark any validation errors as cleared
       clearErrorMessage();
@@ -68,8 +67,7 @@ export function BudgetCategoryForm({
           : updateBudgetCategoryRequest(budgetCategory, budgetCategoryFields);
       request.then((response) => {
         if (response.ok) {
-          refreshBudget();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -92,15 +90,12 @@ export function BudgetCategoryForm({
     }
   };
 
-  const budgetCategoryName = budgetCategory?.name;
-
   let maybeDeleteButton: React.ReactNode = null;
   if (budgetCategory !== null) {
     const deleteBudgetCategory = () => {
       deleteBudgetCategoryRequest(budgetCategory).then((response) => {
         if (response.ok) {
-          refreshBudget();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -129,7 +124,16 @@ export function BudgetCategoryForm({
       <form onSubmit={onSubmit}>
         <div>
           <label htmlFor="name">BudgetCategory Name</label>
-          <input type="text" name="name" defaultValue={budgetCategoryName} />
+          <input type="text" name="name" defaultValue={budgetCategory?.name} />
+        </div>
+
+        <div>
+          <label htmlFor="ignored">Ignore in spending analysis</label>
+          <input
+            type="checkbox"
+            name="ignored"
+            defaultChecked={budgetCategory?.ignored ?? false}
+          />
         </div>
 
         <div>
@@ -140,7 +144,6 @@ export function BudgetCategoryForm({
         </div>
       </form>
       {maybeDeleteButton}
-      <span onClick={hideEditForm}>[cancel]</span>
     </div>
   );
 }

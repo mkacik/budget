@@ -37,13 +37,11 @@ function deleteBudgetItemRequest(budgetItem: BudgetItem) {
 
 export function BudgetItemForm({
   budgetItem,
-  hideEditForm,
-  refreshBudget,
+  onSuccess,
   allCategories,
 }: {
   budgetItem: BudgetItem | null;
-  hideEditForm: () => void;
-  refreshBudget: () => void;
+  onSuccess: () => void;
   allCategories: Array<BudgetCategoryView>;
 }) {
   const initialAmount = budgetItem?.amount || { Weekly: { amount: 0 } };
@@ -77,8 +75,7 @@ export function BudgetItemForm({
           : updateBudgetItemRequest(budgetItem, budgetItemFields);
       request.then((response) => {
         if (response.ok) {
-          refreshBudget();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -106,8 +103,7 @@ export function BudgetItemForm({
     const deleteBudgetItem = () => {
       deleteBudgetItemRequest(budgetItem).then((response) => {
         if (response.ok) {
-          refreshBudget();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -166,7 +162,6 @@ export function BudgetItemForm({
         </div>
       </form>
       {maybeDeleteButton}
-      <span onClick={hideEditForm}>[cancel]</span>
     </div>
   );
 }

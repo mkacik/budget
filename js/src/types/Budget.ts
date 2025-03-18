@@ -4,10 +4,10 @@ export type Budget = { categories: Array<BudgetCategory>, items: Array<BudgetIte
 
 export type BudgetAmount = { "Weekly": { amount: number, } } | { "Monthly": { amount: number, } } | { "Yearly": { amount: number, } } | { "EveryXYears": { x: number, amount: number, } };
 
-export type BudgetCategory = { id: number, name: string, };
+export type BudgetCategory = { id: number, name: string, ignored: boolean, };
 
-export type BudgetCategoryFields = { name: string, };
+export type BudgetCategoryFields = { name: string, ignored: boolean, };
 
-export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount, };
+export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount | null, };
 
-export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount, };
+export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount | null, };

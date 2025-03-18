@@ -5,7 +5,11 @@ import {
   BudgetItem,
 } from "./types/Budget";
 
-function getAmountPerYear(amount: BudgetAmount): number {
+function getAmountPerYear(amount: BudgetAmount | null): number {
+  if (amount === null) {
+    return 0;
+  }
+
   const props = Object.keys(amount);
   if (props.length !== 1) {
     throw Error("Incorrect BudgetAmount enum value!");
@@ -23,7 +27,7 @@ function getAmountPerYear(amount: BudgetAmount): number {
     case "EveryXYears":
       return enumProps.amount! / enumProps.x!;
     default:
-      return 0;
+      throw Error("Incorrect BudgetAmount enum value!");
   }
 }
 
@@ -68,6 +72,10 @@ export class BudgetCategoryView {
 
   get name() {
     return this.category.name;
+  }
+
+  get ignored() {
+    return this.category.ignored;
   }
 
   get amountPerYear() {

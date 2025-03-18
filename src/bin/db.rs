@@ -171,6 +171,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         &db,
         BudgetCategoryFields {
             name: String::from("Car"),
+            ignored: false,
         },
     )
     .await?;
@@ -179,6 +180,16 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         &db,
         BudgetCategoryFields {
             name: String::from("Shopping"),
+            ignored: false,
+        },
+    )
+    .await?;
+
+    let ignored_id = BudgetCategory::create(
+        &db,
+        BudgetCategoryFields {
+            name: String::from("Ignored"),
+            ignored: true,
         },
     )
     .await?;
@@ -188,7 +199,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: car_id,
             name: String::from("Fuel"),
-            amount: BudgetAmount::Weekly { amount: 50. },
+            amount: Some(BudgetAmount::Weekly { amount: 50. }),
         },
     )
     .await?;
@@ -198,7 +209,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: car_id,
             name: String::from("Loan"),
-            amount: BudgetAmount::Monthly { amount: 300. },
+            amount: Some(BudgetAmount::Monthly { amount: 300. }),
         },
     )
     .await?;
@@ -208,7 +219,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: car_id,
             name: String::from("Insurance"),
-            amount: BudgetAmount::Yearly { amount: 1000. },
+            amount: Some(BudgetAmount::Yearly { amount: 1000. }),
         },
     )
     .await?;
@@ -218,10 +229,10 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: car_id,
             name: String::from("Downpayment"),
-            amount: BudgetAmount::EveryXYears {
+            amount: Some(BudgetAmount::EveryXYears {
                 x: 5,
                 amount: 5000.,
-            },
+            }),
         },
     )
     .await?;
@@ -231,7 +242,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: shopping_id,
             name: String::from("Groceries"),
-            amount: BudgetAmount::Weekly { amount: 100. },
+            amount: Some(BudgetAmount::Weekly { amount: 100. }),
         },
     )
     .await?;
@@ -241,7 +252,27 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetItemFields {
             category_id: shopping_id,
             name: String::from("Clothing"),
-            amount: BudgetAmount::Monthly { amount: 200. },
+            amount: Some(BudgetAmount::Monthly { amount: 200. }),
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: ignored_id,
+            name: String::from("X-Account Transfers"),
+            amount: None,
+        },
+    )
+    .await?;
+
+    BudgetItem::create(
+        &db,
+        BudgetItemFields {
+            category_id: ignored_id,
+            name: String::from("Amazon"),
+            amount: None,
         },
     )
     .await?;

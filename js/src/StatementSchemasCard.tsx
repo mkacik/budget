@@ -43,12 +43,10 @@ function deleteStatementSchemaRequest(schema: StatementSchema) {
 
 function StatementSchemaForm({
   schema,
-  hideEditForm,
-  refreshStatementSchemas,
+  onSuccess,
 }: {
   schema: StatementSchema | null;
-  hideEditForm: () => void;
-  refreshStatementSchemas: () => void;
+  onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [recordMapping, setRecordMapping] = useState<RecordMapping>(
@@ -88,8 +86,7 @@ function StatementSchemaForm({
           : updateStatementSchemaRequest(schema, schemaFields);
       request.then((response) => {
         if (response.ok) {
-          refreshStatementSchemas();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -121,8 +118,7 @@ function StatementSchemaForm({
     const deleteStatementSchema = () => {
       deleteStatementSchemaRequest(schema).then((response) => {
         if (response.ok) {
-          refreshStatementSchemas();
-          hideEditForm();
+          onSuccess();
         } else {
           response
             .json()
@@ -178,10 +174,14 @@ export function StatementSchemasCard({
   const [activeStatementSchema, setActiveStatementSchema] =
     useState<StatementSchema | null>(null);
 
-  const hideEditModal = () => setModalVisible(false);
   const showEditModal = (schema: StatementSchema | null) => {
     setActiveStatementSchema(schema);
     setModalVisible(true);
+  };
+  const hideEditModal = () => setModalVisible(false);
+  const onEditSuccess = () => {
+    refreshStatementSchemas();
+    hideEditModal();
   };
 
   const rows = statementSchemas.map((schema) => {
@@ -200,12 +200,11 @@ export function StatementSchemasCard({
         <span onClick={() => showEditModal(null)}>[add new]</span>
       </div>
 
-      <ModalCard visible={modalVisible}>
+      <ModalCard visible={modalVisible} hideModal={hideEditModal}>
         <StatementSchemaForm
           key={activeStatementSchema?.name}
           schema={activeStatementSchema}
-          hideEditForm={hideEditModal}
-          refreshStatementSchemas={refreshStatementSchemas}
+          onSuccess={onEditSuccess}
         />
       </ModalCard>
     </>

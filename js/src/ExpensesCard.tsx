@@ -73,12 +73,10 @@ function BudgetItemSelector({
 
 function StatementImportForm({
   account,
-  hideImportForm,
-  bumpUpdates,
+  onSuccess,
 }: {
   account: Account;
-  hideImportForm: () => void;
-  bumpUpdates: () => void;
+  onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -100,9 +98,8 @@ function StatementImportForm({
       setLoading(false);
       form.reset();
       if (response.ok) {
-        bumpUpdates(); // triggers data refetch
         clearErrorMessage();
-        hideImportForm();
+        onSuccess();
       } else {
         response
           .json()
@@ -129,7 +126,6 @@ function StatementImportForm({
         <input type="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
         <input type="submit" value="Submit" />
       </form>
-      <span onClick={hideImportForm}>[cancel]</span>
     </>
   );
 }
@@ -138,14 +134,14 @@ function ExpenseRow({
   expense,
   active,
   budgetItems,
-  bumpUpdates,
   onClick,
+  onSuccess,
 }: {
   expense: Expense;
   active: boolean;
   budgetItems: BudgetItemDB;
-  bumpUpdates: () => void;
   onClick: () => void;
+  onSuccess: () => void;
 }) {
   const budgetItemID = expense.budget_item_id;
   const budgetItemName =
@@ -161,7 +157,7 @@ function ExpenseRow({
       body: JSON.stringify({ budget_item_id: newBudgetItemID }),
     }).then((response) => {
       if (response.ok) {
-        bumpUpdates();
+        onSuccess();
       } else {
         console.log(response);
       }
@@ -175,35 +171,43 @@ function ExpenseRow({
       updateBudgetItemID={updateBudgetItemID}
     />
   ) : (
-    <input type="text" disabled value={budgetItemName} />
+    budgetItemName
   );
 
+  const dateTime =
+    expense.transaction_time === null
+      ? expense.transaction_date
+      : expense.transaction_date + " " + expense.transaction_time;
+
   return (
-    <div onClick={onClick}>
-      <span>{expense.transaction_date}</span>
-      {" | "}
-      {budgetItemElem}
-      {" | "}
-      <span>{expense.amount}</span>
-      {" | "}
-      <span>{expense.description}</span>
-    </div>
+    <tr className="row" onClick={onClick}>
+      <td className="cell-date">{dateTime}</td>
+      <td>{budgetItemElem}</td>
+      <td>{expense.amount}</td>
+      <td>{expense.description}</td>
+    </tr>
   );
 }
 
 function ExpensesTable({
   expenses,
   budgetItems,
-  bumpUpdates,
+  onSuccess,
 }: {
   expenses: Array<Expense>;
   budgetItems: BudgetItemDB;
-  bumpUpdates: () => void;
+  onSuccess: () => void;
 }) {
   const [activeRow, setActiveRow] = useState<number>(0);
 
   return (
-    <div>
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Details</th>
+      </tr>
       {expenses.map((expense, idx) => (
         <ExpenseRow
           key={idx}
@@ -211,13 +215,13 @@ function ExpensesTable({
           active={idx === activeRow}
           budgetItems={budgetItems}
           onClick={() => setActiveRow(idx)}
-          bumpUpdates={() => {
+          onSuccess={() => {
             setActiveRow(activeRow + 1);
-            bumpUpdates();
+            onSuccess();
           }}
         />
       ))}
-    </div>
+    </table>
   );
 }
 
@@ -232,8 +236,8 @@ export function ExpensesCard({
 
   const [account, setAccount] = useState<Account>(accounts[0]!);
   const [expenses, setExpenses] = useState<Array<Expense>>([]);
-  const [updates, setUpdates] = useState<number>(0);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [updates, setUpdates] = useState<number>(0);
 
   const fetchExpenses = () => {
     fetch(`/api/accounts/${account.id}/expenses`)
@@ -249,12 +253,17 @@ export function ExpensesCard({
     fetchExpenses();
   }, [account, setAccount, updates]);
 
+  const refreshExpenses = () => {
+    setUpdates(updates + 1);
+  };
+
   const updateAccount = (newAccount: Account) => {
     setAccount(newAccount);
   };
 
-  const bumpUpdates = () => {
-    setUpdates(updates + 1);
+  const onImportSuccess = () => {
+    refreshExpenses();
+    setModalVisible(false);
   };
 
   return (
@@ -270,18 +279,17 @@ export function ExpensesCard({
       <div>
         <span onClick={() => setModalVisible(true)}>[import statement]</span>
       </div>
-      <ModalCard visible={modalVisible}>
-        <StatementImportForm
-          account={account}
-          hideImportForm={() => setModalVisible(false)}
-          bumpUpdates={bumpUpdates}
-        />
+      <ModalCard
+        visible={modalVisible}
+        hideModal={() => setModalVisible(false)}
+      >
+        <StatementImportForm account={account} onSuccess={onImportSuccess} />
       </ModalCard>
       <hr />
       <ExpensesTable
         expenses={expenses}
         budgetItems={budgetItems}
-        bumpUpdates={bumpUpdates}
+        onSuccess={refreshExpenses}
       />
     </div>
   );

@@ -24,12 +24,13 @@ CREATE TABLE expenses (
 
 CREATE TABLE budget_categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE
+  name TEXT NOT NULL UNIQUE,
+  ignored BOOLEAN NOT NULL
 );
 
 CREATE TABLE budget_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category_id INTEGER NOT NULL,
   name TEXT NOT NULL,
-  amount TEXT NOT NULL
+  amount TEXT
 );

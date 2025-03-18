@@ -57,6 +57,8 @@ export function BudgetCard({
   budget: BudgetView;
   refreshBudget: () => void;
 }) {
+  // Note: need this enum, because null value of edited object could represent either new item
+  // or new category;
   const [modalMode, setModalMode] = useState<ModalMode>(ModalMode.HIDDEN);
   const [editedCategory, setEditedCategory] =
     useState<BudgetCategoryView | null>(null);
@@ -72,7 +74,8 @@ export function BudgetCard({
     setModalMode(ModalMode.ITEM);
   };
 
-  const closeModal = () => {
+  const onEditSuccess = () => {
+    refreshBudget();
     setModalMode(ModalMode.HIDDEN);
   };
 
@@ -83,8 +86,7 @@ export function BudgetCard({
         <BudgetCategoryForm
           key={editedCategory?.name}
           budgetCategory={editedCategory?.category ?? null}
-          hideEditForm={closeModal}
-          refreshBudget={refreshBudget}
+          onSuccess={onEditSuccess}
         />
       );
       break;
@@ -94,8 +96,7 @@ export function BudgetCard({
         <BudgetItemForm
           key={editedItem?.name}
           budgetItem={editedItem?.item ?? null}
-          hideEditForm={closeModal}
-          refreshBudget={refreshBudget}
+          onSuccess={onEditSuccess}
           allCategories={budget.categories}
         />
       );
@@ -110,11 +111,46 @@ export function BudgetCard({
       <span onClick={() => editItem(null)}>[add new item]</span>
     ) : null;
 
+  const includedCategories = budget.categories.filter(
+    (category) => !category.ignored,
+  );
+  const excludedCategories = budget.categories.filter(
+    (category) => category.ignored,
+  );
+
   return (
     <div>
-      <div>Total - {budget.amountPerYear}</div>
+      <h2>Budget</h2>
       <div>
-        {budget.categories.map((category, index) => (
+        {includedCategories.map((category, index) => (
+          <BudgetCategoryCard
+            key={index}
+            editCategory={() => editCategory(category)}
+            category={category}
+          >
+            {category.items.map((item, index) => (
+              <BudgetItemCard
+                key={index}
+                item={item}
+                editItem={() => editItem(item)}
+              />
+            ))}
+          </BudgetCategoryCard>
+        ))}
+      </div>
+      <div>
+        <b>TOTAL - {budget.amountPerYear}</b>
+      </div>
+
+      <div>
+        <span onClick={() => editCategory(null)}>[add new category]</span>
+        {maybeAddNewItemButton}
+      </div>
+
+      <h2>Ignored categories</h2>
+
+      <div>
+        {excludedCategories.map((category, index) => (
           <BudgetCategoryCard
             key={index}
             editCategory={() => editCategory(category)}
@@ -131,13 +167,10 @@ export function BudgetCard({
         ))}
       </div>
 
-      <div>
-        <span onClick={() => editCategory(null)}>[add new category]</span>
-      </div>
-
-      <div>{maybeAddNewItemButton}</div>
-
-      <ModalCard visible={modalMode != ModalMode.HIDDEN}>
+      <ModalCard
+        visible={modalMode !== ModalMode.HIDDEN}
+        hideModal={() => setModalMode(ModalMode.HIDDEN)}
+      >
         {modalContent}
       </ModalCard>
     </div>
