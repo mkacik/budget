@@ -37,7 +37,7 @@ function getOptionParams(field: AmountField): OptionParams {
 function getDefaultOptionParams(optionName: OptionName): OptionParams {
   switch (optionName) {
     case FROM_COLUMN:
-      return { col: 2, invert: false };
+      return { col: 2, invert: false, skip_pattern: null };
     case FROM_CREDIT_DEBIT_COLUMNS:
       return { first: 2, invert_first: false, second: 3, invert_second: true };
   }

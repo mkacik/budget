@@ -81,6 +81,7 @@ fn get_bank_record_mapping() -> RecordMapping {
         amount: AmountField::FromColumn {
             col: 2,
             invert: false,
+            skip_pattern: None,
         },
     }
 }
@@ -99,6 +100,7 @@ fn get_shop_record_mapping() -> RecordMapping {
         amount: AmountField::FromColumn {
             col: 10,
             invert: false,
+            skip_pattern: Some(String::from("Not Available")),
         },
     }
 }

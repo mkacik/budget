@@ -4,12 +4,16 @@ use ts_rs::TS;
 
 use crate::database::ID;
 use crate::datetime::{to_local_date, to_local_time, TZ};
-use crate::error::ImportError;
 use crate::expense::ExpenseFields;
 
 const SEPARATOR: &str = "\u{241F}";
 
 type ColID = usize;
+
+pub enum ImportResult {
+    Skip,
+    Error { message: String },
+}
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export_to = "RecordMapping.ts")]
@@ -30,6 +34,7 @@ pub enum AmountField {
     FromColumn {
         col: ColID,
         invert: bool,
+        skip_pattern: Option<String>,
     },
     FromCreditDebitColumns {
         first: ColID,
@@ -54,48 +59,62 @@ pub struct RecordMapping {
     pub amount: AmountField,
 }
 
-fn get_col(record: &StringRecord, col: ColID) -> Result<&str, ImportError> {
-    match record.get(col) {
-        Some(value) => Ok(value),
-        None => Err(ImportError::new(format!(
-            "Requested 0-indexed column {} but row only had {} fields",
-            col,
-            record.len()
-        ))),
-    }
+fn get_col(record: &StringRecord, col: ColID) -> Result<&str, ImportResult> {
+    let value = match record.get(col) {
+        Some(value) => value,
+        None => {
+            let message = format!(
+                "Requested 0-indexed column {} but row only had {} fields",
+                col,
+                record.len(),
+            );
+            return Err(ImportResult::Error { message: message });
+        }
+    };
+
+    Ok(value)
 }
 
 impl DateField {
-    fn from_record(&self, record: &StringRecord) -> Result<String, ImportError> {
+    fn from_record(&self, record: &StringRecord) -> Result<String, ImportResult> {
         match self {
             DateField::FromColumn { col, tz } => {
                 let field = get_col(&record, *col)?;
 
-                match to_local_date(field, tz) {
-                    Ok(value) => Ok(value),
-                    Err(_) => Err(ImportError::new(format!(
-                        "Could not parse '{}' into a date",
-                        field
-                    ))),
+                let value = match to_local_date(field, tz) {
+                    Ok(value) => value,
+                    Err(_) => {
+                        let message = format!("Could not parse '{}' into a date", field);
+                        return Err(ImportResult::Error { message: message });
+                    }
+                };
+
+                // TODO: handle this in some different way than hardcoding shit
+                if *value < *"2024-12-30" {
+                    return Err(ImportResult::Skip);
                 }
+
+                Ok(value)
             }
         }
     }
 }
 
 impl TimeField {
-    fn from_record(&self, record: &StringRecord) -> Result<Option<String>, ImportError> {
+    fn from_record(&self, record: &StringRecord) -> Result<Option<String>, ImportResult> {
         match self {
             TimeField::FromColumn { col, tz } => {
                 let field = get_col(&record, *col)?;
 
-                match to_local_time(field, tz) {
-                    Ok(value) => Ok(Some(value)),
-                    Err(_) => Err(ImportError::new(format!(
-                        "Could not parse '{}' into a time",
-                        field
-                    ))),
-                }
+                let value = match to_local_time(field, tz) {
+                    Ok(value) => value,
+                    Err(_) => {
+                        let message = format!("Could not parse '{}' into a time", field);
+                        return Err(ImportResult::Error { message: message });
+                    }
+                };
+
+                Ok(Some(value))
             }
             TimeField::Empty => Ok(None),
         }
@@ -103,10 +122,20 @@ impl TimeField {
 }
 
 impl AmountField {
-    fn from_record(&self, record: &StringRecord) -> Result<f64, ImportError> {
+    fn from_record(&self, record: &StringRecord) -> Result<f64, ImportResult> {
         match self {
-            AmountField::FromColumn { col, invert } => {
+            AmountField::FromColumn {
+                col,
+                invert,
+                skip_pattern,
+            } => {
                 let field = get_col(&record, *col)?;
+
+                if let Some(pattern) = skip_pattern {
+                    if field.contains(pattern) {
+                        return Err(ImportResult::Skip);
+                    }
+                }
 
                 AmountField::parse_from_str(field, *invert)
             }
@@ -130,7 +159,7 @@ impl AmountField {
         }
     }
 
-    fn parse_from_str(field: &str, invert: bool) -> Result<f64, ImportError> {
+    fn parse_from_str(field: &str, invert: bool) -> Result<f64, ImportResult> {
         let value = match field.parse::<f64>() {
             Ok(value) => {
                 if invert {
@@ -140,10 +169,8 @@ impl AmountField {
                 }
             }
             Err(_) => {
-                return Err(ImportError::new(format!(
-                    "Could not parse '{}' into f64",
-                    field
-                )))
+                let message = format!("Could not parse '{}' into f64", field);
+                return Err(ImportResult::Error { message: message });
             }
         };
 
@@ -152,7 +179,7 @@ impl AmountField {
 }
 
 impl TextField {
-    fn from_record(&self, record: &StringRecord) -> Result<String, ImportError> {
+    fn from_record(&self, record: &StringRecord) -> Result<String, ImportResult> {
         match self {
             TextField::FromColumn { col } => {
                 let field = get_col(&record, *col)?;
@@ -178,7 +205,7 @@ impl RecordMapping {
         &self,
         record: StringRecord,
         account_id: ID,
-    ) -> Result<ExpenseFields, ImportError> {
+    ) -> Result<ExpenseFields, ImportResult> {
         let transaction_date = self.transaction_date.from_record(&record)?;
         let transaction_time = self.transaction_time.from_record(&record)?;
         let description = self.description.from_record(&record)?;

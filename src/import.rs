@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use crate::database::{Database, ID};
 use crate::error::ImportError;
 use crate::expense::{Expense, ExpenseFields, LatestExpenses};
-use crate::record_mapping::RecordMapping;
+use crate::record_mapping::{ImportResult, RecordMapping};
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
 
@@ -22,21 +22,22 @@ pub async fn read_expenses(
         }
     };
     let mut expenses: Vec<ExpenseFields> = Vec::new();
-    let mut index = 0;
+    let mut row_index = 0;
     for result in reader.records() {
         let record = match result {
             Ok(value) => value,
             Err(_) => return Err(ImportError::new(format!("Malformed row in statement."))),
         };
-        let expense = match mapping.record_to_expense(record, account_id) {
-            Ok(value) => value,
-            Err(e) => {
-                let error = ImportError::new(format!("{} in row {}", e.message, index));
+        match mapping.record_to_expense(record, account_id) {
+            Ok(value) => expenses.push(value),
+            Err(ImportResult::Skip) => {}
+            Err(ImportResult::Error { message }) => {
+                let error = ImportError::new(format!("{} in row {}", message, row_index));
                 return Err(error);
             }
         };
-        expenses.push(expense);
-        index += 1;
+        row_index += 1;
+        println!("Processed row {}", row_index);
     }
 
     Ok(expenses)

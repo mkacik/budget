@@ -2,6 +2,8 @@ import React from "react";
 
 import { TZ } from "../types/RecordMapping";
 
+const EMPTY = "";
+
 export type FromColumn = { col: number };
 
 export function FromColumnForm({
@@ -62,7 +64,11 @@ export function FromColumnWithTZForm({
   );
 }
 
-export type FromColumnWithInvert = { col: number; invert: boolean };
+export type FromColumnWithInvert = {
+  col: number;
+  invert: boolean;
+  skip_pattern: string | null;
+};
 
 export function FromColumnWithInvertForm({
   params,
@@ -85,12 +91,26 @@ export function FromColumnWithInvertForm({
     updateParams(newOptionParams);
   };
 
+  const updateSkipPattern = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    const skipPattern =
+      target.value === null || target.value === EMPTY ? null : target.value;
+    const newOptionParams = { ...params, skip_pattern: skipPattern };
+    updateParams(newOptionParams);
+  };
+
   return (
     <div>
       <label>Column</label>
       <input type="number" value={params.col} onChange={updateCol} />
       <label>Flip sign</label>
       <input type="checkbox" checked={params.invert} onChange={updateInvert} />
+      <label>Skip if field contains</label>
+      <input
+        type="input"
+        value={params.skip_pattern ?? EMPTY}
+        onChange={updateSkipPattern}
+      />
     </div>
   );
 }
