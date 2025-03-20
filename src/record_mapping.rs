@@ -10,6 +10,7 @@ const SEPARATOR: &str = "\u{241F}";
 
 type ColID = usize;
 
+#[derive(Debug)]
 pub enum ImportResult {
     Skip,
     Error { message: String },

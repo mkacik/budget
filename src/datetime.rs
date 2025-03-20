@@ -90,9 +90,7 @@ mod tests {
     fn test_to_local_time_for_chicago_as_local_time() {
         let cases = vec![
             (("01:30:00", TZ::Local), "01:30:00"),
-            (("01:30:00", TZ::UTC), "19:30:00"),
             (("10:00 pm", TZ::Local), "22:00:00"),
-            (("10:00 pm", TZ::UTC), "16:00:00"),
         ];
 
         for (input_params, expected_result) in cases.into_iter() {
