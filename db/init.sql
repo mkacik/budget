@@ -34,3 +34,8 @@ CREATE TABLE budget_items (
   name TEXT NOT NULL,
   amount TEXT
 );
+
+CREATE TABLE credentials (
+  username TEXT PRIMARY KEY NOT NULL UNIQUE,
+  pwhash TEXT NOT NULL
+);

@@ -1,5 +1,7 @@
 pub mod account;
 pub mod budget;
+pub mod credentials;
+pub mod crypto;
 pub mod database;
 pub mod database_enum;
 pub mod datetime;

@@ -5,6 +5,8 @@ use rocket::{Error as RocketError, Ignite, Rocket};
 
 mod account;
 mod budget;
+mod credentials;
+mod crypto;
 mod database;
 mod database_enum;
 mod datetime;
