@@ -103,10 +103,16 @@ function App() {
   return (
     <>
       <div className="header">
-        <span onClick={() => setTab(Tab.Budget)}>Budget</span>
-        <span onClick={() => setTab(Tab.Expenses)}>Expenses</span>
-        <span onClick={() => setTab(Tab.Accounts)}>Accounts</span>
-        <span onClick={() => setTab(Tab.Schemas)}>Schemas</span>
+        <span className="header-item" onClick={() => setTab(Tab.Budget)}>Budget</span>
+        <span className="header-item" onClick={() => setTab(Tab.Expenses)}>Expenses</span>
+        <span className="header-item" onClick={() => setTab(Tab.Accounts)}>Accounts</span>
+        <span className="header-item" onClick={() => setTab(Tab.Schemas)}>Schemas</span>
+        <span className="header-filler" />
+        <span className="header-item">
+          <form action="logout" method="post">
+            <input type="submit" value="Logout" />
+          </form>
+        </span>
       </div>
       <div className="main">
         {render_if(tab == Tab.Budget, budgetCard)}

@@ -17,6 +17,7 @@ mod record_mapping;
 mod routes;
 mod statement_schema;
 
+use crate::crypto::init_crypto;
 use crate::database::Database;
 
 async fn run() -> Result<Rocket<Ignite>, RocketError> {
@@ -26,9 +27,10 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
         .mount(
             "/",
             routes![
-                routes::base::index,
-                routes::base::favicon,
-                routes::base::default
+                routes::base::index_logged_in,
+                routes::base::index_logged_out,
+                routes::login::login,
+                routes::login::logout,
             ],
         )
         .mount(
@@ -62,6 +64,11 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
 
 #[rocket::main]
 async fn main() {
+    if init_crypto().is_err() {
+        println!("Error initializing crypto, aborting");
+        return;
+    }
+
     match run().await {
         Ok(_) => {}
         Err(e) => {

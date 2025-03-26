@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use std::io;
 
 use budget::credentials::Credentials;
-use budget::crypto::{hash_password, verify_password};
+use budget::crypto::{hash_password, init_crypto, verify_password};
 use budget::database::Database;
 
 #[derive(Parser, Debug)]
@@ -20,6 +20,11 @@ enum Command {
 
 #[tokio::main]
 async fn main() {
+    if init_crypto().is_err() {
+        println!("Error initializing crypto, aborting");
+        return;
+    }
+
     let db = Database::init().await;
 
     let args = Args::parse();

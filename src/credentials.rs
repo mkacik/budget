@@ -60,7 +60,7 @@ impl Credentials {
     pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
-            "UPDATE credentials SET pwhash = ?2 WHERE username = 1",
+            "UPDATE credentials SET pwhash = ?2 WHERE username = ?1",
             self.username,
             self.pwhash,
         )
