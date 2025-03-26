@@ -134,7 +134,7 @@ mod tests {
         assert_eq!(result[1], b'b');
         assert_eq!(result[2], b'c');
         for i in 4..STRBYTES {
-          assert_eq!(result[i], 0);
+            assert_eq!(result[i], 0);
         }
     }
 }
