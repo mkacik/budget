@@ -31,6 +31,17 @@ impl Credentials {
         Ok(())
     }
 
+    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<Credentials>> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_as::<_, Credentials>(
+            "SELECT username, pwhash FROM credentials ORDER BY username",
+        )
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn fetch_by_username(
         db: &Database,
         username: &str,

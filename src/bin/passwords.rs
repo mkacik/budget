@@ -15,6 +15,7 @@ struct Args {
 enum Command {
     Set { username: String },
     Remove { username: String },
+    ListUsernames,
 }
 
 #[tokio::main]
@@ -28,6 +29,9 @@ async fn main() {
         }
         Command::Remove { username } => {
             remove_password(db, username).await;
+        }
+        Command::ListUsernames => {
+            list_usernames(db).await;
         }
     };
 }
@@ -62,13 +66,6 @@ async fn set_password(db: Database, username: String) {
     }
 }
 
-async fn remove_password(db: Database, username: String) {
-    match Credentials::delete_by_username(&db, &username).await {
-        Ok(_) => println!("Deleted login credentials for user '{}'", username),
-        Err(e) => println!("Something went wrong: {}", e),
-    };
-}
-
 fn read_password() -> anyhow::Result<String> {
     println!("Type in new password:");
     let mut password = String::new();
@@ -98,5 +95,26 @@ async fn save_credentials(db: Database, username: String, pwhash: String) -> any
             creds.update(&db).await
         }
         Err(e) => Err(e),
+    }
+}
+
+async fn remove_password(db: Database, username: String) {
+    match Credentials::delete_by_username(&db, &username).await {
+        Ok(_) => println!("Deleted login credentials for user '{}'", username),
+        Err(e) => println!("Something went wrong: {}", e),
+    };
+}
+
+async fn list_usernames(db: Database) {
+    let all = match Credentials::fetch_all(&db).await {
+        Ok(value) => value,
+        Err(e) => {
+            println!("Something went wrong: {}", e);
+            return;
+        }
+    };
+
+    for creds in all {
+        println!("{}", creds.username);
     }
 }
