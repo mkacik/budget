@@ -199,7 +199,11 @@ export function AccountsCard({
         <span onClick={() => showEditModal(null)}>[add new]</span>
       </div>
 
-      <ModalCard visible={modalVisible} hideModal={hideEditModal}>
+      <ModalCard
+        title={activeAccount === null ? "New Account" : "Edit Account"}
+        visible={modalVisible}
+        hideModal={hideEditModal}
+      >
         <AccountForm
           key={activeAccount?.name}
           account={activeAccount}

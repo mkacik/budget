@@ -200,7 +200,11 @@ export function StatementSchemasCard({
         <span onClick={() => showEditModal(null)}>[add new]</span>
       </div>
 
-      <ModalCard visible={modalVisible} hideModal={hideEditModal}>
+      <ModalCard
+        title={activeStatementSchema === null ? "New Schema" : "Edit Schema"}
+        visible={modalVisible}
+        hideModal={hideEditModal}
+      >
         <StatementSchemaForm
           key={activeStatementSchema?.name}
           schema={activeStatementSchema}

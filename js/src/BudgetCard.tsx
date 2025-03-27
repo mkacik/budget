@@ -79,9 +79,14 @@ export function BudgetCard({
     setModalMode(ModalMode.HIDDEN);
   };
 
+  let modalTitle: string = "";
   let modalContent: React.ReactNode = null;
   switch (modalMode) {
     case ModalMode.CATEGORY: {
+      modalTitle =
+        editedCategory === null
+          ? "New Budget Category"
+          : "Edit Budget Category";
       modalContent = (
         <BudgetCategoryForm
           key={editedCategory?.name}
@@ -92,6 +97,7 @@ export function BudgetCard({
       break;
     }
     case ModalMode.ITEM: {
+      modalTitle = editedItem === null ? "New Budget Item" : "Edit Budget Item";
       modalContent = (
         <BudgetItemForm
           key={editedItem?.name}
@@ -168,6 +174,7 @@ export function BudgetCard({
       </div>
 
       <ModalCard
+        title={modalTitle}
         visible={modalMode !== ModalMode.HIDDEN}
         hideModal={() => setModalMode(ModalMode.HIDDEN)}
       >

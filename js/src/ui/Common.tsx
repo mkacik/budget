@@ -1,10 +1,12 @@
 import React from "react";
 
 export function ModalCard({
+  title,
   visible,
   hideModal,
   children,
 }: {
+  title: string;
   visible: boolean;
   hideModal: () => void;
   children: React.ReactNode;
@@ -20,6 +22,7 @@ export function ModalCard({
   return (
     <div className="modal-container" onClick={hideModal}>
       <div className="card modal" onClick={preventParentOnClick}>
+        <div className="card-header">{title}</div>
         {children}
       </div>
     </div>

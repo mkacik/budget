@@ -73,6 +73,12 @@ body {
   background-color: var(--color-card-error-background);
 }
 
+.card-header {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
 .modal-container {
   z-index: 1;
   position: absolute;
@@ -90,6 +96,7 @@ body {
 .modal {
   width: 80%;
   height: 80%;
+  padding: 1rem;
 }
 
 input, select, button {

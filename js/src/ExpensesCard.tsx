@@ -245,6 +245,7 @@ export function StatementImportButton({
         <span onClick={() => setModalVisible(true)}>[import statement]</span>
       </div>
       <ModalCard
+        title="Import Expenses"
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
