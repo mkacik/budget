@@ -3,7 +3,16 @@ import { useState } from "react";
 
 import { Account, AccountFields, AccountClass } from "./types/Account";
 
-import { Card, ErrorCard, ModalCard } from "./ui/Common";
+import {
+  Form,
+  FormButtons,
+  ItemCard,
+  ErrorCard,
+  Pill,
+  ModalCard,
+  GlyphButton,
+  InlineGlyphButton,
+} from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
@@ -124,40 +133,34 @@ function AccountForm({
       });
     };
 
-    maybeDeleteButton = (
-      <div>
-        <button onClick={deleteAccount}>[delete]</button>
-      </div>
-    );
+    maybeDeleteButton = <GlyphButton glyph="delete" onClick={deleteAccount} />;
   }
 
   return (
-    <div>
+    <>
       <ErrorCard message={errorMessage} />
-      <form onSubmit={onSubmit}>
-        <div>
-          <label htmlFor="name">Account Name</label>
-          <input type="text" name="name" defaultValue={accountName} />
-        </div>
+      <Form onSubmit={onSubmit}>
+        <label htmlFor="name">Account Name</label>
+        <input type="text" name="name" defaultValue={accountName} />
 
-        <div>
-          <label htmlFor="class">Account Type</label>
-          <select name="class" defaultValue={accountClass}>
-            {accountClassOptions}
-          </select>
-        </div>
+        <label htmlFor="class">Account Type</label>
+        <select name="class" defaultValue={accountClass}>
+          {accountClassOptions}
+        </select>
 
-        <div>
-          <label htmlFor="importConfig">Import Schema</label>
-          <input type="text" name="importConfig" defaultValue={importConfig} />
-        </div>
+        <label htmlFor="importConfig">Import Schema</label>
+        <input type="text" name="importConfig" defaultValue={importConfig} />
 
-        <div>
-          <input type="submit" value={account === null ? "Create" : "Update"} />
-        </div>
-      </form>
-      {maybeDeleteButton}
-    </div>
+        <FormButtons>
+          {maybeDeleteButton}
+          <input
+            className="button"
+            type="submit"
+            value={account === null ? "Create" : "Update"}
+          />
+        </FormButtons>
+      </Form>
+    </>
   );
 }
 
@@ -183,21 +186,26 @@ export function AccountsCard({
 
   const rows = accounts.map((account) => {
     return (
-      <Card key={account.id}>
+      <ItemCard key={account.id}>
+        <Pill>{account.class}</Pill>
         <span>{account.name}</span>
-        <span>{account.class}</span>
-        <span>{account.statement_schema_id ?? "-"}</span>
-        <span onClick={() => showEditModal(account)}>[edit]</span>
-      </Card>
+        <InlineGlyphButton
+          glyph="edit"
+          onClick={() => showEditModal(account)}
+        />
+      </ItemCard>
     );
   });
 
   return (
     <>
       {rows}
-      <div>
-        <span onClick={() => showEditModal(null)}>[add new]</span>
-      </div>
+
+      <GlyphButton
+        glyph="add"
+        text="add account"
+        onClick={() => showEditModal(null)}
+      />
 
       <ModalCard
         title={activeAccount === null ? "New Account" : "Edit Account"}
