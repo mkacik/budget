@@ -103,10 +103,18 @@ function App() {
   return (
     <>
       <div className="header">
-        <span className="header-item" onClick={() => setTab(Tab.Budget)}>Budget</span>
-        <span className="header-item" onClick={() => setTab(Tab.Expenses)}>Expenses</span>
-        <span className="header-item" onClick={() => setTab(Tab.Accounts)}>Accounts</span>
-        <span className="header-item" onClick={() => setTab(Tab.Schemas)}>Schemas</span>
+        <span className="header-item" onClick={() => setTab(Tab.Budget)}>
+          Budget
+        </span>
+        <span className="header-item" onClick={() => setTab(Tab.Expenses)}>
+          Expenses
+        </span>
+        <span className="header-item" onClick={() => setTab(Tab.Accounts)}>
+          Accounts
+        </span>
+        <span className="header-item" onClick={() => setTab(Tab.Schemas)}>
+          Schemas
+        </span>
         <span className="header-filler" />
         <span className="header-item">
           <form action="logout" method="post">

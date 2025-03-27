@@ -225,6 +225,35 @@ function ExpensesTable({
   );
 }
 
+export function StatementImportButton({
+  account,
+  onImportSuccess,
+}: {
+  account: Account;
+  onImportSuccess: () => void;
+}) {
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  const onSuccess = () => {
+    onImportSuccess();
+    setModalVisible(false);
+  };
+
+  return (
+    <>
+      <div>
+        <span onClick={() => setModalVisible(true)}>[import statement]</span>
+      </div>
+      <ModalCard
+        visible={modalVisible}
+        hideModal={() => setModalVisible(false)}
+      >
+        <StatementImportForm account={account} onSuccess={onSuccess} />
+      </ModalCard>
+    </>
+  );
+}
+
 export function ExpensesCard({
   allAccounts,
   budgetItems,
@@ -234,37 +263,33 @@ export function ExpensesCard({
 }) {
   const accounts = allAccounts.accounts;
 
-  const [account, setAccount] = useState<Account>(accounts[0]!);
+  const [account, setAccount] = useState<Account>(accounts[0] || null);
   const [expenses, setExpenses] = useState<Array<Expense>>([]);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [updates, setUpdates] = useState<number>(0);
 
+  const updateAccount = (newAccount: Account) => {
+    setAccount(newAccount);
+  };
+
   const fetchExpenses = () => {
-    fetch(`/api/accounts/${account.id}/expenses`)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-        const expenses = result as Expenses;
-        setExpenses(expenses.expenses);
-      });
+    if (account !== null) {
+      fetch(`/api/accounts/${account.id}/expenses`)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          const expenses = result as Expenses;
+          setExpenses(expenses.expenses);
+        });
+    }
   };
 
   useEffect(() => {
     fetchExpenses();
   }, [account, setAccount, updates]);
 
-  const refreshExpenses = () => {
-    setUpdates(updates + 1);
-  };
-
-  const updateAccount = (newAccount: Account) => {
-    setAccount(newAccount);
-  };
-
-  const onImportSuccess = () => {
-    refreshExpenses();
-    setModalVisible(false);
-  };
+  if (account === null) {
+    return <>{"Add accounts to enable imports"}</>;
+  }
 
   return (
     <div>
@@ -273,23 +298,15 @@ export function ExpensesCard({
         selected={account}
         updateAccount={updateAccount}
       />
-      <div>
-        <h3>{account.name}</h3>
-      </div>
-      <div>
-        <span onClick={() => setModalVisible(true)}>[import statement]</span>
-      </div>
-      <ModalCard
-        visible={modalVisible}
-        hideModal={() => setModalVisible(false)}
-      >
-        <StatementImportForm account={account} onSuccess={onImportSuccess} />
-      </ModalCard>
-      <hr />
+      <h3>{account.name}</h3>
+      <StatementImportButton
+        account={account}
+        onImportSuccess={fetchExpenses}
+      />
       <ExpensesTable
         expenses={expenses}
         budgetItems={budgetItems}
-        onSuccess={refreshExpenses}
+        onSuccess={fetchExpenses}
       />
     </div>
   );
