@@ -12,7 +12,7 @@ import {
   FormButtons,
   ErrorCard,
 } from "./ui/Common";
-import { FormHelper, JSON_HEADERS } from "./Common";
+import { JSON_HEADERS } from "./Common";
 
 function createBudgetItemRequest(fields: BudgetItemFields) {
   return fetch("/api/budget_items", {
@@ -41,6 +41,8 @@ function deleteBudgetItemRequest(budgetItem: BudgetItem) {
   });
 }
 
+const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
+
 export function BudgetItemForm({
   budgetItem,
   onSuccess,
@@ -50,10 +52,18 @@ export function BudgetItemForm({
   onSuccess: () => void;
   allCategories: Array<BudgetCategoryView>;
 }) {
-  const initialAmount = budgetItem?.amount || { Weekly: { amount: 0 } };
+  const initialFields: BudgetItemFields = {
+    name: budgetItem?.name ?? "",
+    category_id: budgetItem?.category_id ?? allCategories[0].id,
+    amount: budgetItem !== null ? budgetItem.amount : DEFAULT_AMOUNT,
+  };
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [amount, setAmount] = useState<BudgetAmount>(initialAmount);
+  const [fields, setFields] = useState<BudgetItemFields>(initialFields);
+
+  const categoryIgnored = allCategories.find(
+    (category) => category.id === fields.category_id,
+  )!.ignored;
 
   const clearErrorMessage = () => {
     if (errorMessage !== null) {
@@ -61,24 +71,54 @@ export function BudgetItemForm({
     }
   };
 
+  const setName = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    const value = target.value;
+    setFields({ ...fields, name: value });
+  };
+
+  const setCategoryID = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLSelectElement;
+    const value = Number(target.value);
+    const newCategoryIgnored = allCategories.find(
+      (category) => category.id === value,
+    )!.ignored;
+    if (categoryIgnored && !newCategoryIgnored) {
+      setFields({ ...fields, category_id: value, amount: DEFAULT_AMOUNT });
+    } else {
+      setFields({ ...fields, category_id: value });
+    }
+  };
+
+  const setAmount = (amount: BudgetAmount) => {
+    setFields({ ...fields, amount });
+  };
+
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formHelper = new FormHelper(form);
 
     try {
-      const budgetItemFields: BudgetItemFields = {
-        name: formHelper.getString("name"),
-        category_id: formHelper.getNumber("category"),
-        amount: amount,
+      const updatedName = fields.name.trim();
+      if (updatedName === "") {
+        throw Error("Budget Item Name can't be empty!");
+      }
+      const updatedAmount = categoryIgnored ? null : fields.amount;
+      if (!categoryIgnored && updatedAmount === null) {
+        throw Error("Can't leave amount empty for item in budgeted category.");
+      }
+      const updatedFields = {
+        name: updatedName,
+        category_id: fields.category_id,
+        amount: updatedAmount,
       } as BudgetItemFields;
+
       // if nothing threw by this point, mark any validation errors as cleared
       clearErrorMessage();
 
       const request =
         budgetItem === null
-          ? createBudgetItemRequest(budgetItemFields)
-          : updateBudgetItemRequest(budgetItem, budgetItemFields);
+          ? createBudgetItemRequest(updatedFields)
+          : updateBudgetItemRequest(budgetItem, updatedFields);
       request.then((response) => {
         if (response.ok) {
           onSuccess();
@@ -128,18 +168,23 @@ export function BudgetItemForm({
     maybeDeleteButton = <GlyphButton glyph="edit" onClick={deleteBudgetItem} />;
   }
 
+  const maybeAmountSelector: React.ReactNode =
+    categoryIgnored || fields.amount === null ? null : (
+      <BudgetAmountForm
+        budgetAmount={fields.amount!}
+        updateBudgetAmount={setAmount}
+      />
+    );
+
   return (
     <>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label htmlFor="name">Budget Item Name</label>
-        <input type="text" name="name" defaultValue={budgetItem?.name} />
+        <label>Budget Item Name</label>
+        <input type="text" value={fields.name} onChange={setName} />
 
-        <label htmlFor="category">Budget Item Category</label>
-        <select
-          name="category"
-          defaultValue={budgetItem?.category_id ?? allCategories[0].id}
-        >
+        <label>Budget Item Category</label>
+        <select value={fields.category_id} onChange={setCategoryID}>
           {allCategories.map((category, idx) => (
             <option key={idx} value={category.id}>
               {category.name}
@@ -147,10 +192,7 @@ export function BudgetItemForm({
           ))}
         </select>
 
-        <BudgetAmountForm
-          budgetAmount={amount}
-          updateBudgetAmount={(newAmount: BudgetAmount) => setAmount(newAmount)}
-        />
+        {maybeAmountSelector}
 
         <FormButtons>
           {maybeDeleteButton}
