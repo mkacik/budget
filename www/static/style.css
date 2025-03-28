@@ -74,6 +74,10 @@ input, select, button {
 }
 
 .error {
+  display: flex;
+  align-items: center;
+  gap: var(--vertical-gap);
+
   color: var(--color-text-error);
   border-color: var(--color-card-error-border);
   background-color: var(--color-card-error-background);
