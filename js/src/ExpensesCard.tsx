@@ -5,7 +5,14 @@ import { Account, Accounts } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetItemDB } from "./BudgetView";
-import { ErrorCard, ModalCard } from "./ui/Common";
+import {
+  Form,
+  FormButtons,
+  ItemCard,
+  InlineGlyphButton,
+  ErrorCard,
+  ModalCard,
+} from "./ui/Common";
 
 export function AccountSelector({
   accounts,
@@ -122,10 +129,13 @@ function StatementImportForm({
   return (
     <>
       <ErrorCard message={errorMessage} />
-      <form name="statement" onSubmit={onSubmit}>
-        <input type="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
-        <input type="submit" value="Submit" />
-      </form>
+      <Form onSubmit={onSubmit}>
+        <label htmlFor="file">Choose statement to upload (.csv,.txt)</label>
+        <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
+        <FormButtons>
+          <input className="button" type="submit" value="Upload" />
+        </FormButtons>
+      </Form>
     </>
   );
 }
@@ -164,14 +174,16 @@ function ExpenseRow({
     });
   };
 
-  const budgetItemElem = active ? (
-    <BudgetItemSelector
-      budgetItems={budgetItems}
-      selectedBudgetItemID={budgetItemID}
-      updateBudgetItemID={updateBudgetItemID}
-    />
+  const budgetItemCell = active ? (
+    <td className="category">
+      <BudgetItemSelector
+        budgetItems={budgetItems}
+        selectedBudgetItemID={budgetItemID}
+        updateBudgetItemID={updateBudgetItemID}
+      />
+    </td>
   ) : (
-    budgetItemName
+    <td>{budgetItemName}</td>
   );
 
   const dateTime =
@@ -180,10 +192,12 @@ function ExpenseRow({
       : expense.transaction_date + " " + expense.transaction_time;
 
   return (
-    <tr className="row" onClick={onClick}>
-      <td className="cell-date">{dateTime}</td>
-      <td>{budgetItemElem}</td>
-      <td>{expense.amount}</td>
+    <tr onClick={onClick}>
+      <td className="date" title={dateTime}>
+        {expense.transaction_date}
+      </td>
+      {budgetItemCell}
+      <td className="number align-right">{expense.amount.toFixed(2)}</td>
       <td>{expense.description}</td>
     </tr>
   );
@@ -200,27 +214,35 @@ function ExpensesTable({
 }) {
   const [activeRow, setActiveRow] = useState<number>(0);
 
+  if (expenses.length == 0) {
+    return <div>Import expenses to start categorizing</div>;
+  }
+
   return (
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Amount</th>
-        <th>Details</th>
-      </tr>
-      {expenses.map((expense, idx) => (
-        <ExpenseRow
-          key={idx}
-          expense={expense}
-          active={idx === activeRow}
-          budgetItems={budgetItems}
-          onClick={() => setActiveRow(idx)}
-          onSuccess={() => {
-            setActiveRow(activeRow + 1);
-            onSuccess();
-          }}
-        />
-      ))}
+    <table className="expenses-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th className="align-right">Amount</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {expenses.map((expense, idx) => (
+          <ExpenseRow
+            key={idx}
+            expense={expense}
+            active={idx === activeRow}
+            budgetItems={budgetItems}
+            onClick={() => setActiveRow(idx)}
+            onSuccess={() => {
+              setActiveRow(activeRow + 1);
+              onSuccess();
+            }}
+          />
+        ))}
+      </tbody>
     </table>
   );
 }
@@ -241,9 +263,13 @@ export function StatementImportButton({
 
   return (
     <>
-      <div>
-        <span onClick={() => setModalVisible(true)}>[import statement]</span>
-      </div>
+      <small>
+        <InlineGlyphButton
+          glyph="add"
+          text="import expenses"
+          onClick={() => setModalVisible(true)}
+        />
+      </small>
       <ModalCard
         title="Import Expenses"
         visible={modalVisible}
@@ -293,22 +319,25 @@ export function ExpensesCard({
   }
 
   return (
-    <div>
-      <AccountSelector
-        accounts={accounts}
-        selected={account}
-        updateAccount={updateAccount}
-      />
-      <h3>{account.name}</h3>
-      <StatementImportButton
-        account={account}
-        onImportSuccess={fetchExpenses}
-      />
+    <>
+      <ItemCard>
+        Account
+        <AccountSelector
+          accounts={accounts}
+          selected={account}
+          updateAccount={updateAccount}
+        />
+        <StatementImportButton
+          account={account}
+          onImportSuccess={fetchExpenses}
+        />
+      </ItemCard>
+
       <ExpensesTable
         expenses={expenses}
         budgetItems={budgetItems}
         onSuccess={fetchExpenses}
       />
-    </div>
+    </>
   );
 }

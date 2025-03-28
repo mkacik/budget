@@ -38,7 +38,12 @@ export function ErrorCard({ message }: { message: string | null }) {
   if (message === null) {
     return null;
   }
-  return <div className="card error">❌ {message}</div>;
+  return (
+    <div className="card error">
+      <span className="material-symbols-outlined">error</span>
+      {message}
+    </div>
+  );
 }
 
 export function ItemCard({ children }: { children: React.ReactNode }) {
@@ -67,13 +72,16 @@ export function GlyphButton({
 export function InlineGlyphButton({
   glyph,
   onClick,
+  text,
 }: {
   glyph: Glyph;
   onClick: () => void;
+  text?: string;
 }) {
   return (
     <div className="button button-small" onClick={onClick}>
       <span className="material-symbols-outlined ">{glyph}</span>
+      {text}
     </div>
   );
 }

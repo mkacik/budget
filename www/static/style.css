@@ -22,6 +22,7 @@ body {
 }
 
 input, select, button {
+  padding: 0.2rem;
   font-family: var(--font-family);
   font-size: inherit;
 }
@@ -138,28 +139,44 @@ input, select, button {
   }
 }
 
-table {
+.expenses-table {
   width: 100%;
-}
+  border: none;
+  border-spacing: 0;
+  text-align: left;
 
-.row:nth-child(even) {
-    background-color: var(--color-table-row);
-}
-
-.row {
-  &:hover {
-    background-color: var(--color-hover);
-    cursor: pointer;
+  tr:nth-child(even) {
+      background-color: var(--color-table-row);
   }
-}
 
-td {
-  height: 1.4rem;
-  padding: 0.4rem;
-}
+  tr {
+   &:hover {
+      background-color: var(--color-hover);
+      cursor: pointer;
+    }
+  }
 
-.cell-date {
-  white-space: nowrap;
+  th, td {
+    border-bottom: 1px solid #ddd;
+    padding: 0.5rem;
+    vertical-align: top;
+  }
+
+  .date {
+    white-space: nowrap;
+  }
+
+  .number {
+    font-family: monospace;
+  }
+
+  .category {
+    padding: 0.2rem;
+  }
+
+  .align-right {
+    text-align: right;
+  }
 }
 
 .login-container {
@@ -213,10 +230,6 @@ td {
     justify-content: flex-end;
   }
 
-  input, select, button {
-    padding: 0.2rem;
-  }
-
   input[type=checkbox] {
     justify-self: left;
   }
@@ -244,7 +257,7 @@ td {
 }
 
 .button-small {
-  padding: 0.1rem !important;
+  padding: 0.2rem !important;
 
   .material-symbols-outlined {
     font-variation-settings: 'opsz' 20
