@@ -5,42 +5,122 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
-import { ModalCard } from "./ui/Common";
+import {
+  GlyphButton,
+  InlineGlyph,
+  InlineGlyphButton,
+  ModalCard,
+  SectionHeader,
+} from "./ui/Common";
 
-function BudgetItemCard({
+function BudgetItemRow({
   item,
   editItem,
+  skipAmounts,
 }: {
   item: BudgetItemView;
   editItem: () => void;
+  skipAmounts?: boolean;
 }) {
+  const amounts = skipAmounts ? null : (
+    <>
+      <td className="number align-right">
+        {(item.amountPerYear / 12).toFixed(2)}
+      </td>
+      <td className="number align-right">{item.amountPerYear.toFixed(2)}</td>
+    </>
+  );
+
   return (
-    <div>
-      {item.name} - {item.amountPerYear}
-      <span onClick={editItem}>[edit]</span>
-    </div>
+    <tr>
+      <td className="row-name">
+        <InlineGlyph glyph="chevron_right" />
+        {item.name}
+        <InlineGlyphButton glyph="edit" onClick={editItem} />
+      </td>
+      {amounts}
+    </tr>
   );
 }
 
-function BudgetCategoryCard({
+function BudgetCategoryRow({
   category,
   editCategory,
-  children,
+  skipAmounts,
 }: {
   category: BudgetCategoryView;
   editCategory: () => void;
+  skipAmounts?: boolean;
+}) {
+  const amounts = skipAmounts ? null : (
+    <>
+      <td className="number align-right">
+        {(category.amountPerYear / 12).toFixed(2)}
+      </td>
+      <td className="number align-right">
+        {category.amountPerYear.toFixed(2)}
+      </td>
+    </>
+  );
+
+  return (
+    <tr className="row-group-header">
+      <td className="row-name">
+        {category.name}
+        <InlineGlyphButton glyph="edit" onClick={editCategory} />
+      </td>
+      {amounts}
+    </tr>
+  );
+}
+
+export function BudgetTable({
+  amountPerYear,
+  children,
+}: {
+  amountPerYear?: number;
   children: React.ReactNode;
 }) {
+  let header: React.ReactNode = null;
+  let footer: React.ReactNode = null;
+
+  if (amountPerYear !== undefined && amountPerYear !== null) {
+    header = (
+      <tr>
+        <th>Name</th>
+        <th className="align-right">Amortized monthly</th>
+        <th className="align-right">Amortized yearly</th>
+      </tr>
+    );
+    footer = <BudgetTableFooter amountPerYear={amountPerYear} />;
+  } else {
+    header = (
+      <tr>
+        <th>Name</th>
+      </tr>
+    );
+  }
+
   return (
-    <div>
-      <div>
-        <b>
-          {category.name} - {category.amountPerYear}
-        </b>
-        <span onClick={editCategory}>[edit]</span>
-      </div>
-      {children}
-    </div>
+    <table className="budget-table">
+      <thead>{header}</thead>
+      <tbody>{children}</tbody>
+      <tfoot>{footer}</tfoot>
+    </table>
+  );
+}
+
+export function BudgetTableFooter({
+  amountPerYear,
+}: {
+  amountPerYear: number;
+}) {
+  return (
+    <tr className="row-group-header">
+      <td className="row-name">TOTAL</td>
+      <td className="number align-right">{(amountPerYear / 12).toFixed(2)}</td>
+      <td className="number align-right">{amountPerYear.toFixed(2)}</td>
+    </tr>
   );
 }
 
@@ -112,11 +192,6 @@ export function BudgetCard({
       break;
   }
 
-  const maybeAddNewItemButton =
-    budget.categories.length > 0 ? (
-      <span onClick={() => editItem(null)}>[add new item]</span>
-    ) : null;
-
   const includedCategories = budget.categories.filter(
     (category) => !category.ignored,
   );
@@ -124,53 +199,79 @@ export function BudgetCard({
     (category) => category.ignored,
   );
 
+  let budgetRows: Array<React.ReactElement> = [];
+  for (let category of includedCategories) {
+    budgetRows.push(
+      <BudgetCategoryRow
+        key={category.name}
+        editCategory={() => editCategory(category)}
+        category={category}
+      />,
+    );
+
+    for (let item of category.items) {
+      budgetRows.push(
+        <BudgetItemRow
+          key={item.name}
+          item={item}
+          editItem={() => editItem(item)}
+        />,
+      );
+    }
+  }
+
+  let ignoredRows: Array<React.ReactElement> = [];
+  for (let category of excludedCategories) {
+    ignoredRows.push(
+      <BudgetCategoryRow
+        key={category.name}
+        editCategory={() => editCategory(category)}
+        category={category}
+        skipAmounts={true}
+      />,
+    );
+
+    for (let item of category.items) {
+      ignoredRows.push(
+        <BudgetItemRow
+          key={item.name}
+          item={item}
+          editItem={() => editItem(item)}
+          skipAmounts={true}
+        />,
+      );
+    }
+  }
+
+  const maybeAddNewItemButton =
+    budget.categories.length > 0 ? (
+      <GlyphButton glyph="add" text="add item" onClick={() => editItem(null)} />
+    ) : null;
+
   return (
-    <div>
-      <h2>Budget</h2>
-      <div>
-        {includedCategories.map((category, index) => (
-          <BudgetCategoryCard
-            key={index}
-            editCategory={() => editCategory(category)}
-            category={category}
-          >
-            {category.items.map((item, index) => (
-              <BudgetItemCard
-                key={index}
-                item={item}
-                editItem={() => editItem(item)}
-              />
-            ))}
-          </BudgetCategoryCard>
-        ))}
-      </div>
-      <div>
-        <b>TOTAL - {budget.amountPerYear}</b>
-      </div>
+    <>
+      <SectionHeader>Budget</SectionHeader>
+
+      <BudgetTable amountPerYear={budget.amountPerYear}>
+        {budgetRows}
+      </BudgetTable>
+
+      <span>
+        <SectionHeader>Ignored categories</SectionHeader>
+        <p>
+          Items from ignored categories can be used to exclude x-account moves.
+        </p>
+
+        <BudgetTable>{ignoredRows}</BudgetTable>
+      </span>
 
       <div>
-        <span onClick={() => editCategory(null)}>[add new category]</span>
+        <GlyphButton
+          glyph="add"
+          text="add category"
+          onClick={() => editCategory(null)}
+        />
         {maybeAddNewItemButton}
-      </div>
-
-      <h2>Ignored categories</h2>
-
-      <div>
-        {excludedCategories.map((category, index) => (
-          <BudgetCategoryCard
-            key={index}
-            editCategory={() => editCategory(category)}
-            category={category}
-          >
-            {category.items.map((item, index) => (
-              <BudgetItemCard
-                key={index}
-                item={item}
-                editItem={() => editItem(item)}
-              />
-            ))}
-          </BudgetCategoryCard>
-        ))}
       </div>
 
       <ModalCard
@@ -180,6 +281,6 @@ export function BudgetCard({
       >
         {modalContent}
       </ModalCard>
-    </div>
+    </>
   );
 }

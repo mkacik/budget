@@ -1,6 +1,7 @@
 :root {
   --color-main: #ffbf00;
-  --color-table-row: #fff8e2;
+  --color-table-row: #f9f9fb;
+  --color-table-header: #fff8e2;
   --color-hover: #ffd34f;
   --color-card-background: #f9f9fb;
   --color-card-border: #cdcdcd;
@@ -71,6 +72,8 @@ input, select, button {
   border-radius: var(--border-radius);
   border-color: var(--color-card-border);
   background-color: var(--color-card-background);
+
+  font-size: 1.1rem;
 }
 
 .error {
@@ -89,8 +92,6 @@ input, select, button {
   gap: var(--vertical-gap);
   align-items: center;
   padding-left: 0.8rem;
-
-  font-size: 1.1rem;
 }
 
 .modal-container {
@@ -117,14 +118,9 @@ input, select, button {
   gap: 1.5rem;
   padding: 1.5rem;
 
-  font-size: 1.1rem;
-
   .modal-header {
     display: flex;
-    direction: row;
-
-    font-size: 1.5rem;
-    font-weight: bold;
+    flex-direction: row;
 
     .modal-title {
       width: 100%;
@@ -141,6 +137,11 @@ input, select, button {
     flex-direction: column;
     gap: var(--vertical-gap);
   }
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .expenses-table {
@@ -166,6 +167,14 @@ input, select, button {
     vertical-align: top;
   }
 
+  th {
+    border-top: 1px solid #ddd;
+  }
+
+  thead, tfoot {
+      background-color: var(--color-table-header);
+  }
+
   .date {
     white-space: nowrap;
   }
@@ -181,6 +190,55 @@ input, select, button {
   .align-right {
     text-align: right;
   }
+}
+
+.budget-table {
+  width: 100%;
+  border: none;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+
+  tr {
+   &:hover {
+      background-color: var(--color-hover);
+    }
+  }
+
+  th, td {
+    border-bottom: 1px solid #ddd;
+    padding: 0.5rem;
+    vertical-align: top;
+  }
+
+  th {
+    border-top: 1px solid #ddd;
+  }
+
+  thead, tfoot {
+      background-color: var(--color-table-header);
+  }
+
+  .row-group-header {
+    font-weight: bold;
+  }
+
+  .row-name {
+    display: flex;
+    flex-direction: row;
+    gap: var(--vertical-gap);
+    align-items: center;
+  }
+
+  .number {
+    font-family: monospace;
+  }
+
+  .align-right {
+    text-align: right;
+  }
+
 }
 
 .login-container {
@@ -256,6 +314,7 @@ input, select, button {
   }
 
   .material-symbols-outlined {
+    color: #555555;
     font-variation-settings: 'opsz' 24
   }
 }
@@ -275,5 +334,5 @@ input, select, button {
   border-width: 1px;;
   border-color: var(--color-hover);
   border-radius: var(--border-radius);
-  background-color: var(--color-table-row);:w
+  background-color: var(--color-table-header);
 }

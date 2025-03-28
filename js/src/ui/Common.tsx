@@ -22,7 +22,7 @@ export function ModalCard({
   return (
     <div className="modal-container" onClick={hideModal}>
       <div className="card modal" onClick={preventParentOnClick}>
-        <div className="modal-header">
+        <div className="modal-header title">
           <span className="modal-title">{title}</span>
           <span className="modal-close-button" onClick={hideModal}>
             ✕
@@ -40,7 +40,7 @@ export function ErrorCard({ message }: { message: string | null }) {
   }
   return (
     <div className="card error">
-      <span className="material-symbols-outlined">error</span>
+      <InlineGlyph glyph="error" />
       {message}
     </div>
   );
@@ -50,7 +50,7 @@ export function ItemCard({ children }: { children: React.ReactNode }) {
   return <div className="card item">{children}</div>;
 }
 
-export type Glyph = "add" | "edit" | "delete";
+export type Glyph = "add" | "chevron_right" | "delete" | "edit" | "error";
 
 export function GlyphButton({
   glyph,
@@ -80,10 +80,14 @@ export function InlineGlyphButton({
 }) {
   return (
     <div className="button button-small" onClick={onClick}>
-      <span className="material-symbols-outlined ">{glyph}</span>
+      <span className="material-symbols-outlined">{glyph}</span>
       {text}
     </div>
   );
+}
+
+export function InlineGlyph({ glyph }: { glyph: Glyph }) {
+  return <span className="material-symbols-outlined">{glyph}</span>;
 }
 
 export function Form({
@@ -121,4 +125,12 @@ export function FormSection({
 
 export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
+}
+
+export function SectionHeader({ children }: { children: string }) {
+  return <span className="title">{children}</span>;
+}
+
+export function SubmitButton({ text }: { text: string }) {
+  return <input className="button" type="submit" value={text} />;
 }

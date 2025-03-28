@@ -5,7 +5,13 @@ import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
 import { BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
-import { ErrorCard } from "./ui/Common";
+import {
+  GlyphButton,
+  SubmitButton,
+  Form,
+  FormButtons,
+  ErrorCard,
+} from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetItemRequest(fields: BudgetItemFields) {
@@ -119,49 +125,38 @@ export function BudgetItemForm({
       });
     };
 
-    maybeDeleteButton = (
-      <div>
-        <span onClick={deleteBudgetItem}>[delete]</span>
-      </div>
-    );
+    maybeDeleteButton = <GlyphButton glyph="edit" onClick={deleteBudgetItem} />;
   }
 
   return (
-    <div>
+    <>
       <ErrorCard message={errorMessage} />
-      <form onSubmit={onSubmit}>
-        <div>
-          <label htmlFor="name">Budget Item Name</label>
-          <input type="text" name="name" defaultValue={budgetItem?.name} />
-        </div>
+      <Form onSubmit={onSubmit}>
+        <label htmlFor="name">Budget Item Name</label>
+        <input type="text" name="name" defaultValue={budgetItem?.name} />
 
-        <div>
-          <label htmlFor="category">Budget Item Category</label>
-          <select
-            name="category"
-            defaultValue={budgetItem?.category_id ?? allCategories[0].id}
-          >
-            {allCategories.map((category, idx) => (
-              <option key={idx} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <label htmlFor="category">Budget Item Category</label>
+        <select
+          name="category"
+          defaultValue={budgetItem?.category_id ?? allCategories[0].id}
+        >
+          {allCategories.map((category, idx) => (
+            <option key={idx} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
 
         <BudgetAmountForm
           budgetAmount={amount}
           updateBudgetAmount={(newAmount: BudgetAmount) => setAmount(newAmount)}
         />
 
-        <div>
-          <input
-            type="submit"
-            value={budgetItem === null ? "Create" : "Update"}
-          />
-        </div>
-      </form>
-      {maybeDeleteButton}
-    </div>
+        <FormButtons>
+          {maybeDeleteButton}
+          <SubmitButton text={budgetItem === null ? "Create" : "Update"} />
+        </FormButtons>
+      </Form>
+    </>
   );
 }

@@ -3,7 +3,13 @@ import { useState } from "react";
 
 import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
 
-import { ErrorCard } from "./ui/Common";
+import {
+  GlyphButton,
+  SubmitButton,
+  Form,
+  FormButtons,
+  ErrorCard,
+} from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetCategoryRequest(fields: BudgetCategoryFields) {
@@ -112,38 +118,29 @@ export function BudgetCategoryForm({
     };
 
     maybeDeleteButton = (
-      <div>
-        <span onClick={deleteBudgetCategory}>[delete]</span>
-      </div>
+      <GlyphButton glyph="delete" onClick={deleteBudgetCategory} />
     );
   }
 
   return (
-    <div>
+    <>
       <ErrorCard message={errorMessage} />
-      <form onSubmit={onSubmit}>
-        <div>
-          <label htmlFor="name">BudgetCategory Name</label>
-          <input type="text" name="name" defaultValue={budgetCategory?.name} />
-        </div>
+      <Form onSubmit={onSubmit}>
+        <label htmlFor="name">BudgetCategory Name</label>
+        <input type="text" name="name" defaultValue={budgetCategory?.name} />
 
-        <div>
-          <label htmlFor="ignored">Ignore in spending analysis</label>
-          <input
-            type="checkbox"
-            name="ignored"
-            defaultChecked={budgetCategory?.ignored ?? false}
-          />
-        </div>
+        <label htmlFor="ignored">Ignore in spending analysis</label>
+        <input
+          type="checkbox"
+          name="ignored"
+          defaultChecked={budgetCategory?.ignored ?? false}
+        />
 
-        <div>
-          <input
-            type="submit"
-            value={budgetCategory === null ? "Create" : "Update"}
-          />
-        </div>
-      </form>
-      {maybeDeleteButton}
-    </div>
+        <FormButtons>
+          {maybeDeleteButton}
+          <SubmitButton text={budgetCategory === null ? "Create" : "Update"} />
+        </FormButtons>
+      </Form>
+    </>
   );
 }
