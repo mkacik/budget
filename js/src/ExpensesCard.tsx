@@ -292,7 +292,6 @@ export function ExpensesCard({
 
   const [account, setAccount] = useState<Account>(accounts[0] || null);
   const [expenses, setExpenses] = useState<Array<Expense>>([]);
-  const [updates, setUpdates] = useState<number>(0);
 
   const updateAccount = (newAccount: Account) => {
     setAccount(newAccount);
@@ -312,7 +311,7 @@ export function ExpensesCard({
 
   useEffect(() => {
     fetchExpenses();
-  }, [account, setAccount, updates]);
+  }, [account, setAccount]);
 
   if (account === null) {
     return <>{"Add accounts to enable imports"}</>;
