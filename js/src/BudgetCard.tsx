@@ -172,8 +172,8 @@ export function BudgetCard({
     (category) => category.ignored,
   );
 
-  let budgetRows: Array<React.ReactElement> = [];
-  for (let category of includedCategories) {
+  const budgetRows: Array<React.ReactElement> = [];
+  for (const category of includedCategories) {
     budgetRows.push(
       <BudgetCategoryRow
         key={category.name}
@@ -182,7 +182,7 @@ export function BudgetCard({
       />,
     );
 
-    for (let item of category.items) {
+    for (const item of category.items) {
       budgetRows.push(
         <BudgetItemRow
           key={item.name}
@@ -193,8 +193,8 @@ export function BudgetCard({
     }
   }
 
-  let ignoredRows: Array<React.ReactElement> = [];
-  for (let category of excludedCategories) {
+  const ignoredRows: Array<React.ReactElement> = [];
+  for (const category of excludedCategories) {
     ignoredRows.push(
       <BudgetCategoryRow
         key={category.name}
@@ -204,7 +204,7 @@ export function BudgetCard({
       />,
     );
 
-    for (let item of category.items) {
+    for (const item of category.items) {
       ignoredRows.push(
         <BudgetItemRow
           key={item.name}

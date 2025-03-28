@@ -11,7 +11,7 @@ export function BudgetChart({
 }) {
   const data: Array<Array<number | string>> = [["Category", "Yearly budget"]];
 
-  for (let category of categories) {
+  for (const category of categories) {
     data.push([category.name, category.amountPerYear]);
   }
 
