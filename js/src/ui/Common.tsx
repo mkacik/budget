@@ -50,7 +50,13 @@ export function ItemCard({ children }: { children: React.ReactNode }) {
   return <div className="card item">{children}</div>;
 }
 
-export type Glyph = "add" | "chevron_right" | "delete" | "edit" | "error";
+export type Glyph =
+  | "add"
+  | "chevron_right"
+  | "delete"
+  | "edit"
+  | "error"
+  | "pie_chart";
 
 export function GlyphButton({
   glyph,
@@ -127,7 +133,7 @@ export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
 }
 
-export function SectionHeader({ children }: { children: string }) {
+export function SectionHeader({ children }: { children: React.ReactNode }) {
   return <span className="title">{children}</span>;
 }
 

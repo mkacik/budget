@@ -5,6 +5,7 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
+import { BudgetChart } from "./BudgetChart";
 import {
   GlyphButton,
   InlineGlyph,
@@ -127,6 +128,7 @@ export function BudgetTableFooter({
 enum ModalMode {
   CATEGORY,
   ITEM,
+  CHART,
   HIDDEN,
 }
 
@@ -154,43 +156,14 @@ export function BudgetCard({
     setModalMode(ModalMode.ITEM);
   };
 
+  const showChart = () => {
+    setModalMode(ModalMode.CHART);
+  };
+
   const onEditSuccess = () => {
     refreshBudget();
     setModalMode(ModalMode.HIDDEN);
   };
-
-  let modalTitle: string = "";
-  let modalContent: React.ReactNode = null;
-  switch (modalMode) {
-    case ModalMode.CATEGORY: {
-      modalTitle =
-        editedCategory === null
-          ? "New Budget Category"
-          : "Edit Budget Category";
-      modalContent = (
-        <BudgetCategoryForm
-          key={editedCategory?.name}
-          budgetCategory={editedCategory?.category ?? null}
-          onSuccess={onEditSuccess}
-        />
-      );
-      break;
-    }
-    case ModalMode.ITEM: {
-      modalTitle = editedItem === null ? "New Budget Item" : "Edit Budget Item";
-      modalContent = (
-        <BudgetItemForm
-          key={editedItem?.name}
-          budgetItem={editedItem?.item ?? null}
-          onSuccess={onEditSuccess}
-          allCategories={budget.categories}
-        />
-      );
-      break;
-    }
-    default:
-      break;
-  }
 
   const includedCategories = budget.categories.filter(
     (category) => !category.ignored,
@@ -243,6 +216,44 @@ export function BudgetCard({
     }
   }
 
+  let modalTitle: string = "";
+  let modalContent: React.ReactNode = null;
+  switch (modalMode) {
+    case ModalMode.CATEGORY: {
+      modalTitle =
+        editedCategory === null
+          ? "New Budget Category"
+          : "Edit Budget Category";
+      modalContent = (
+        <BudgetCategoryForm
+          key={editedCategory?.name}
+          budgetCategory={editedCategory?.category ?? null}
+          onSuccess={onEditSuccess}
+        />
+      );
+      break;
+    }
+    case ModalMode.ITEM: {
+      modalTitle = editedItem === null ? "New Budget Item" : "Edit Budget Item";
+      modalContent = (
+        <BudgetItemForm
+          key={editedItem?.name}
+          budgetItem={editedItem?.item ?? null}
+          onSuccess={onEditSuccess}
+          allCategories={budget.categories}
+        />
+      );
+      break;
+    }
+    case ModalMode.CHART: {
+      modalTitle = "Budget";
+      modalContent = <BudgetChart categories={includedCategories} />;
+      break;
+    }
+    default:
+      break;
+  }
+
   const maybeAddNewItemButton =
     budget.categories.length > 0 ? (
       <GlyphButton glyph="add" text="add item" onClick={() => editItem(null)} />
@@ -250,7 +261,10 @@ export function BudgetCard({
 
   return (
     <>
-      <SectionHeader>Budget</SectionHeader>
+      <SectionHeader>
+        Budget
+        <InlineGlyphButton glyph="pie_chart" onClick={showChart} />
+      </SectionHeader>
 
       <BudgetTable amountPerYear={budget.amountPerYear}>
         {budgetRows}

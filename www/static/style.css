@@ -133,6 +133,8 @@ input, select, button {
   }
 
   .modal-body {
+    height: 100%;
+
     display: flex;
     flex-direction: column;
     gap: var(--vertical-gap);
@@ -140,6 +142,10 @@ input, select, button {
 }
 
 .title {
+    display: flex;
+    flex-direction: row;
+    gap: var(--vertical-gap);
+
     font-size: 1.5rem;
     font-weight: bold;
 }

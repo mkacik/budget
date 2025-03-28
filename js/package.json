@@ -1,5 +1,5 @@
 {
-  "name": "flashcards",
+  "name": "budget",
   "version": "1.0.0",
   "description": "Frontend for budgeting app",
   "main": "src/App.js",
@@ -16,7 +16,8 @@
     "@types/react": "=18.3.1",
     "@types/react-dom": "=18.3.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-google-charts": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
