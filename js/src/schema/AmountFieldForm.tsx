@@ -106,6 +106,7 @@ export function AmountFieldForm({
 
   return (
     <>
+      <label>Mapping function</label>
       <select value={optionName} onChange={onOptionNameChange}>
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
         <option value={FROM_CREDIT_DEBIT_COLUMNS}>

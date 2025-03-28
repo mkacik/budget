@@ -187,8 +187,8 @@ export function AccountsCard({
   const rows = accounts.map((account) => {
     return (
       <ItemCard key={account.id}>
-        <Pill>{account.class}</Pill>
         <span>{account.name}</span>
+        <Pill>{account.class}</Pill>
         <InlineGlyphButton
           glyph="edit"
           onClick={() => showEditModal(account)}

@@ -83,6 +83,7 @@ input, select, button {
   flex-direction: row;
   gap: var(--vertical-gap);
   align-items: center;
+  padding-left: 0.8rem;
 
   font-size: 1.1rem;
 }
@@ -107,6 +108,7 @@ input, select, button {
 
   display: flex;
   flex-direction: column;
+  overflow: auto;
   gap: 1.5rem;
   padding: 1.5rem;
 
@@ -198,6 +200,8 @@ td {
 
   .edit-form-section-header {
     grid-column: 1 / span 2;
+
+    font-weight: bold;
   }
 
   .edit-form-buttons {
@@ -211,6 +215,10 @@ td {
 
   input, select, button {
     padding: 0.2rem;
+  }
+
+  input[type=checkbox] {
+    justify-self: left;
   }
 }
 

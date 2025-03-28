@@ -12,6 +12,7 @@ import { AmountFieldForm } from "./schema/AmountFieldForm";
 import { DateFieldForm } from "./schema/DateFieldForm";
 import { TimeFieldForm } from "./schema/TimeFieldForm";
 import { TextFieldForm } from "./schema/TextFieldForm";
+import { FormSection } from "./ui/Common";
 
 export function getDefaultRecordMapping(): RecordMapping {
   const recordMapping: RecordMapping = {
@@ -53,34 +54,30 @@ export function RecordMappingForm({
 
   return (
     <>
-      <div>
-        Transaction Date
+      <FormSection title="Transaction Date">
         <DateFieldForm
           date={recordMapping.transaction_date}
           updateDate={updateTransactionDate}
         />
-      </div>
-      <div>
-        Transaction Time
+      </FormSection>
+      <FormSection title="Transaction Time">
         <TimeFieldForm
           time={recordMapping.transaction_time}
           updateTime={updateTransactionTime}
         />
-      </div>
-      <div>
-        Description
+      </FormSection>
+      <FormSection title="Description">
         <TextFieldForm
           text={recordMapping.description}
           updateText={updateDescription}
         />
-      </div>
-      <div>
-        Amount
+      </FormSection>
+      <FormSection title="Amount">
         <AmountFieldForm
           amount={recordMapping.amount}
           updateAmount={updateAmount}
         />
-      </div>
+      </FormSection>
     </>
   );
 }

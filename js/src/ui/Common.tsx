@@ -96,6 +96,21 @@ export function FormButtons({ children }: { children: React.ReactNode }) {
   return <div className="edit-form-buttons">{children}</div>;
 }
 
+export function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <span className="edit-form-section-header">{title}</span>
+      {children}
+    </>
+  );
+}
+
 export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
 }

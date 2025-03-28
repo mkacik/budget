@@ -11,7 +11,15 @@ import {
   getDefaultRecordMapping,
   RecordMappingForm,
 } from "./RecordMappingForm";
-import { ItemCard, ErrorCard, ModalCard } from "./ui/Common";
+import {
+  Form,
+  FormButtons,
+  ItemCard,
+  ErrorCard,
+  ModalCard,
+  GlyphButton,
+  InlineGlyphButton,
+} from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields) {
@@ -135,31 +143,31 @@ function StatementSchemaForm({
     };
 
     maybeDeleteButton = (
-      <div>
-        <button onClick={deleteStatementSchema}>[delete]</button>
-      </div>
+      <GlyphButton glyph="delete" onClick={deleteStatementSchema} />
     );
   }
 
   return (
-    <div>
+    <>
       {maybeErrorCard}
-      <form onSubmit={onSubmit}>
-        <div>
-          <label htmlFor="name">StatementSchema Name</label>
-          <input type="text" name="name" defaultValue={schemaName} />
-        </div>
+      <Form onSubmit={onSubmit}>
+        <label htmlFor="name">StatementSchema Name</label>
+        <input type="text" name="name" defaultValue={schemaName} />
 
         <RecordMappingForm
           recordMapping={recordMapping}
           updateRecordMapping={updateRecordMapping}
         />
-        <div>
-          <input type="submit" value={schema === null ? "Create" : "Update"} />
-        </div>
-      </form>
-      {maybeDeleteButton}
-    </div>
+        <FormButtons>
+          {maybeDeleteButton}
+          <input
+            className="button"
+            type="submit"
+            value={schema === null ? "Create" : "Update"}
+          />
+        </FormButtons>
+      </Form>
+    </>
   );
 }
 
@@ -188,7 +196,7 @@ export function StatementSchemasCard({
     return (
       <ItemCard key={schema.id}>
         <span>{schema.name}</span>
-        <span onClick={() => showEditModal(schema)}>[edit]</span>
+        <InlineGlyphButton glyph="edit" onClick={() => showEditModal(schema)} />
       </ItemCard>
     );
   });
@@ -196,9 +204,12 @@ export function StatementSchemasCard({
   return (
     <>
       {rows}
-      <div>
-        <span onClick={() => showEditModal(null)}>[add new]</span>
-      </div>
+
+      <GlyphButton
+        glyph="add"
+        text="add schema"
+        onClick={() => showEditModal(null)}
+      />
 
       <ModalCard
         title={activeStatementSchema === null ? "New Schema" : "Edit Schema"}

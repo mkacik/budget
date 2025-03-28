@@ -20,10 +20,10 @@ export function FromColumnForm({
   };
 
   return (
-    <div>
+    <>
       <label>Column</label>
       <input type="number" value={params.col} onChange={updateCol} />
-    </div>
+    </>
   );
 }
 
@@ -51,16 +51,16 @@ export function FromColumnWithTZForm({
   };
 
   return (
-    <div>
+    <>
       <label>Column</label>
       <input type="number" value={params.col} onChange={updateCol} />
-      <br />
+
       <label>Timezone</label>
       <select value={params.tz} onChange={updateTz}>
         <option value="Local">Local</option>
         <option value="UTC">UTC</option>
       </select>
-    </div>
+    </>
   );
 }
 
@@ -100,18 +100,20 @@ export function FromColumnWithInvertForm({
   };
 
   return (
-    <div>
+    <>
       <label>Column</label>
       <input type="number" value={params.col} onChange={updateCol} />
+
       <label>Flip sign</label>
       <input type="checkbox" checked={params.invert} onChange={updateInvert} />
+
       <label>Skip if field contains</label>
       <input
         type="input"
         value={params.skip_pattern ?? EMPTY}
         onChange={updateSkipPattern}
       />
-    </div>
+    </>
   );
 }
 
@@ -158,24 +160,26 @@ export function FromCreditDebitColumnsForm({
   };
 
   return (
-    <div>
+    <>
       <label>Column</label>
       <input type="number" value={params.first} onChange={updateFirst} />
+
       <label>Flip sign</label>
       <input
         type="checkbox"
         checked={params.invert_first}
         onChange={updateInvertFirst}
       />
-      <br />
+
       <label>Column</label>
       <input type="number" value={params.second} onChange={updateSecond} />
+
       <label>Flip sign</label>
       <input
         type="checkbox"
         checked={params.invert_second}
         onChange={updateInvertSecond}
       />
-    </div>
+    </>
   );
 }
