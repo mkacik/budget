@@ -91,6 +91,7 @@ function App() {
     <AccountsCard
       accounts={accounts.accounts}
       refreshAccounts={fetchAccounts}
+      statementSchemas={schemas.schemas}
     />
   );
   const schemasCard = (

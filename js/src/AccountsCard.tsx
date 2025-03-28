@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { Account, AccountFields, AccountClass } from "./types/Account";
+import { StatementSchema } from "./types/StatementSchema";
 
 import {
   Form,
@@ -48,9 +49,11 @@ function deleteAccountRequest(account: Account) {
 function AccountForm({
   account,
   onSuccess,
+  statementSchemas,
 }: {
   account: Account | null;
   onSuccess: () => void;
+  statementSchemas: Array<StatementSchema>;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -111,6 +114,11 @@ function AccountForm({
       {value}
     </option>
   ));
+  const statementSchemaOptions = statementSchemas.map((schema, idx) => (
+    <option key={idx} value={schema.id}>
+      {schema.name}
+    </option>
+  ));
 
   let maybeDeleteButton: React.ReactNode = null;
   if (account !== null) {
@@ -149,7 +157,13 @@ function AccountForm({
         </select>
 
         <label htmlFor="importConfig">Import Schema</label>
-        <input type="text" name="importConfig" defaultValue={importConfig} />
+        <select
+          name="importConfig"
+          defaultValue={importConfig ?? FormHelper.EMPTY}
+        >
+          <option value={FormHelper.EMPTY}>-</option>
+          {statementSchemaOptions}
+        </select>
 
         <FormButtons>
           {maybeDeleteButton}
@@ -167,9 +181,11 @@ function AccountForm({
 export function AccountsCard({
   accounts,
   refreshAccounts,
+  statementSchemas,
 }: {
   accounts: Array<Account>;
   refreshAccounts: () => void;
+  statementSchemas: Array<StatementSchema>;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
@@ -216,6 +232,7 @@ export function AccountsCard({
           key={activeAccount?.name}
           account={activeAccount}
           onSuccess={onEditSuccess}
+          statementSchemas={statementSchemas}
         />
       </ModalCard>
     </>
