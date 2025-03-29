@@ -33,11 +33,13 @@ function getAmountPerYear(amount: BudgetAmount | null): number {
 
 export class BudgetItemView {
   item: BudgetItem;
+  category: BudgetCategoryView;
   displayName: string;
   amountPerYear: number;
 
-  constructor(item: BudgetItem, category: BudgetCategory) {
+  constructor(item: BudgetItem, category: BudgetCategoryView) {
     this.item = item;
+    this.category = category;
     this.displayName = `${category.name} :: ${item.name}`;
     this.amountPerYear = getAmountPerYear(item.amount);
   }
@@ -92,6 +94,7 @@ export class BudgetCategoryView {
 export class BudgetView {
   categories: Array<BudgetCategoryView>;
   ignoredCategories: Array<BudgetCategoryView>;
+  itemsByID: Map<number, BudgetItemView>;
   budget: Budget;
 
   constructor(budget: Budget) {
@@ -101,10 +104,12 @@ export class BudgetView {
       categoriesMap.set(categoryView.id, categoryView);
     }
 
+    const itemsMap = new Map<number, BudgetItemView>();
     for (const item of budget.items) {
       const categoryId = item.category_id;
       const category = categoriesMap.get(categoryId)!;
-      const itemView = new BudgetItemView(item, category.category);
+      const itemView = new BudgetItemView(item, category);
+      itemsMap.set(itemView.id, itemView);
       category.items.push(itemView);
     }
 
@@ -126,6 +131,7 @@ export class BudgetView {
 
     this.categories = categories.filter((category) => !category.ignored);
     this.ignoredCategories = categories.filter((category) => category.ignored);
+    this.itemsByID = itemsMap;
     this.budget = budget;
   }
 
@@ -136,7 +142,7 @@ export class BudgetView {
     );
   }
 
-  getBudgetItemsForCategorization(): BudgetItemDB {
+  get items() {
     const items = new Array<BudgetItemView>();
     for (const list of [this.categories, this.ignoredCategories]) {
       for (const category of list) {
@@ -145,20 +151,10 @@ export class BudgetView {
         }
       }
     }
-    return new BudgetItemDB(items);
-  }
-}
-
-export class BudgetItemDB {
-  items: Array<BudgetItemView>;
-  itemsByID: Map<number, BudgetItemView>;
-
-  constructor(items: Array<BudgetItemView>) {
-    this.items = items;
-    this.itemsByID = new Map(items.map((item) => [item.id, item]));
+    return items;
   }
 
-  get(budgetItemID: number): BudgetItemView {
+  getItem(budgetItemID: number): BudgetItemView {
     const item = this.itemsByID.get(budgetItemID);
     if (item === null || item === undefined) {
       throw new Error(

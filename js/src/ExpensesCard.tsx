@@ -1,10 +1,10 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { Account, Accounts } from "./types/Account";
+import { Account } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
-import { BudgetItemDB } from "./BudgetView";
+import { BudgetView } from "./BudgetView";
 import {
   Form,
   FormButtons,
@@ -46,13 +46,13 @@ export function AccountSelector({
 }
 
 function BudgetItemSelector({
-  budgetItems,
   selectedBudgetItemID,
   updateBudgetItemID,
+  budget,
 }: {
-  budgetItems: BudgetItemDB;
   selectedBudgetItemID: number | null;
   updateBudgetItemID: (newBudgetItemID: number | null) => void;
+  budget: BudgetView;
 }) {
   const UNSET = 0;
 
@@ -63,7 +63,7 @@ function BudgetItemSelector({
     updateBudgetItemID(newBudgetItemID);
   };
 
-  const options = budgetItems.items.map((item, idx) => (
+  const options = budget.items.map((item, idx) => (
     <option key={idx} value={item.id}>
       {item.displayName}
     </option>
@@ -143,19 +143,19 @@ function StatementImportForm({
 function ExpenseRow({
   expense,
   active,
-  budgetItems,
   onClick,
   onSuccess,
+  budget,
 }: {
   expense: Expense;
   active: boolean;
-  budgetItems: BudgetItemDB;
   onClick: () => void;
   onSuccess: () => void;
+  budget: BudgetView;
 }) {
   const budgetItemID = expense.budget_item_id;
   const budgetItemName =
-    budgetItemID !== null ? budgetItems.get(budgetItemID).displayName : "";
+    budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
 
   const updateBudgetItemID = (newBudgetItemID: number | null) => {
     console.log(newBudgetItemID);
@@ -177,9 +177,9 @@ function ExpenseRow({
   const budgetItemCell = active ? (
     <td className="category">
       <BudgetItemSelector
-        budgetItems={budgetItems}
         selectedBudgetItemID={budgetItemID}
         updateBudgetItemID={updateBudgetItemID}
+        budget={budget}
       />
     </td>
   ) : (
@@ -205,12 +205,12 @@ function ExpenseRow({
 
 function ExpensesTable({
   expenses,
-  budgetItems,
   onSuccess,
+  budget,
 }: {
   expenses: Array<Expense>;
-  budgetItems: BudgetItemDB;
   onSuccess: () => void;
+  budget: BudgetView;
 }) {
   const [activeRow, setActiveRow] = useState<number>(0);
 
@@ -234,7 +234,7 @@ function ExpensesTable({
             key={idx}
             expense={expense}
             active={idx === activeRow}
-            budgetItems={budgetItems}
+            budget={budget}
             onClick={() => setActiveRow(idx)}
             onSuccess={() => {
               setActiveRow(activeRow + 1);
@@ -282,14 +282,12 @@ export function StatementImportButton({
 }
 
 export function ExpensesCard({
-  allAccounts,
-  budgetItems,
+  accounts,
+  budget,
 }: {
-  allAccounts: Accounts;
-  budgetItems: BudgetItemDB;
+  accounts: Array<Account>;
+  budget: BudgetView;
 }) {
-  const accounts = allAccounts.accounts;
-
   const [account, setAccount] = useState<Account>(accounts[0] || null);
   const [expenses, setExpenses] = useState<Array<Expense>>([]);
 
@@ -334,8 +332,8 @@ export function ExpensesCard({
 
       <ExpensesTable
         expenses={expenses}
-        budgetItems={budgetItems}
         onSuccess={fetchExpenses}
+        budget={budget}
       />
     </>
   );

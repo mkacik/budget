@@ -5,7 +5,7 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
-import { BudgetChart } from "./BudgetChart";
+import { BudgetChart } from "./Charts";
 import {
   GlyphButton,
   InlineGlyph,

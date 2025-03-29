@@ -15,6 +15,7 @@ mod expense;
 mod import;
 mod record_mapping;
 mod routes;
+mod spending;
 mod statement_schema;
 
 use crate::crypto::init_crypto;
@@ -41,6 +42,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::account::update_account,
                 routes::api::account::delete_account,
                 routes::api::budget::get_budget,
+                routes::api::budget::get_spending,
                 routes::api::budget_category::add_budget_category,
                 routes::api::budget_category::update_budget_category,
                 routes::api::budget_category::delete_budget_category,

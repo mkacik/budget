@@ -10,4 +10,5 @@ pub mod expense;
 pub mod import;
 pub mod record_mapping;
 pub mod routes;
+pub mod spending;
 pub mod statement_schema;

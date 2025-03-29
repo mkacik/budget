@@ -44,8 +44,10 @@ function deleteBudgetItemRequest(budgetItem: BudgetItem) {
 }
 
 function isCategoryIgnored(categoryID: number, budget: BudgetView) {
-  const value = budget.ignoredCategories.find((category) => category.id === categoryID);
-  return ((value !== undefined) && (value !== null));
+  const value = budget.ignoredCategories.find(
+    (category) => category.id === categoryID,
+  );
+  return value !== undefined && value !== null;
 }
 
 function getCategoryOption(category: BudgetCategoryView) {
@@ -57,9 +59,12 @@ function getCategoryOption(category: BudgetCategoryView) {
 }
 
 function getCategoryOptions(budget: BudgetView) {
-  let spacer = ((budget.categories.length > 0) && (budget.ignoredCategories.length > 0))
-    ? <option value="" disabled>— ignored categories below —</option>
-    : null;
+  let spacer =
+    budget.categories.length > 0 && budget.ignoredCategories.length > 0 ? (
+      <option value="" disabled>
+        — ignored categories below —
+      </option>
+    ) : null;
 
   return (
     <>
@@ -107,7 +112,11 @@ export function BudgetItemForm({
     const newCategoryID = Number(target.value);
     const newCategoryIgnored = isCategoryIgnored(newCategoryID, budget);
     if (categoryIgnored && !newCategoryIgnored) {
-      setFields({ ...fields, category_id: newCategoryID, amount: DEFAULT_AMOUNT });
+      setFields({
+        ...fields,
+        category_id: newCategoryID,
+        amount: DEFAULT_AMOUNT,
+      });
     } else {
       setFields({ ...fields, category_id: newCategoryID });
     }

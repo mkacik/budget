@@ -9,6 +9,7 @@ import { StatementSchemas } from "./types/StatementSchema";
 import { BudgetCard } from "./BudgetCard";
 import { BudgetView } from "./BudgetView";
 import { AccountsCard } from "./AccountsCard";
+import { AnalyzeCard } from "./AnalyzeCard";
 import { ExpensesCard } from "./ExpensesCard";
 import { StatementSchemasCard } from "./StatementSchemasCard";
 
@@ -17,6 +18,7 @@ enum Tab {
   Accounts,
   Expenses,
   Schemas,
+  Analyze,
 }
 
 function render_if(condition: boolean, element: React.ReactNode) {
@@ -82,10 +84,7 @@ function App() {
 
   const budgetCard = <BudgetCard budget={budget} refreshBudget={fetchBudget} />;
   const expensesCard = (
-    <ExpensesCard
-      allAccounts={accounts}
-      budgetItems={budget.getBudgetItemsForCategorization()}
-    />
+    <ExpensesCard accounts={accounts.accounts} budget={budget} />
   );
   const accountsCard = (
     <AccountsCard
@@ -100,6 +99,7 @@ function App() {
       refreshStatementSchemas={fetchSchemas}
     />
   );
+  const analyzeCard = <AnalyzeCard budget={budget} />;
 
   return (
     <>
@@ -116,6 +116,9 @@ function App() {
         <span className="header-item" onClick={() => setTab(Tab.Schemas)}>
           Schemas
         </span>
+        <span className="header-item" onClick={() => setTab(Tab.Analyze)}>
+          Analyze
+        </span>
         <span className="header-filler" />
         <span className="header-item">
           <form action="logout" method="post">
@@ -128,6 +131,7 @@ function App() {
         {render_if(tab == Tab.Expenses, expensesCard)}
         {render_if(tab == Tab.Accounts, accountsCard)}
         {render_if(tab == Tab.Schemas, schemasCard)}
+        {render_if(tab == Tab.Analyze, analyzeCard)}
       </div>
     </>
   );
