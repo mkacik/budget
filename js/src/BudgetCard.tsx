@@ -165,15 +165,8 @@ export function BudgetCard({
     setModalMode(ModalMode.HIDDEN);
   };
 
-  const includedCategories = budget.categories.filter(
-    (category) => !category.ignored,
-  );
-  const excludedCategories = budget.categories.filter(
-    (category) => category.ignored,
-  );
-
   const budgetRows: Array<React.ReactElement> = [];
-  for (const category of includedCategories) {
+  for (const category of budget.categories) {
     budgetRows.push(
       <BudgetCategoryRow
         key={category.name}
@@ -194,7 +187,7 @@ export function BudgetCard({
   }
 
   const ignoredRows: Array<React.ReactElement> = [];
-  for (const category of excludedCategories) {
+  for (const category of budget.ignoredCategories) {
     ignoredRows.push(
       <BudgetCategoryRow
         key={category.name}
@@ -240,14 +233,14 @@ export function BudgetCard({
           key={editedItem?.name}
           budgetItem={editedItem?.item ?? null}
           onSuccess={onEditSuccess}
-          allCategories={budget.categories}
+          budget={budget}
         />
       );
       break;
     }
     case ModalMode.CHART: {
       modalTitle = "Budget";
-      modalContent = <BudgetChart categories={includedCategories} />;
+      modalContent = <BudgetChart categories={budget.categories} />;
       break;
     }
     default:

@@ -91,6 +91,7 @@ export class BudgetCategoryView {
 
 export class BudgetView {
   categories: Array<BudgetCategoryView>;
+  ignoredCategories: Array<BudgetCategoryView>;
   budget: Budget;
 
   constructor(budget: Budget) {
@@ -123,7 +124,8 @@ export class BudgetView {
       category.items.sort(sorter);
     }
 
-    this.categories = categories;
+    this.categories = categories.filter((category) => !category.ignored);
+    this.ignoredCategories = categories.filter((category) => category.ignored);
     this.budget = budget;
   }
 
@@ -136,9 +138,11 @@ export class BudgetView {
 
   getBudgetItemsForCategorization(): BudgetItemDB {
     const items = new Array<BudgetItemView>();
-    for (const category of this.categories) {
-      for (const item of category.items) {
-        items.push(item);
+    for (const list of [this.categories, this.ignoredCategories]) {
+      for (const category of list) {
+        for (const item of category.items) {
+          items.push(item);
+        }
       }
     }
     return new BudgetItemDB(items);
