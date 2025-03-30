@@ -55,6 +55,10 @@ export class BudgetItemView {
   get name() {
     return this.item.name;
   }
+
+  get amountPerMonth() {
+    return this.amountPerYear / 12;
+  }
 }
 
 export class BudgetCategoryView {
@@ -89,11 +93,16 @@ export class BudgetCategoryView {
     }
     return this._amountPerYear;
   }
+
+  get amountPerMonth() {
+    return this.amountPerYear / 12;
+  }
 }
 
 export class BudgetView {
   categories: Array<BudgetCategoryView>;
   ignoredCategories: Array<BudgetCategoryView>;
+  categoriesByID: Map<number, BudgetCategoryView>;
   itemsByID: Map<number, BudgetItemView>;
   budget: Budget;
 
@@ -131,6 +140,7 @@ export class BudgetView {
 
     this.categories = categories.filter((category) => !category.ignored);
     this.ignoredCategories = categories.filter((category) => category.ignored);
+    this.categoriesByID = categoriesMap;
     this.itemsByID = itemsMap;
     this.budget = budget;
   }
@@ -154,13 +164,23 @@ export class BudgetView {
     return items;
   }
 
-  getItem(budgetItemID: number): BudgetItemView {
-    const item = this.itemsByID.get(budgetItemID);
+  getItem(itemID: number): BudgetItemView {
+    const item = this.itemsByID.get(itemID);
     if (item === null || item === undefined) {
       throw new Error(
-        `Something fucky happened in db - can't find budget item id: ${budgetItemID}`,
+        `Something fucky happened - can't find budget item with id: ${itemID}`,
       );
     }
     return item;
+  }
+
+  getCategory(categoryID: number): BudgetCategoryView {
+    const category = this.categoriesByID.get(categoryID);
+    if (category === null || category === undefined) {
+      throw new Error(
+        `Something fucky happened - can't find budget category with id: ${categoryID}`,
+      );
+    }
+    return category;
   }
 }
