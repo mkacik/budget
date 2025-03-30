@@ -6,12 +6,13 @@ import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetView } from "./BudgetView";
 import {
+  ErrorCard,
   Form,
   FormButtons,
-  ItemCard,
   InlineGlyphButton,
-  ErrorCard,
+  ItemCard,
   ModalCard,
+  SectionHeader,
 } from "./ui/Common";
 
 export function AccountSelector({
@@ -317,6 +318,7 @@ export function ExpensesCard({
 
   return (
     <>
+      <SectionHeader>Expenses</SectionHeader>
       <ItemCard>
         Account
         <AccountSelector

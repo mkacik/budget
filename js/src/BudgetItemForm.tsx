@@ -59,7 +59,7 @@ function getCategoryOption(category: BudgetCategoryView) {
 }
 
 function getCategoryOptions(budget: BudgetView) {
-  let spacer =
+  const spacer =
     budget.categories.length > 0 && budget.ignoredCategories.length > 0 ? (
       <option value="" disabled>
         — ignored categories below —

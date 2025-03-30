@@ -52,12 +52,18 @@ function parseData(
 }
 
 function MonthlySpendingTable({
-  data,
+  dataPoints,
   budget,
 }: {
-  data: MonthlySpendingData;
+  dataPoints: Array<SpendingDataPoint> | null;
   budget: BudgetView;
 }) {
+  if (dataPoints === null) {
+    return null;
+  }
+
+  const data = parseData(dataPoints, budget);
+
   const headerRowNames = budget.categories.map((category, i) => (
     <th key={i} className="align-right">
       {category.name}
@@ -150,17 +156,10 @@ export function AnalyzeCard({ budget }: { budget: BudgetView }) {
     }
   }, [spendingData, fetchSpendingData]);
 
-  if (spendingData === null) {
-    return null;
-  }
-
   return (
     <>
       <SectionHeader>Analyze spending</SectionHeader>
-      <MonthlySpendingTable
-        data={parseData(spendingData, budget)}
-        budget={budget}
-      />
+      <MonthlySpendingTable dataPoints={spendingData} budget={budget} />
     </>
   );
 }

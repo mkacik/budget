@@ -5,14 +5,15 @@ import { Account, AccountFields, AccountClass } from "./types/Account";
 import { StatementSchema } from "./types/StatementSchema";
 
 import {
+  ErrorCard,
   Form,
   FormButtons,
-  ItemCard,
-  ErrorCard,
-  Pill,
-  ModalCard,
   GlyphButton,
   InlineGlyphButton,
+  ItemCard,
+  ModalCard,
+  Pill,
+  SectionHeader,
 } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
@@ -215,6 +216,8 @@ export function AccountsCard({
 
   return (
     <>
+      <SectionHeader>Accounts</SectionHeader>
+
       {rows}
 
       <GlyphButton

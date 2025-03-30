@@ -12,13 +12,14 @@ import {
   RecordMappingForm,
 } from "./RecordMappingForm";
 import {
+  ErrorCard,
   Form,
   FormButtons,
-  ItemCard,
-  ErrorCard,
-  ModalCard,
   GlyphButton,
   InlineGlyphButton,
+  ItemCard,
+  ModalCard,
+  SectionHeader,
 } from "./ui/Common";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
@@ -203,6 +204,8 @@ export function StatementSchemasCard({
 
   return (
     <>
+      <SectionHeader>Statement Schemas</SectionHeader>
+
       {rows}
 
       <GlyphButton
