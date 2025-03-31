@@ -84,7 +84,7 @@ export function BudgetItemForm({
   onSuccess: () => void;
   budget: BudgetView;
 }) {
-  const initialFields: BudgetItemFields = {
+  const initialFields = {
     name: budgetItem?.name ?? "",
     category_id: budgetItem?.category_id ?? budget.categories[0].id,
     amount: budgetItem !== null ? budgetItem.amount : DEFAULT_AMOUNT,

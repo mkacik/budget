@@ -6,6 +6,7 @@ use ts_rs::{ExportError, TS};
 use budget::account::{AccountFields, Accounts};
 use budget::budget::{Budget, BudgetCategoryFields, BudgetItemFields};
 use budget::expense::Expenses;
+use budget::schema_test::{TestSchemaRequest, TestSchemaResponse};
 use budget::spending::SpendingData;
 use budget::statement_schema::{StatementSchemaFields, StatementSchemas};
 
@@ -24,6 +25,9 @@ fn export() -> Result<(), ExportError> {
 
     StatementSchemaFields::export_all()?;
     StatementSchemas::export_all()?;
+
+    TestSchemaRequest::export_all()?;
+    TestSchemaResponse::export_all()?;
 
     Ok(())
 }

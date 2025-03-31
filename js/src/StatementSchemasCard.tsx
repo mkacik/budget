@@ -11,6 +11,7 @@ import {
   getDefaultRecordMapping,
   RecordMappingForm,
 } from "./RecordMappingForm";
+import { SchemaTestForm } from "./SchemaTestForm";
 import {
   ErrorCard,
   Form,
@@ -20,8 +21,9 @@ import {
   ItemCard,
   ModalCard,
   SectionHeader,
+  SubmitButton,
 } from "./ui/Common";
-import { FormHelper, JSON_HEADERS } from "./Common";
+import { JSON_HEADERS } from "./Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields) {
   return fetch("/api/schemas", {
@@ -57,10 +59,13 @@ function StatementSchemaForm({
   schema: StatementSchema | null;
   onSuccess: () => void;
 }) {
+  const initialFields = {
+    name: schema?.name ?? "",
+    record_mapping: schema?.record_mapping ?? getDefaultRecordMapping(),
+  };
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [recordMapping, setRecordMapping] = useState<RecordMapping>(
-    schema?.record_mapping ?? getDefaultRecordMapping(),
-  );
+  const [fields, setFields] = useState<StatementSchemaFields>(initialFields);
 
   const clearErrorMessage = () => {
     if (errorMessage !== null) {
@@ -68,24 +73,33 @@ function StatementSchemaForm({
     }
   };
 
-  const updateRecordMapping = (newRecordMapping: RecordMapping) => {
-    setRecordMapping(newRecordMapping);
+  const setName = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    const newName = target.value;
+    setFields({ ...fields, name: newName });
+  };
+
+  const setRecordMapping = (newRecordMapping: RecordMapping) => {
+    setFields({ ...fields, record_mapping: newRecordMapping });
   };
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formHelper = new FormHelper(form);
 
     try {
-      if (recordMapping === null) {
+      const updatedName = fields.name.trim();
+      if (updatedName === "") {
+        throw Error("Budget Item Name can't be empty!");
+      }
+      if (fields.record_mapping === null) {
         throw new Error("Mapping must be configured for all columns");
       }
 
       const schemaFields: StatementSchemaFields = {
-        name: formHelper.getString("name"),
-        record_mapping: recordMapping,
+        name: updatedName,
+        record_mapping: fields.record_mapping,
       } as StatementSchemaFields;
+
       // if nothing threw by this point, mark any validation errors as cleared
       clearErrorMessage();
 
@@ -118,10 +132,6 @@ function StatementSchemaForm({
     }
   };
 
-  const schemaName = schema?.name;
-  const maybeErrorCard =
-    errorMessage !== null ? <ErrorCard message={errorMessage} /> : null;
-
   let maybeDeleteButton: React.ReactNode = null;
   if (schema !== null) {
     const deleteStatementSchema = () => {
@@ -150,24 +160,24 @@ function StatementSchemaForm({
 
   return (
     <>
-      {maybeErrorCard}
+      <ErrorCard message={errorMessage} />
+
       <Form onSubmit={onSubmit}>
-        <label htmlFor="name">StatementSchema Name</label>
-        <input type="text" name="name" defaultValue={schemaName} />
+        <label>StatementSchema Name</label>
+        <input type="text" value={fields.name} onChange={setName} />
 
         <RecordMappingForm
-          recordMapping={recordMapping}
-          updateRecordMapping={updateRecordMapping}
+          recordMapping={fields.record_mapping}
+          updateRecordMapping={setRecordMapping}
         />
+
         <FormButtons>
           {maybeDeleteButton}
-          <input
-            className="button"
-            type="submit"
-            value={schema === null ? "Create" : "Update"}
-          />
+          <SubmitButton text={schema === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
+
+      <SchemaTestForm fields={fields} />
     </>
   );
 }

@@ -5,10 +5,19 @@
   --color-hover: #ffd34f;
   --color-card-background: #f9f9fb;
   --color-card-border: #cdcdcd;
-  --color-card-error-background: #fbe7e7;
-  --color-card-error-border: #d27676;
-  --color-text-error: #af2323;
   --color-table-border: #d0d0d0;
+
+  --color-text-error: #af2323;
+  --color-card-error-border: #d27676;
+  --color-card-error-background: #fbe7e7;
+
+  --color-text-info: #004080;
+  --color-card-info-border: #4da6ff;
+  --color-card-info-background: #e6f3ff;
+
+  --color-text-success: #194d19;
+  --color-card-success-border: #79d279;
+  --color-card-success-background: #ecf9ec;
 
   --vertical-gap: 0.5rem;
   --border-radius: 5px;
@@ -31,6 +40,17 @@ input, select, button {
 
 select option:disabled {
   font-style: italic;
+}
+
+textarea {
+  width: 100%;
+  height: 3rem;
+}
+
+pre {
+  margin: 0;
+  font-size: small;
+  overflow: auto;
 }
 
 .header {
@@ -81,14 +101,28 @@ select option:disabled {
   font-size: 1.1rem;
 }
 
-.error {
+.status {
   display: flex;
   align-items: center;
   gap: var(--vertical-gap);
+}
 
+.error {
   color: var(--color-text-error);
   border-color: var(--color-card-error-border);
   background-color: var(--color-card-error-background);
+}
+
+.info {
+  color: var(--color-text-info);
+  border-color: var(--color-card-info-border);
+  background-color: var(--color-card-info-background);
+}
+
+.success {
+  color: var(--color-text-success);
+  border-color: var(--color-card-success-border);
+  background-color: var(--color-card-success-background);
 }
 
 .item {
@@ -114,8 +148,8 @@ select option:disabled {
 }
 
 .modal {
-  width: 60%;
-  height: 75%;
+  width: 80%;
+  height: 90%;
 
   display: flex;
   flex-direction: column;
@@ -331,6 +365,11 @@ select option:disabled {
     grid-column: 1 / span 2;
 
     font-weight: bold;
+  }
+
+  .edit-form-field-wide {
+    grid-column: 1 / span 2;
+
   }
 
   .edit-form-buttons {

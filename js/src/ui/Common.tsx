@@ -35,13 +35,34 @@ export function ModalCard({
 }
 
 export function ErrorCard({ message }: { message: string | null }) {
+  return <StatusCard status="error" message={message} />;
+}
+
+type Status = "error" | "info" | "success";
+
+export function StatusCard({
+  status,
+  message,
+  children,
+}: {
+  status: Status;
+  message: string | null;
+  children?: React.ReactNode;
+}) {
   if (message === null) {
     return null;
   }
+
+  const classNames = ["card", status];
+  const glyph = status === "success" ? "check_circle" : status;
+
   return (
-    <div className="card error">
-      <InlineGlyph glyph="error" />
-      {message}
+    <div className={classNames.join(" ")}>
+      <span className="status">
+        <InlineGlyph glyph={glyph} />
+        {message}
+      </span>
+      {children}
     </div>
   );
 }
@@ -52,10 +73,12 @@ export function ItemCard({ children }: { children: React.ReactNode }) {
 
 export type Glyph =
   | "add"
+  | "check_circle"
   | "chevron_right"
   | "delete"
   | "edit"
   | "error"
+  | "info"
   | "pie_chart";
 
 export function GlyphButton({
@@ -127,6 +150,10 @@ export function FormSection({
       {children}
     </>
   );
+}
+
+export function FormFieldWide({ children }: { children: React.ReactNode }) {
+  return <span className="edit-form-field-wide">{children}</span>;
 }
 
 export function Pill({ children }: { children: string }) {

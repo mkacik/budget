@@ -4,6 +4,7 @@ use rocket::{delete, get, post, State};
 use crate::account::Account;
 use crate::database::{Database, ID};
 use crate::routes::common::{serialize_result, ApiResponse};
+use crate::schema_test::TestSchemaRequest;
 use crate::statement_schema::{StatementSchema, StatementSchemaFields};
 
 #[get("/schemas")]
@@ -45,7 +46,7 @@ pub async fn update_schema(
     }
 }
 
-#[delete("/schemas/<schema_id>")]
+#[delete("/schemas/<schema_id>", rank = 2)]
 pub async fn delete_schema(db: &State<Database>, schema_id: ID) -> ApiResponse {
     let accounts = match Account::fetch_by_schema_id(db, schema_id).await {
         Ok(value) => value,
@@ -59,6 +60,17 @@ pub async fn delete_schema(db: &State<Database>, schema_id: ID) -> ApiResponse {
 
     match StatementSchema::delete_by_id(db, schema_id).await {
         Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
+    }
+}
+
+#[post("/schemas/test", format = "json", data = "<request>")]
+pub async fn test_schema(request: Json<TestSchemaRequest>) -> ApiResponse {
+    let test_schema_request = request.into_inner();
+    let result = test_schema_request.process();
+
+    match serialize_result(Ok(result)) {
+        Ok(value) => ApiResponse::SuccessWithData { data: value },
         Err(_) => ApiResponse::ServerError,
     }
 }

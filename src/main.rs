@@ -15,6 +15,7 @@ mod expense;
 mod import;
 mod record_mapping;
 mod routes;
+mod schema_test;
 mod spending;
 mod statement_schema;
 
@@ -56,6 +57,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::statement_schema::add_schema,
                 routes::api::statement_schema::update_schema,
                 routes::api::statement_schema::delete_schema,
+                routes::api::statement_schema::test_schema,
             ],
         )
         .mount("/static", FileServer::from(relative!("www/static")))

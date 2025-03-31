@@ -29,7 +29,12 @@ pub async fn read_expenses(
             Err(_) => return Err(ImportError::new(format!("Malformed row in statement."))),
         };
         match mapping.record_to_expense(record, account_id) {
-            Ok(value) => expenses.push(value),
+            Ok(value) => {
+                // TODO: handle this in some different way than hardcoding shit
+                if *value.transaction_date >= *"2025-01-01" {
+                    expenses.push(value);
+                }
+            }
             Err(ImportResult::Skip) => {}
             Err(ImportResult::Error { message }) => {
                 let error = ImportError::new(format!("{} in row {}", message, row_index));

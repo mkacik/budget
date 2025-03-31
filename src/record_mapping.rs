@@ -90,11 +90,6 @@ impl DateField {
                     }
                 };
 
-                // TODO: handle this in some different way than hardcoding shit
-                if *value < *"2024-12-30" {
-                    return Err(ImportResult::Skip);
-                }
-
                 Ok(value)
             }
         }

@@ -2,4 +2,6 @@
 
 export type Expense = { id: number, account_id: number, transaction_date: string, transaction_time: string | null, description: string, amount: number, budget_item_id: number | null, };
 
+export type ExpenseFields = { account_id: number, transaction_date: string, transaction_time: string | null, description: string, amount: number, };
+
 export type Expenses = { expenses: Array<Expense>, };
