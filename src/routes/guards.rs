@@ -4,8 +4,8 @@ use rocket::State;
 
 use crate::credentials::Credentials;
 use crate::database::Database;
+use crate::write_log::WriteLogEntry;
 
-#[allow(dead_code)]
 pub struct User {
     pub username: String,
 }
@@ -37,6 +37,37 @@ impl<'r> FromRequest<'r> for &'r User {
         match user {
             Ok(value) => Outcome::Success(value),
             _ => Outcome::Forward(Status::Unauthorized),
+        }
+    }
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for &'r WriteLogEntry {
+    type Error = std::convert::Infallible;
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let entry = request
+            .local_cache_async(async {
+                let user = match request.guard::<&User>().await {
+                    Outcome::Success(value) => value,
+                    _ => return Err(()),
+                };
+
+                let db = match request.guard::<&State<Database>>().await {
+                    Outcome::Success(value) => value,
+                    _ => return Err(()),
+                };
+
+                match WriteLogEntry::create(db, &user.username, &request).await {
+                    Ok(value) => Ok(value),
+                    _ => Err(()),
+                }
+            })
+            .await;
+
+        match entry {
+            Ok(value) => Outcome::Success(value),
+            _ => Outcome::Forward(Status::NotFound),
         }
     }
 }

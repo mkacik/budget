@@ -39,3 +39,14 @@ CREATE TABLE credentials (
   username TEXT PRIMARY KEY NOT NULL UNIQUE,
   pwhash TEXT NOT NULL
 );
+
+CREATE TABLE write_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uri TEXT NOT NULL,
+  method TEXT NOT NULL,
+  username TEXT NOT NULL,
+  content TEXT,
+  status TEXT,
+  start_ts INTEGER,
+  end_ts INTEGER
+);

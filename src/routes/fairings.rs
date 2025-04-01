@@ -34,12 +34,6 @@ impl GateKeeper {
         false
     }
 }
-// allow root, static and login routes without any checks or logging
-
-// then, require user, if not found, redirect to 404
-// if reguest is post request, log to db, and store ID in request-local state
-
-// before returning response, if request had ID, log request status to db
 
 #[rocket::async_trait]
 impl Fairing for GateKeeper {
@@ -65,11 +59,6 @@ impl Fairing for GateKeeper {
                 return;
             }
         };
-
-        // 3. For all write (delete/post/put) requests, create db entry in action log, and
-        // attach id to request, so status can be logged to db in `on_response`.
-
-        // TODO: implement write logging
     }
 }
 

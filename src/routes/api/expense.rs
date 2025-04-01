@@ -12,6 +12,7 @@ use crate::expense::Expense;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_schema::StatementSchema;
+use crate::write_log::WriteLogEntry;
 
 #[get("/accounts/<account_id>/expenses")]
 pub async fn get_expenses(db: &State<Database>, account_id: ID) -> ApiResponse {
@@ -99,6 +100,7 @@ pub struct UpdateExpenseRequest {
 #[post("/expenses/<expense_id>", format = "json", data = "<request>")]
 pub async fn update_expense(
     db: &State<Database>,
+    _log_entry: &WriteLogEntry,
     expense_id: ID,
     request: Json<UpdateExpenseRequest>,
 ) -> ApiResponse {

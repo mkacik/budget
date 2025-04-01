@@ -18,6 +18,7 @@ mod routes;
 mod schema_test;
 mod spending;
 mod statement_schema;
+mod write_log;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;

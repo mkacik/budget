@@ -13,3 +13,4 @@ pub mod routes;
 pub mod schema_test;
 pub mod spending;
 pub mod statement_schema;
+pub mod write_log;
