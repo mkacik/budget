@@ -2,17 +2,17 @@ use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
 use rocket::serde::json::Json;
 use rocket::{get, post, State};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
 
 use crate::account::Account;
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
 use crate::expense::Expense;
+use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_schema::StatementSchema;
-use crate::write_log::WriteLogEntry;
 
 #[get("/accounts/<account_id>/expenses")]
 pub async fn get_expenses(db: &State<Database>, account_id: ID) -> ApiResponse {
@@ -32,9 +32,12 @@ pub struct UploadStatementForm<'f> {
 #[post("/accounts/<account_id>/expenses", data = "<form>")]
 pub async fn import_expenses(
     db: &State<Database>,
+    log_entry: &WriteLogEntry,
     account_id: ID,
     mut form: Form<UploadStatementForm<'_>>,
 ) -> ApiResponse {
+    log_entry.set_content(String::from("<FILE>"));
+
     let account = match Account::fetch_by_id(db, account_id).await {
         Ok(value) => value,
         Err(_) => {
@@ -92,18 +95,21 @@ pub async fn import_expenses(
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateExpenseRequest {
     budget_item_id: Option<ID>,
 }
 
-#[post("/expenses/<expense_id>", format = "json", data = "<request>")]
+#[post("/expenses/<expense_id>", format = "json", data = "<json>")]
 pub async fn update_expense(
     db: &State<Database>,
-    _log_entry: &WriteLogEntry,
+    log_entry: &WriteLogEntry,
     expense_id: ID,
-    request: Json<UpdateExpenseRequest>,
+    json: Json<UpdateExpenseRequest>,
 ) -> ApiResponse {
+    let request = json.into_inner();
+    log_entry.set_content(serde_json::to_string(&request).unwrap());
+
     let budget_item_id = request.budget_item_id;
     // If new value of budget item is not None, validate that the id exists in db
     if let Some(id) = budget_item_id {

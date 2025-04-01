@@ -3,7 +3,9 @@ use rocket::http::uri::Origin;
 use rocket::request::Outcome;
 use rocket::{Data, Request, Response, State};
 
-use crate::routes::guards::User;
+use crate::database::Database;
+use crate::guards::user::User;
+use crate::guards::write_log::WriteLogEntry;
 
 pub enum RouteMatcher {
     Exact(&'static str),
@@ -40,7 +42,7 @@ impl Fairing for GateKeeper {
     fn info(&self) -> Info {
         Info {
             name: "Authorize and log writes",
-            kind: Kind::Request,
+            kind: Kind::Request | Kind::Response,
         }
     }
 
@@ -59,6 +61,23 @@ impl Fairing for GateKeeper {
                 return;
             }
         };
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        let log_entry_result: &Result<WriteLogEntry, ()> = request.local_cache(|| Err(()));
+        let log_entry = match log_entry_result {
+            Ok(value) => value,
+            Err(_) => return,
+        };
+
+        let db = request.guard::<&State<Database>>().await.unwrap();
+        let status = response.status().code.to_string();
+        if log_entry.log_result(&db, &status).await.is_err() {
+            println!(
+                "CRITICAL: DB update failed for [{:?}], status {}",
+                log_entry, status
+            );
+        }
     }
 }
 

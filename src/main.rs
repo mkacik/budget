@@ -12,13 +12,13 @@ mod database_enum;
 mod datetime;
 mod error;
 mod expense;
+mod guards;
 mod import;
 mod record_mapping;
 mod routes;
 mod schema_test;
 mod spending;
 mod statement_schema;
-mod write_log;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
