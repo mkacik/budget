@@ -21,16 +21,24 @@ mod statement_schema;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
+use crate::routes::fairings::{GateKeeper, RouteMatcher};
 
 async fn run() -> Result<Rocket<Ignite>, RocketError> {
     let db = Database::init().await;
+    let gk = GateKeeper {
+        allow_logged_out_access: vec![
+            RouteMatcher::Exact("/"),
+            RouteMatcher::Exact("/login"),
+            RouteMatcher::Prefix("/static"),
+        ],
+    };
 
     rocket::build()
         .mount(
             "/",
             routes![
-                routes::base::index_logged_in,
-                routes::base::index_logged_out,
+                routes::index::index_logged_in,
+                routes::index::index_logged_out,
                 routes::login::login,
                 routes::login::logout,
             ],
@@ -62,6 +70,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
         )
         .mount("/static", FileServer::from(relative!("www/static")))
         .manage(db)
+        .attach(gk)
         .launch()
         .await
 }

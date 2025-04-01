@@ -4,7 +4,7 @@ use rocket::get;
 use crate::routes::guards::User;
 
 #[get("/")]
-pub async fn index_logged_in(user: User) -> Result<NamedFile, std::io::Error> {
+pub async fn index_logged_in(_user: &User) -> Result<NamedFile, std::io::Error> {
     NamedFile::open("www/index.html").await
 }
 

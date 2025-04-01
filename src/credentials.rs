@@ -8,6 +8,7 @@ pub struct Credentials {
     pub pwhash: String,
 }
 
+#[allow(dead_code)]
 impl Credentials {
     pub async fn create(db: &Database, username: &str, pwhash: &str) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
