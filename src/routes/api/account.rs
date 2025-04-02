@@ -21,7 +21,7 @@ pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
 pub async fn add_account(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    request: Json<AccountFields>
+    request: Json<AccountFields>,
 ) -> ApiResponse {
     let fields = request.into_inner();
     log_entry.set_content(&fields);
@@ -58,7 +58,7 @@ pub async fn update_account(
 pub async fn delete_account(
     db: &State<Database>,
     _log_entry: &WriteLogEntry,
-    account_id: ID
+    account_id: ID,
 ) -> ApiResponse {
     let expenses = match Expense::fetch_by_account_id(db, account_id).await {
         Ok(value) => value,

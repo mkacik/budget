@@ -39,9 +39,9 @@ pub async fn import_expenses(
     log_entry.set_content(format!("File of length {}", form.file.len()));
 
     if form.file.len() == 0 {
-      return ApiResponse::BadRequest {
-          message: String::from("Can't process empty file."),
-      };
+        return ApiResponse::BadRequest {
+            message: String::from("Can't process empty file."),
+        };
     }
 
     let account = match Account::fetch_by_id(db, account_id).await {
