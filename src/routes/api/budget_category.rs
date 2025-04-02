@@ -3,14 +3,17 @@ use rocket::{delete, post, State};
 
 use crate::budget::{BudgetCategory, BudgetCategoryFields, BudgetItem};
 use crate::database::{Database, ID};
+use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::ApiResponse;
 
 #[post("/budget_categories", format = "json", data = "<request>")]
 pub async fn add_budget_category(
     db: &State<Database>,
+    log_entry: &WriteLogEntry,
     request: Json<BudgetCategoryFields>,
 ) -> ApiResponse {
     let fields = request.into_inner();
+    log_entry.set_content(&fields);
 
     match BudgetCategory::create(&db, fields).await {
         Ok(_) => ApiResponse::Success,
@@ -25,10 +28,13 @@ pub async fn add_budget_category(
 )]
 pub async fn update_budget_category(
     db: &State<Database>,
+    log_entry: &WriteLogEntry,
     budget_category_id: ID,
     request: Json<BudgetCategory>,
 ) -> ApiResponse {
     let budget_category = request.into_inner();
+    log_entry.set_content(&budget_category);
+
     if budget_category_id != budget_category.id {
         return ApiResponse::BadRequest {
             message: String::from("IDs for update don't match"),
@@ -42,7 +48,11 @@ pub async fn update_budget_category(
 }
 
 #[delete("/budget_categories/<budget_category_id>")]
-pub async fn delete_budget_category(db: &State<Database>, budget_category_id: ID) -> ApiResponse {
+pub async fn delete_budget_category(
+    db: &State<Database>,
+    _log_entry: &WriteLogEntry,
+    budget_category_id: ID,
+) -> ApiResponse {
     let delete_blocked = match BudgetItem::any_has_budget_category_id(db, budget_category_id).await
     {
         Ok(value) => value,

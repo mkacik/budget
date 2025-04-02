@@ -197,7 +197,9 @@ export function BudgetItemForm({
       });
     };
 
-    maybeDeleteButton = <GlyphButton glyph="edit" onClick={deleteBudgetItem} />;
+    maybeDeleteButton = (
+      <GlyphButton glyph="delete" onClick={deleteBudgetItem} />
+    );
   }
 
   const maybeAmountSelector: React.ReactNode =
