@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "../www/static",
+    "outDir": "../www",
     "noImplicitAny": false,
     "strict": true,
     "module": "es2022",

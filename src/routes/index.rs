@@ -12,3 +12,8 @@ pub async fn index_logged_in(_user: &User) -> Result<NamedFile, std::io::Error> 
 pub async fn index_logged_out() -> Result<NamedFile, std::io::Error> {
     NamedFile::open("www/login.html").await
 }
+
+#[get("/bundle.js")]
+pub async fn js() -> Result<NamedFile, std::io::Error> {
+    NamedFile::open("www/bundle.js").await
+}

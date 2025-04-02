@@ -40,6 +40,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
             routes![
                 routes::index::index_logged_in,
                 routes::index::index_logged_out,
+                routes::index::js,
                 routes::login::login,
                 routes::login::logout,
             ],
