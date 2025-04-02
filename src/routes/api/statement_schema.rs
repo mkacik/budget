@@ -3,6 +3,7 @@ use rocket::{delete, get, post, State};
 
 use crate::account::Account;
 use crate::database::{Database, ID};
+use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::schema_test::TestSchemaRequest;
 use crate::statement_schema::{StatementSchema, StatementSchemaFields};
@@ -18,8 +19,13 @@ pub async fn get_schemas(db: &State<Database>) -> ApiResponse {
 }
 
 #[post("/schemas", format = "json", data = "<request>")]
-pub async fn add_schema(db: &State<Database>, request: Json<StatementSchemaFields>) -> ApiResponse {
+pub async fn add_schema(
+    db: &State<Database>,
+    log_entry: &WriteLogEntry,
+    request: Json<StatementSchemaFields>,
+) -> ApiResponse {
     let fields = request.into_inner();
+    log_entry.set_content(&fields);
 
     match StatementSchema::create(&db, fields).await {
         Ok(_) => ApiResponse::Success,
@@ -30,10 +36,13 @@ pub async fn add_schema(db: &State<Database>, request: Json<StatementSchemaField
 #[post("/schemas/<schema_id>", format = "json", data = "<request>")]
 pub async fn update_schema(
     db: &State<Database>,
+    log_entry: &WriteLogEntry,
     schema_id: ID,
     request: Json<StatementSchema>,
 ) -> ApiResponse {
     let schema = request.into_inner();
+    log_entry.set_content(&schema);
+
     if schema_id != schema.id {
         return ApiResponse::BadRequest {
             message: String::from("IDs for update don't match"),
@@ -47,7 +56,11 @@ pub async fn update_schema(
 }
 
 #[delete("/schemas/<schema_id>", rank = 2)]
-pub async fn delete_schema(db: &State<Database>, schema_id: ID) -> ApiResponse {
+pub async fn delete_schema(
+    db: &State<Database>,
+    _log_entry: &WriteLogEntry,
+    schema_id: ID,
+) -> ApiResponse {
     let accounts = match Account::fetch_by_schema_id(db, schema_id).await {
         Ok(value) => value,
         Err(_) => return ApiResponse::ServerError,
