@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Account } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
-import { BudgetView } from "./BudgetView";
+import { BudgetView, BudgetItemView } from "./BudgetView";
 import {
   ErrorCard,
   Form,
@@ -46,6 +46,36 @@ export function AccountSelector({
   );
 }
 
+function getItemOptions(budget: BudgetView) {
+  const items = budget.categories.map((category) => category.items).flat();
+  const ignoredItems = budget.ignoredCategories
+    .map((category) => category.items)
+    .flat();
+
+  const spacer =
+    items.length > 0 && ignoredItems.length > 0 ? (
+      <option value="" disabled>
+        — ignored items below —
+      </option>
+    ) : null;
+
+  const getOption = (item: BudgetItemView) => {
+    return (
+      <option key={item.id} value={item.id}>
+        {item.displayName}
+      </option>
+    );
+  };
+
+  return (
+    <>
+      {items.map((item) => getOption(item))}
+      {spacer}
+      {ignoredItems.map((item) => getOption(item))}
+    </>
+  );
+}
+
 function BudgetItemSelector({
   selectedBudgetItemID,
   updateBudgetItemID,
@@ -64,17 +94,11 @@ function BudgetItemSelector({
     updateBudgetItemID(newBudgetItemID);
   };
 
-  const options = budget.items.map((item, idx) => (
-    <option key={idx} value={item.id}>
-      {item.displayName}
-    </option>
-  ));
-
   const selectedID = selectedBudgetItemID ?? UNSET;
   return (
     <select value={selectedID} onChange={onSelectChange}>
       <option value={UNSET}>-</option>
-      {options}
+      {getItemOptions(budget)}
     </select>
   );
 }
