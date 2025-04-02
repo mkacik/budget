@@ -103,7 +103,11 @@ export class BudgetView {
   categories: Array<BudgetCategoryView>;
   ignoredCategories: Array<BudgetCategoryView>;
   categoriesByID: Map<number, BudgetCategoryView>;
+
+  items: Array<BudgetItemView>;
+  ignoredItems: Array<BudgetItemView>;
   itemsByID: Map<number, BudgetItemView>;
+
   budget: Budget;
 
   constructor(budget: Budget) {
@@ -141,7 +145,13 @@ export class BudgetView {
     this.categories = categories.filter((category) => !category.ignored);
     this.ignoredCategories = categories.filter((category) => category.ignored);
     this.categoriesByID = categoriesMap;
+
+    this.items = this.categories.map((category) => category.items).flat();
+    this.ignoredItems = this.ignoredCategories
+      .map((category) => category.items)
+      .flat();
     this.itemsByID = itemsMap;
+
     this.budget = budget;
   }
 
@@ -150,18 +160,6 @@ export class BudgetView {
       (acc, current) => acc + current.amountPerYear,
       0,
     );
-  }
-
-  get items() {
-    const items = new Array<BudgetItemView>();
-    for (const list of [this.categories, this.ignoredCategories]) {
-      for (const category of list) {
-        for (const item of category.items) {
-          items.push(item);
-        }
-      }
-    }
-    return items;
   }
 
   getItem(itemID: number): BudgetItemView {

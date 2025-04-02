@@ -5,37 +5,69 @@ import { Expense } from "./types/Expense";
 
 import { BudgetView, BudgetItemView } from "./BudgetView";
 
-function BudgetItemOptions({ budget }: { budget: BudgetView }) {
-  const items = budget.categories.map((category) => category.items).flat();
-  const ignoredItems = budget.ignoredCategories
-    .map((category) => category.items)
-    .flat();
+const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 
+type KeyMap = Map<string, BudgetItemView | null>;
+
+function getKeyMap(budget: BudgetView): KeyMap {
+  const keyMap: KeyMap = new Map([["Backspace", null]]);
+
+  const items = [budget.items, budget.ignoredItems].flat();
+  for (const [idx, item] of items.entries()) {
+    if (idx < CHARS.length) {
+      keyMap.set(CHARS[idx], item);
+    } else {
+      break;
+    }
+  }
+
+  return keyMap;
+}
+
+function KeyMapLegend({ keyMap }: { keyMap: KeyMap }) {
+  const items: Array<React.ReactNode> = [];
+  for (const [key, item] of keyMap.entries()) {
+    items.push(<b>{key}</b>);
+    items.push(item?.displayName ?? <i>delete categorization</i>);
+  }
+
+  return (
+    <div className="legend-container">
+      <div className="card legend">
+        {items.map((item, idx) => (
+          <span key={idx}>{item}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BudgetItemOption({ item }: { item: BudgetItemView }) {
+  return <option value={item.id}>{item.displayName}</option>;
+}
+
+function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
   const spacer =
-    items.length > 0 && ignoredItems.length > 0 ? (
+    budget.ignoredItems.length > 0 ? (
       <option value="" disabled>
         — ignored items below —
       </option>
     ) : null;
 
-  const getOption = (item: BudgetItemView) => {
-    return (
-      <option key={item.id} value={item.id}>
-        {item.displayName}
-      </option>
-    );
-  };
-
   return (
     <>
-      {items.map((item) => getOption(item))}
+      {budget.items.map((item) => (
+        <BudgetItemOption key={item.id} item={item} />
+      ))}
       {spacer}
-      {ignoredItems.map((item) => getOption(item))}
+      {budget.ignoredItems.map((item) => (
+        <BudgetItemOption key={item.id} item={item} />
+      ))}
     </>
   );
 }
 
-function BudgetItemSelector({
+function BudgetItemSelect({
   selectedBudgetItemID,
   updateBudgetItemID,
   budget,
@@ -44,21 +76,39 @@ function BudgetItemSelector({
   updateBudgetItemID: (newBudgetItemID: number | null) => void;
   budget: BudgetView;
 }) {
-  const UNSET = 0;
+  const UNSET_ID = 0;
+  const keyMap = getKeyMap(budget);
+
+  useEffect(() => {
+    const handleInput = (e) => {
+      if (keyMap.has(e.key)) {
+        const itemID = keyMap.get(e.key)?.id ?? null;
+        updateBudgetItemID(itemID);
+      }
+    };
+    document.addEventListener("keydown", handleInput);
+
+    return () => document.removeEventListener("keydown", handleInput);
+  });
 
   const onSelectChange = (e: React.SyntheticEvent): void => {
     const elem = e.target as HTMLSelectElement;
     const id = Number(elem.value);
-    const newBudgetItemID = id === UNSET ? null : id;
+    const newBudgetItemID = id === UNSET_ID ? null : id;
     updateBudgetItemID(newBudgetItemID);
   };
 
-  const selectedID = selectedBudgetItemID ?? UNSET;
   return (
-    <select value={selectedID} onChange={onSelectChange}>
-      <option value={UNSET}>-</option>
-      <BudgetItemOptions budget={budget} />
-    </select>
+    <>
+      <KeyMapLegend keyMap={keyMap} />
+      <select
+        value={selectedBudgetItemID ?? UNSET_ID}
+        onChange={onSelectChange}
+      >
+        <option value={UNSET_ID}>-</option>
+        <BudgetItemSelectOptions budget={budget} />
+      </select>
+    </>
   );
 }
 
@@ -80,7 +130,6 @@ function ExpenseRow({
     budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
 
   const updateBudgetItemID = (newBudgetItemID: number | null) => {
-    console.log(newBudgetItemID);
     fetch(`/api/expenses/${expense.id}`, {
       method: "POST",
       headers: {
@@ -98,7 +147,7 @@ function ExpenseRow({
 
   const budgetItemCell = active ? (
     <td className="category">
-      <BudgetItemSelector
+      <BudgetItemSelect
         selectedBudgetItemID={budgetItemID}
         updateBudgetItemID={updateBudgetItemID}
         budget={budget}
@@ -157,21 +206,31 @@ export function ExpensesTable({
   };
 
   useEffect(() => {
-    const handleKeypress = (e) => {
+    const handleNavigationKeys = (e) => {
       switch (e.key) {
+        case "ArrowLeft":
         case "ArrowUp": {
           prevRow();
           return;
         }
+        case "ArrowRight":
         case "ArrowDown": {
           nextRow();
           return;
         }
+        case "PageUp": {
+          setActiveRow(0);
+          return;
+        }
+        case "PageDown": {
+          setActiveRow(expenses.length - 1);
+          return;
+        }
       }
     };
-    document.addEventListener("keydown", handleKeypress);
+    document.addEventListener("keydown", handleNavigationKeys);
 
-    return () => document.removeEventListener("keydown", handleKeypress);
+    return () => document.removeEventListener("keydown", handleNavigationKeys);
   }, [expenses, activeRow, setActiveRow]);
 
   return (
@@ -191,6 +250,7 @@ export function ExpensesTable({
           <th>Details</th>
         </tr>
       </thead>
+
       <tbody>
         {expenses.map((expense, idx) => (
           <ExpenseRow

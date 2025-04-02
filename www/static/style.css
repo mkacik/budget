@@ -134,14 +134,14 @@ pre {
 }
 
 .modal-container {
-  z-index: 1;
-  position: absolute;
+  z-index: 2;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-
+ 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -178,6 +178,21 @@ pre {
     flex-direction: column;
     gap: var(--vertical-gap);
   }
+}
+
+.legend-container {
+  z-index: 1;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.2rem;
+  column-gap: var(--vertical-gap);
+  box-shadow: 0 0 5px var(--color-card-border);
 }
 
 .title {
