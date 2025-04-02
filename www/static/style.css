@@ -235,6 +235,10 @@ pre {
   .align-right {
     text-align: right;
   }
+
+  select {
+    width: 100%;
+  }
 }
 
 .budget-table {

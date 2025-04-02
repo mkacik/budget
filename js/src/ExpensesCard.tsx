@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Account } from "./types/Account";
 import { Expense, Expenses } from "./types/Expense";
 
-import { BudgetView, BudgetItemView } from "./BudgetView";
+import { BudgetView } from "./BudgetView";
+import { ExpensesTable } from "./ExpensesTable";
 import {
   ErrorCard,
   Form,
@@ -42,63 +43,6 @@ export function AccountSelector({
           {account.name}
         </option>
       ))}
-    </select>
-  );
-}
-
-function getItemOptions(budget: BudgetView) {
-  const items = budget.categories.map((category) => category.items).flat();
-  const ignoredItems = budget.ignoredCategories
-    .map((category) => category.items)
-    .flat();
-
-  const spacer =
-    items.length > 0 && ignoredItems.length > 0 ? (
-      <option value="" disabled>
-        — ignored items below —
-      </option>
-    ) : null;
-
-  const getOption = (item: BudgetItemView) => {
-    return (
-      <option key={item.id} value={item.id}>
-        {item.displayName}
-      </option>
-    );
-  };
-
-  return (
-    <>
-      {items.map((item) => getOption(item))}
-      {spacer}
-      {ignoredItems.map((item) => getOption(item))}
-    </>
-  );
-}
-
-function BudgetItemSelector({
-  selectedBudgetItemID,
-  updateBudgetItemID,
-  budget,
-}: {
-  selectedBudgetItemID: number | null;
-  updateBudgetItemID: (newBudgetItemID: number | null) => void;
-  budget: BudgetView;
-}) {
-  const UNSET = 0;
-
-  const onSelectChange = (e: React.SyntheticEvent): void => {
-    const elem = e.target as HTMLSelectElement;
-    const id = Number(elem.value);
-    const newBudgetItemID = id === UNSET ? null : id;
-    updateBudgetItemID(newBudgetItemID);
-  };
-
-  const selectedID = selectedBudgetItemID ?? UNSET;
-  return (
-    <select value={selectedID} onChange={onSelectChange}>
-      <option value={UNSET}>-</option>
-      {getItemOptions(budget)}
     </select>
   );
 }
@@ -171,113 +115,6 @@ function StatementImportForm({
   );
 }
 
-function ExpenseRow({
-  expense,
-  active,
-  onClick,
-  onSuccess,
-  budget,
-}: {
-  expense: Expense;
-  active: boolean;
-  onClick: () => void;
-  onSuccess: () => void;
-  budget: BudgetView;
-}) {
-  const budgetItemID = expense.budget_item_id;
-  const budgetItemName =
-    budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
-
-  const updateBudgetItemID = (newBudgetItemID: number | null) => {
-    console.log(newBudgetItemID);
-    fetch(`/api/expenses/${expense.id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ budget_item_id: newBudgetItemID }),
-    }).then((response) => {
-      if (response.ok) {
-        onSuccess();
-      } else {
-        console.log(response);
-      }
-    });
-  };
-
-  const budgetItemCell = active ? (
-    <td className="category">
-      <BudgetItemSelector
-        selectedBudgetItemID={budgetItemID}
-        updateBudgetItemID={updateBudgetItemID}
-        budget={budget}
-      />
-    </td>
-  ) : (
-    <td>{budgetItemName}</td>
-  );
-
-  const dateTime =
-    expense.transaction_time === null
-      ? expense.transaction_date
-      : expense.transaction_date + " " + expense.transaction_time;
-
-  return (
-    <tr onClick={onClick}>
-      <td className="date" title={dateTime}>
-        {expense.transaction_date}
-      </td>
-      {budgetItemCell}
-      <td className="number align-right">{expense.amount.toFixed(2)}</td>
-      <td>{expense.description}</td>
-    </tr>
-  );
-}
-
-function ExpensesTable({
-  expenses,
-  onSuccess,
-  budget,
-}: {
-  expenses: Array<Expense>;
-  onSuccess: () => void;
-  budget: BudgetView;
-}) {
-  const [activeRow, setActiveRow] = useState<number>(0);
-
-  if (expenses.length == 0) {
-    return <div>Import expenses to start categorizing</div>;
-  }
-
-  return (
-    <table className="expenses-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th className="align-right">Amount</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody>
-        {expenses.map((expense, idx) => (
-          <ExpenseRow
-            key={idx}
-            expense={expense}
-            active={idx === activeRow}
-            budget={budget}
-            onClick={() => setActiveRow(idx)}
-            onSuccess={() => {
-              setActiveRow(activeRow + 1);
-              onSuccess();
-            }}
-          />
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
 export function StatementImportButton({
   account,
   onImportSuccess,
@@ -343,7 +180,7 @@ export function ExpensesCard({
   }, [account, setAccount]);
 
   if (account === null) {
-    return <>{"Add accounts to enable imports"}</>;
+    return <>{"Add accounts to enable imports and start categorizing"}</>;
   }
 
   return (
@@ -362,11 +199,16 @@ export function ExpensesCard({
         />
       </ItemCard>
 
-      <ExpensesTable
-        expenses={expenses}
-        onSuccess={fetchExpenses}
-        budget={budget}
-      />
+      {expenses.length > 0 ? (
+        <ExpensesTable
+          key={account.id}
+          expenses={expenses}
+          onSuccess={fetchExpenses}
+          budget={budget}
+        />
+      ) : (
+        <div>Import expenses to start categorizing</div>
+      )}
     </>
   );
 }
