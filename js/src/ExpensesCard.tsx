@@ -98,10 +98,16 @@ function StatementImportForm({
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const maybeFile = formData.get("file") as File;
+    if (maybeFile?.name === "") {
+      setErrorMessage("File must be selected.");
+      return;
+    }
     setLoading(true);
     fetch(`api/accounts/${account.id}/expenses`, {
       method: "POST",
-      body: new FormData(form),
+      body: formData,
     }).then((response) => {
       setLoading(false);
       form.reset();

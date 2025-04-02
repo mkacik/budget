@@ -1,6 +1,7 @@
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::State;
+use serde::Serialize;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -27,9 +28,10 @@ pub struct WriteLogEntry {
 }
 
 impl WriteLogEntry {
-    pub fn set_content(&self, content: String) {
+    pub fn set_content<T: Serialize>(&self, content: T) {
+        let value = serde_json::to_string(&content).unwrap();
         let mut lock = self.content.lock().unwrap();
-        *lock = Some(content);
+        *lock = Some(value);
     }
 
     pub async fn create(

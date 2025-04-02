@@ -36,7 +36,13 @@ pub async fn import_expenses(
     account_id: ID,
     mut form: Form<UploadStatementForm<'_>>,
 ) -> ApiResponse {
-    log_entry.set_content(String::from("<FILE>"));
+    log_entry.set_content(format!("File of length {}", form.file.len()));
+
+    if form.file.len() == 0 {
+      return ApiResponse::BadRequest {
+          message: String::from("Can't process empty file."),
+      };
+    }
 
     let account = match Account::fetch_by_id(db, account_id).await {
         Ok(value) => value,
@@ -108,7 +114,7 @@ pub async fn update_expense(
     json: Json<UpdateExpenseRequest>,
 ) -> ApiResponse {
     let request = json.into_inner();
-    log_entry.set_content(serde_json::to_string(&request).unwrap());
+    log_entry.set_content(&request);
 
     let budget_item_id = request.budget_item_id;
     // If new value of budget item is not None, validate that the id exists in db
