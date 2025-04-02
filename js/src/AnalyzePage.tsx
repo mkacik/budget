@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { SpendingDataPoint } from "./types/SpendingData";
 
 import { BudgetView } from "./BudgetView";
-import { SectionHeader } from "./ui/Common";
+import { Section, SectionHeader } from "./ui/Common";
 
 type CategoryID = number;
 
@@ -136,7 +136,7 @@ function MonthlySpendingTable({
   );
 }
 
-export function AnalyzeCard({ budget }: { budget: BudgetView }) {
+export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [spendingData, setSpendingData] =
     useState<Array<SpendingDataPoint> | null>(null);
 
@@ -157,9 +157,9 @@ export function AnalyzeCard({ budget }: { budget: BudgetView }) {
   }, [spendingData, fetchSpendingData]);
 
   return (
-    <>
+    <Section>
       <SectionHeader>Analyze spending</SectionHeader>
       <MonthlySpendingTable dataPoints={spendingData} budget={budget} />
-    </>
+    </Section>
   );
 }

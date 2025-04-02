@@ -11,6 +11,7 @@ import {
   InlineGlyph,
   InlineGlyphButton,
   ModalCard,
+  Section,
   SectionHeader,
 } from "./ui/Common";
 
@@ -132,7 +133,7 @@ enum ModalMode {
   HIDDEN,
 }
 
-export function BudgetCard({
+export function BudgetPage({
   budget,
   refreshBudget,
 }: {
@@ -254,32 +255,34 @@ export function BudgetCard({
 
   return (
     <>
-      <SectionHeader>
-        Budget
-        <InlineGlyphButton glyph="pie_chart" onClick={showChart} />
-      </SectionHeader>
+      <Section>
+        <SectionHeader>
+          Budget
+          <InlineGlyphButton glyph="pie_chart" onClick={showChart} />
+        </SectionHeader>
 
-      <BudgetTable amountPerYear={budget.amountPerYear}>
-        {budgetRows}
-      </BudgetTable>
+        <BudgetTable amountPerYear={budget.amountPerYear}>
+          {budgetRows}
+        </BudgetTable>
+      </Section>
 
-      <span>
-        <SectionHeader>Ignored categories</SectionHeader>
-        <p>
-          Items from ignored categories can be used to exclude x-account moves.
-        </p>
-
-        <BudgetTable>{ignoredRows}</BudgetTable>
-      </span>
-
-      <div>
+      <Section>
         <GlyphButton
           glyph="add"
           text="add category"
           onClick={() => editCategory(null)}
         />
         {maybeAddNewItemButton}
-      </div>
+      </Section>
+
+      <Section>
+        <SectionHeader>Ignored categories</SectionHeader>
+        <span>
+          Items from ignored categories can be used to exclude x-account moves.
+        </span>
+
+        <BudgetTable>{ignoredRows}</BudgetTable>
+      </Section>
 
       <ModalCard
         title={modalTitle}

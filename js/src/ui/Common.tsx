@@ -160,10 +160,14 @@ export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
 }
 
-export function SectionHeader({ children }: { children: React.ReactNode }) {
-  return <span className="title">{children}</span>;
-}
-
 export function SubmitButton({ text }: { text: string }) {
   return <input className="button" type="submit" value={text} />;
+}
+
+export function Section({ children }: { children: React.ReactNode }) {
+  return <div className="section">{children}</div>;
+}
+
+export function SectionHeader({ children }: { children: React.ReactNode }) {
+  return <span className="title">{children}</span>;
 }

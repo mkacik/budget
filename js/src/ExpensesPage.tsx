@@ -13,6 +13,7 @@ import {
   InlineGlyphButton,
   ItemCard,
   ModalCard,
+  Section,
   SectionHeader,
 } from "./ui/Common";
 
@@ -149,7 +150,7 @@ export function StatementImportButton({
   );
 }
 
-export function ExpensesCard({
+export function ExpensesPage({
   accounts,
   budget,
 }: {
@@ -185,30 +186,34 @@ export function ExpensesCard({
 
   return (
     <>
-      <SectionHeader>Expenses</SectionHeader>
-      <ItemCard>
-        Account
-        <AccountSelector
-          accounts={accounts}
-          selected={account}
-          updateAccount={updateAccount}
-        />
-        <StatementImportButton
-          account={account}
-          onImportSuccess={fetchExpenses}
-        />
-      </ItemCard>
+      <Section>
+        <SectionHeader>Expenses</SectionHeader>
+        <ItemCard>
+          Account
+          <AccountSelector
+            accounts={accounts}
+            selected={account}
+            updateAccount={updateAccount}
+          />
+          <StatementImportButton
+            account={account}
+            onImportSuccess={fetchExpenses}
+          />
+        </ItemCard>
+      </Section>
 
-      {expenses.length > 0 ? (
-        <ExpensesTable
-          key={account.id}
-          expenses={expenses}
-          onSuccess={fetchExpenses}
-          budget={budget}
-        />
-      ) : (
-        <div>Import expenses to start categorizing</div>
-      )}
+      <Section>
+        {expenses.length > 0 ? (
+          <ExpensesTable
+            key={account.id}
+            expenses={expenses}
+            onSuccess={fetchExpenses}
+            budget={budget}
+          />
+        ) : (
+          <div>Import expenses to start categorizing</div>
+        )}
+      </Section>
     </>
   );
 }

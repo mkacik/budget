@@ -19,7 +19,8 @@
   --color-card-success-border: #79d279;
   --color-card-success-background: #ecf9ec;
 
-  --vertical-gap: 0.5rem;
+  --gap-medium: 0.5rem;
+  --gap-large: 1.5rem;
   --border-radius: 5px;
   --font-family: Ubuntu,Roboto,Helvetica,sans-serif;
 }
@@ -85,9 +86,16 @@ pre {
 
 .main {
   padding: 1rem;
+
   display: flex;
   flex-direction: column;
-  gap: var(--vertical-gap);
+  gap: var(--gap-large);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-medium);
 }
 
 .card {
@@ -104,7 +112,7 @@ pre {
 .status {
   display: flex;
   align-items: center;
-  gap: var(--vertical-gap);
+  gap: var(--gap-medium);
 }
 
 .error {
@@ -128,7 +136,7 @@ pre {
 .item {
   display: flex;
   flex-direction: row;
-  gap: var(--vertical-gap);
+  gap: var(--gap-medium);
   align-items: center;
   padding-left: 0.8rem;
 }
@@ -176,7 +184,7 @@ pre {
 
     display: flex;
     flex-direction: column;
-    gap: var(--vertical-gap);
+    gap: var(--gap-medium);
   }
 }
 
@@ -191,14 +199,14 @@ pre {
   display: grid;
   grid-template-columns: auto auto;
   gap: 0.2rem;
-  column-gap: var(--vertical-gap);
+  column-gap: var(--gap-medium);
   box-shadow: 0 0 5px var(--color-card-border);
 }
 
 .title {
     display: flex;
     flex-direction: row;
-    gap: var(--vertical-gap);
+    gap: var(--gap-medium);
 
     font-size: 1.5rem;
     font-weight: bold;
@@ -262,7 +270,6 @@ pre {
   border-spacing: 0;
   text-align: left;
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
 
   tr {
    &:hover {
@@ -291,7 +298,7 @@ pre {
   .row-name {
     display: flex;
     flex-direction: row;
-    gap: var(--vertical-gap);
+    gap: var(--gap-medium);
     align-items: center;
   }
 
@@ -353,7 +360,7 @@ pre {
 
   > form {
     display: grid;
-    gap: var(--vertical-gap);
+    gap: var(--gap-medium);
   }
 
   .login-row {
@@ -377,7 +384,7 @@ pre {
 .edit-form {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--vertical-gap);
+  gap: var(--gap-medium);
   align-items: center;
 
   .edit-form-section-header {
@@ -396,7 +403,7 @@ pre {
 
     display: flex;
     flex-direction: row;
-    gap: var(--vertical-gap);
+    gap: var(--gap-medium);
     justify-content: flex-end;
   }
 

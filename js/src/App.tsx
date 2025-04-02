@@ -6,12 +6,12 @@ import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
 import { StatementSchemas } from "./types/StatementSchema";
 
-import { BudgetCard } from "./BudgetCard";
 import { BudgetView } from "./BudgetView";
-import { AccountsCard } from "./AccountsCard";
-import { AnalyzeCard } from "./AnalyzeCard";
-import { ExpensesCard } from "./ExpensesCard";
-import { StatementSchemasCard } from "./StatementSchemasCard";
+
+import { AccountsPage } from "./AccountsPage";
+import { BudgetPage } from "./BudgetPage";
+import { ExpensesPage } from "./ExpensesPage";
+import { AnalyzePage } from "./AnalyzePage";
 
 enum Tab {
   Budget,
@@ -82,24 +82,19 @@ function App() {
     return null;
   }
 
-  const budgetCard = <BudgetCard budget={budget} refreshBudget={fetchBudget} />;
-  const expensesCard = (
-    <ExpensesCard accounts={accounts.accounts} budget={budget} />
+  const budgetPage = <BudgetPage budget={budget} refreshBudget={fetchBudget} />;
+  const expensesPage = (
+    <ExpensesPage accounts={accounts.accounts} budget={budget} />
   );
-  const accountsCard = (
-    <AccountsCard
+  const accountsPage = (
+    <AccountsPage
       accounts={accounts.accounts}
       refreshAccounts={fetchAccounts}
-      statementSchemas={schemas.schemas}
+      schemas={schemas.schemas}
+      refreshSchemas={fetchSchemas}
     />
   );
-  const schemasCard = (
-    <StatementSchemasCard
-      statementSchemas={schemas.schemas}
-      refreshStatementSchemas={fetchSchemas}
-    />
-  );
-  const analyzeCard = <AnalyzeCard budget={budget} />;
+  const analyzePage = <AnalyzePage budget={budget} />;
 
   return (
     <>
@@ -113,9 +108,6 @@ function App() {
         <span className="header-item" onClick={() => setTab(Tab.Accounts)}>
           Accounts
         </span>
-        <span className="header-item" onClick={() => setTab(Tab.Schemas)}>
-          Schemas
-        </span>
         <span className="header-item" onClick={() => setTab(Tab.Analyze)}>
           Analyze
         </span>
@@ -127,11 +119,10 @@ function App() {
         </span>
       </div>
       <div className="main">
-        {render_if(tab == Tab.Budget, budgetCard)}
-        {render_if(tab == Tab.Expenses, expensesCard)}
-        {render_if(tab == Tab.Accounts, accountsCard)}
-        {render_if(tab == Tab.Schemas, schemasCard)}
-        {render_if(tab == Tab.Analyze, analyzeCard)}
+        {render_if(tab == Tab.Budget, budgetPage)}
+        {render_if(tab == Tab.Expenses, expensesPage)}
+        {render_if(tab == Tab.Accounts, accountsPage)}
+        {render_if(tab == Tab.Analyze, analyzePage)}
       </div>
     </>
   );

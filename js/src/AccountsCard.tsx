@@ -50,11 +50,11 @@ function deleteAccountRequest(account: Account) {
 function AccountForm({
   account,
   onSuccess,
-  statementSchemas,
+  schemas,
 }: {
   account: Account | null;
   onSuccess: () => void;
-  statementSchemas: Array<StatementSchema>;
+  schemas: Array<StatementSchema>;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -115,7 +115,7 @@ function AccountForm({
       {value}
     </option>
   ));
-  const statementSchemaOptions = statementSchemas.map((schema, idx) => (
+  const schemaOptions = schemas.map((schema, idx) => (
     <option key={idx} value={schema.id}>
       {schema.name}
     </option>
@@ -163,7 +163,7 @@ function AccountForm({
           defaultValue={importConfig ?? FormHelper.EMPTY}
         >
           <option value={FormHelper.EMPTY}>-</option>
-          {statementSchemaOptions}
+          {schemaOptions}
         </select>
 
         <FormButtons>
@@ -182,11 +182,11 @@ function AccountForm({
 export function AccountsCard({
   accounts,
   refreshAccounts,
-  statementSchemas,
+  schemas,
 }: {
   accounts: Array<Account>;
   refreshAccounts: () => void;
-  statementSchemas: Array<StatementSchema>;
+  schemas: Array<StatementSchema>;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
@@ -235,7 +235,7 @@ export function AccountsCard({
           key={activeAccount?.name}
           account={activeAccount}
           onSuccess={onEditSuccess}
-          statementSchemas={statementSchemas}
+          schemas={schemas}
         />
       </ModalCard>
     </>

@@ -183,27 +183,28 @@ function StatementSchemaForm({
 }
 
 export function StatementSchemasCard({
-  statementSchemas,
-  refreshStatementSchemas,
+  schemas,
+  refreshSchemas,
 }: {
-  statementSchemas: Array<StatementSchema>;
-  refreshStatementSchemas: () => void;
+  schemas: Array<StatementSchema>;
+  refreshSchemas: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [activeStatementSchema, setActiveStatementSchema] =
-    useState<StatementSchema | null>(null);
+  const [activeSchema, setActiveSchema] = useState<StatementSchema | null>(
+    null,
+  );
 
   const showEditModal = (schema: StatementSchema | null) => {
-    setActiveStatementSchema(schema);
+    setActiveSchema(schema);
     setModalVisible(true);
   };
   const hideEditModal = () => setModalVisible(false);
   const onEditSuccess = () => {
-    refreshStatementSchemas();
+    refreshSchemas();
     hideEditModal();
   };
 
-  const rows = statementSchemas.map((schema) => {
+  const rows = schemas.map((schema) => {
     return (
       <ItemCard key={schema.id}>
         <span>{schema.name}</span>
@@ -225,13 +226,13 @@ export function StatementSchemasCard({
       />
 
       <ModalCard
-        title={activeStatementSchema === null ? "New Schema" : "Edit Schema"}
+        title={activeSchema === null ? "New Schema" : "Edit Schema"}
         visible={modalVisible}
         hideModal={hideEditModal}
       >
         <StatementSchemaForm
-          key={activeStatementSchema?.name}
-          schema={activeStatementSchema}
+          key={activeSchema?.name}
+          schema={activeSchema}
           onSuccess={onEditSuccess}
         />
       </ModalCard>
