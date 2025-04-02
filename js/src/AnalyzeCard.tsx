@@ -70,8 +70,8 @@ function MonthlySpendingTable({
     </th>
   ));
   const headerRowAmounts = budget.categories.map((category, i) => (
-    <th key={i} className="align-right number">
-      {category.amountPerMonth.toFixed(2)}
+    <th key={i} className="align-right">
+      <span className="number">{category.amountPerMonth.toFixed(2)}</span>/mo
     </th>
   ));
 
