@@ -12,7 +12,7 @@ import { AmountFieldForm } from "./schema/AmountFieldForm";
 import { DateFieldForm } from "./schema/DateFieldForm";
 import { TimeFieldForm } from "./schema/TimeFieldForm";
 import { TextFieldForm } from "./schema/TextFieldForm";
-import { FormSection } from "./ui/Common";
+import { FormSection } from "./ui/Form";
 
 export function getDefaultRecordMapping(): RecordMapping {
   const recordMapping: RecordMapping = {

@@ -2,7 +2,7 @@ import React from "react";
 
 import { BudgetAmount } from "./types/Budget";
 
-import { FormSection } from "./ui/Common";
+import { FormSection } from "./ui/Form";
 
 const WEEKLY: string = "Weekly";
 const MONTHLY: string = "Monthly";

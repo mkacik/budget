@@ -119,49 +119,8 @@ export function InlineGlyph({ glyph }: { glyph: Glyph }) {
   return <span className="material-symbols-outlined">{glyph}</span>;
 }
 
-export function Form({
-  onSubmit,
-  children,
-}: {
-  onSubmit: (e: React.SyntheticEvent) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <form className="edit-form" onSubmit={onSubmit}>
-      {children}
-    </form>
-  );
-}
-
-export function FormButtons({ children }: { children: React.ReactNode }) {
-  return <div className="edit-form-buttons">{children}</div>;
-}
-
-export function FormSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <span className="edit-form-section-header">{title}</span>
-      {children}
-    </>
-  );
-}
-
-export function FormFieldWide({ children }: { children: React.ReactNode }) {
-  return <span className="edit-form-field-wide">{children}</span>;
-}
-
 export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
-}
-
-export function SubmitButton({ text }: { text: string }) {
-  return <input className="button" type="submit" value={text} />;
 }
 
 export function Section({ children }: { children: React.ReactNode }) {

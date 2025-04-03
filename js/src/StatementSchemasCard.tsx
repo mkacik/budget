@@ -14,15 +14,13 @@ import {
 import { SchemaTestForm } from "./SchemaTestForm";
 import {
   ErrorCard,
-  Form,
-  FormButtons,
   GlyphButton,
   InlineGlyphButton,
   ItemCard,
   ModalCard,
   SectionHeader,
-  SubmitButton,
 } from "./ui/Common";
+import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 import { JSON_HEADERS } from "./Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields) {
@@ -173,7 +171,7 @@ function StatementSchemaForm({
 
         <FormButtons>
           {maybeDeleteButton}
-          <SubmitButton text={schema === null ? "Create" : "Update"} />
+          <FormSubmitButton text={schema === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
 

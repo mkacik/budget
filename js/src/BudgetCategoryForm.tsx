@@ -3,13 +3,8 @@ import { useState } from "react";
 
 import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
 
-import {
-  GlyphButton,
-  SubmitButton,
-  Form,
-  FormButtons,
-  ErrorCard,
-} from "./ui/Common";
+import { GlyphButton, ErrorCard } from "./ui/Common";
+import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetCategoryRequest(fields: BudgetCategoryFields) {
@@ -138,7 +133,9 @@ export function BudgetCategoryForm({
 
         <FormButtons>
           {maybeDeleteButton}
-          <SubmitButton text={budgetCategory === null ? "Create" : "Update"} />
+          <FormSubmitButton
+            text={budgetCategory === null ? "Create" : "Update"}
+          />
         </FormButtons>
       </Form>
     </>

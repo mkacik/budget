@@ -3,15 +3,8 @@ import { useState } from "react";
 
 import { StatementSchemaFields } from "./types/StatementSchema";
 import { TestSchemaRequest, TestSchemaResponse } from "./types/SchemaTest";
-import {
-  ErrorCard,
-  Form,
-  FormButtons,
-  FormFieldWide,
-  SectionHeader,
-  SubmitButton,
-  StatusCard,
-} from "./ui/Common";
+import { ErrorCard, SectionHeader, StatusCard } from "./ui/Common";
+import { Form, FormButtons, FormFieldWide, FormSubmitButton } from "./ui/Form";
 import { JSON_HEADERS } from "./Common";
 
 function testSchemaRequest(request: TestSchemaRequest) {
@@ -113,7 +106,7 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
           <textarea value={row} onChange={updateRow}></textarea>
         </FormFieldWide>
         <FormButtons>
-          <SubmitButton text="Test Schema" />
+          <FormSubmitButton text="Test Schema" />
         </FormButtons>
       </Form>
     </>

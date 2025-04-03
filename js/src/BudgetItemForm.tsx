@@ -5,13 +5,8 @@ import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
-import {
-  GlyphButton,
-  SubmitButton,
-  Form,
-  FormButtons,
-  ErrorCard,
-} from "./ui/Common";
+import { GlyphButton, ErrorCard } from "./ui/Common";
+import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 import { JSON_HEADERS } from "./Common";
 
 const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
@@ -226,7 +221,7 @@ export function BudgetItemForm({
 
         <FormButtons>
           {maybeDeleteButton}
-          <SubmitButton text={budgetItem === null ? "Create" : "Update"} />
+          <FormSubmitButton text={budgetItem === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
     </>

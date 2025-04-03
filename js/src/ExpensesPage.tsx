@@ -8,14 +8,13 @@ import { BudgetView } from "./BudgetView";
 import { ExpensesTable } from "./ExpensesTable";
 import {
   ErrorCard,
-  Form,
-  FormButtons,
   InlineGlyphButton,
   ItemCard,
   ModalCard,
   Section,
   SectionHeader,
 } from "./ui/Common";
+import { Form, FormButtons } from "./ui/Form";
 
 export function AccountSelector({
   accounts,

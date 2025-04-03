@@ -6,8 +6,6 @@ import { StatementSchema } from "./types/StatementSchema";
 
 import {
   ErrorCard,
-  Form,
-  FormButtons,
   GlyphButton,
   InlineGlyphButton,
   ItemCard,
@@ -15,6 +13,7 @@ import {
   Pill,
   SectionHeader,
 } from "./ui/Common";
+import { Form, FormButtons } from "./ui/Form";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
 const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
