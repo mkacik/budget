@@ -220,51 +220,59 @@ pre {
     font-weight: bold;
 }
 
-.expenses-table {
+table {
   width: 100%;
   border: none;
   border-spacing: 0;
+  border-collapse: collapse;
   text-align: left;
 
+  thead, tfoot {
+      background-color: var(--color-table-header);
+  }
+
+  tr {
+    border-bottom: 1px solid var(--color-table-border);
+    border-top: 1px solid var(--color-table-border);
+  }
+
+  tr {
+   &:hover {
+      background-color: var(--color-hover);
+    }
+  }
+
+  th, td {
+    padding: var(--padding-medium);
+    vertical-align: top;
+  }
+
+  .r-align {
+    text-align: right;
+  }
+  
+  .number {
+    font-family: monospace;
+  }
+}
+
+.expenses-table {
   tr:nth-child(even) {
       background-color: var(--color-table-row);
   }
 
   tr {
    &:hover {
-      background-color: var(--color-hover);
       cursor: pointer;
     }
-  }
-
-  th, td {
-    border-bottom: 1px solid var(--color-table-border);
-    padding: var(--padding-medium);
-    vertical-align: top;
-  }
-
-  th {
-    border-top: 1px solid var(--color-table-border);
-  }
-
-  thead, tfoot {
-      background-color: var(--color-table-header);
   }
 
   .date {
     white-space: nowrap;
   }
 
-  .number {
-    font-family: monospace;
-  }
-
   .category {
     padding: var(--padding-small);
-  }
-
-  .align-right {
-    text-align: right;
   }
 
   select {
@@ -273,34 +281,9 @@ pre {
 }
 
 .budget-table {
-  width: 100%;
-  border: none;
-  border-spacing: 0;
-  text-align: left;
   font-size: 1.1rem;
 
-  tr {
-   &:hover {
-      background-color: var(--color-hover);
-    }
-  }
-
-  th, td {
-    border-bottom: 1px solid var(--color-table-border);
-    padding: var(--padding-medium);
-    vertical-align: top;
-  }
-
-  th {
-    border-top: 1px solid var(--color-table-border);
-  }
-
-  thead, tfoot {
-      background-color: var(--color-table-header);
-  }
-
   .row-group-header {
-    font-weight: bold;
   }
 
   .row-name {
@@ -309,45 +292,10 @@ pre {
     gap: var(--gap-medium);
     align-items: center;
   }
-
-  .number {
-    font-family: monospace;
-  }
-
-  .align-right {
-    text-align: right;
-  }
 }
 
 .monthly-table {
-  width: 100%;
-  border: none;
-  border-spacing: 0;
-  border-collapse: collapse;
-  text-align: left;
   font-size: 1.1rem;
-
-  th, td {
-    border-bottom: 1px solid var(--color-table-border);
-    padding: var(--padding-medium);
-    vertical-align: top;
-  }
-
-  th {
-    border-top: 1px solid var(--color-table-border);
-  }
-
-  thead, tfoot {
-      background-color: var(--color-table-header);
-  }
-
-  .number {
-    font-family: monospace;
-  }
-
-  .align-right {
-    text-align: right;
-  }
 
   .soft {
     color: var(--color-table-border);

@@ -65,12 +65,12 @@ function MonthlySpendingTable({
   const data = parseData(dataPoints, budget);
 
   const headerRowNames = budget.categories.map((category, i) => (
-    <th key={i} className="align-right">
+    <th key={i} className="r-align">
       {category.name}
     </th>
   ));
   const headerRowAmounts = budget.categories.map((category, i) => (
-    <th key={i} className="align-right">
+    <th key={i} className="r-align">
       <span className="number">{category.amountPerMonth.toFixed(2)}</span>/mo
     </th>
   ));
@@ -91,7 +91,7 @@ function MonthlySpendingTable({
       const spend =
         maybeSpend !== undefined && maybeSpend !== null ? maybeSpend.spend : 0;
 
-      const classNames = ["align-right"];
+      const classNames = ["r-align"];
       if (spend <= 0) {
         classNames.push("soft");
       } else if (spend > category.amountPerMonth) {

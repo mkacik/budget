@@ -168,7 +168,7 @@ function ExpenseRow({
         {expense.transaction_date}
       </td>
       {budgetItemCell}
-      <td className="number align-right">{expense.amount.toFixed(2)}</td>
+      <td className="number r-align">{expense.amount.toFixed(2)}</td>
       <td>{expense.description}</td>
     </tr>
   );
@@ -246,7 +246,7 @@ export function ExpensesTable({
         <tr>
           <th>Date</th>
           <th>Category</th>
-          <th className="align-right">Amount</th>
+          <th className="r-align">Amount</th>
           <th>Details</th>
         </tr>
       </thead>
