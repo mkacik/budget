@@ -26,16 +26,14 @@ function BudgetItemRow({
 }) {
   const amounts = skipAmounts ? null : (
     <>
-      <td className="number r-align">
-        {(item.amountPerYear / 12).toFixed(2)}
-      </td>
+      <td className="number r-align">{(item.amountPerYear / 12).toFixed(2)}</td>
       <td className="number r-align">{item.amountPerYear.toFixed(2)}</td>
     </>
   );
 
   return (
     <tr>
-      <td className="row-name">
+      <td className="v-center">
         <InlineGlyph glyph="chevron_right" />
         {item.name}
         <InlineGlyphButton glyph="edit" onClick={editItem} />
@@ -59,15 +57,13 @@ function BudgetCategoryRow({
       <td className="number r-align">
         {(category.amountPerYear / 12).toFixed(2)}
       </td>
-      <td className="number r-align">
-        {category.amountPerYear.toFixed(2)}
-      </td>
+      <td className="number r-align">{category.amountPerYear.toFixed(2)}</td>
     </>
   );
 
   return (
-    <tr className="row-group-header">
-      <td className="row-name">
+    <tr className="bold">
+      <td className="v-center">
         {category.name}
         <InlineGlyphButton glyph="edit" onClick={editCategory} />
       </td>
@@ -104,7 +100,7 @@ export function BudgetTable({
   }
 
   return (
-    <table className="budget-table">
+    <table className="large">
       <thead>{header}</thead>
       <tbody>{children}</tbody>
       <tfoot>{footer}</tfoot>
@@ -118,8 +114,8 @@ export function BudgetTableFooter({
   amountPerYear: number;
 }) {
   return (
-    <tr className="row-group-header">
-      <td className="row-name">TOTAL</td>
+    <tr className="bold">
+      <td>TOTAL</td>
       <td className="number r-align">{(amountPerYear / 12).toFixed(2)}</td>
       <td className="number r-align">{amountPerYear.toFixed(2)}</td>
     </tr>

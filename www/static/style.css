@@ -21,14 +21,19 @@
 
   --gap-medium: 0.5rem;
   --gap-large: 1.5rem;
- 
-  --padding-small: 0.2rem; 
+
+  --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1.5rem;
 
   --border-radius: 5px;
 
-  --font-family: Ubuntu,Roboto,Helvetica,sans-serif;
+  --font-family: Ubuntu, Roboto, Helvetica, sans-serif;
+
+  --font-content-medium: 1rem;
+  --font-content-large: 1.1rem;
+  --font-header-medium: 1.2rem;
+  --font-header-large: 1.5rem;
 }
 
 body {
@@ -36,10 +41,12 @@ body {
   display: block;
 
   font-family: var(--font-family);
-  font-size: 1rem;
+  font-size: var(--font-content-medium);
 }
 
-input, select, button {
+input,
+select,
+button {
   padding: var(--padding-small);
   font-family: var(--font-family);
   font-size: inherit;
@@ -67,7 +74,7 @@ pre {
   padding: var(--padding-medium);
 
   background-color: var(--color-main);
-  font-size: 1.2rem;
+  font-size: var(--font-header-medium);
 
   .header-item {
     border-radius: var(--border-radius);
@@ -83,7 +90,7 @@ pre {
     width: 100%;
   }
 
-  input[type=submit] {
+  input[type="submit"] {
     border: none;
     padding: 0;
     margin: 0;
@@ -156,7 +163,7 @@ pre {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
- 
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -212,12 +219,16 @@ pre {
 }
 
 .title {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-medium);
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap-medium);
 
-    font-size: 1.5rem;
-    font-weight: bold;
+  font-size: var(--font-header-large);
+  font-weight: bold;
+}
+
+.large {
+  font-size: var(--font-content-large);
 }
 
 table {
@@ -227,8 +238,9 @@ table {
   border-collapse: collapse;
   text-align: left;
 
-  thead, tfoot {
-      background-color: var(--color-table-header);
+  thead,
+  tfoot {
+    background-color: var(--color-table-header);
   }
 
   tr {
@@ -237,56 +249,42 @@ table {
   }
 
   tr {
-   &:hover {
+    &:hover {
       background-color: var(--color-hover);
     }
   }
 
-  th, td {
+  th,
+  td {
     padding: var(--padding-medium);
     vertical-align: top;
+  }
+
+  .number {
+    font-family: monospace;
+  }
+
+  .soft {
+    color: var(--color-table-border);
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .red {
+    color: var(--color-text-error);
   }
 
   .r-align {
     text-align: right;
   }
-  
-  .number {
-    font-family: monospace;
-  }
-}
 
-.expenses-table {
-  tr:nth-child(even) {
-      background-color: var(--color-table-row);
-  }
-
-  tr {
-   &:hover {
-      cursor: pointer;
-    }
-  }
-
-  .date {
-    white-space: nowrap;
-  }
-
-  .category {
-    padding: var(--padding-small);
-  }
-
-  select {
-    width: 100%;
-  }
-}
-
-.budget-table {
-  font-size: 1.1rem;
-
-  .row-group-header {
-  }
-
-  .row-name {
+  .v-center {
     display: flex;
     flex-direction: row;
     gap: var(--gap-medium);
@@ -294,15 +292,23 @@ table {
   }
 }
 
-.monthly-table {
-  font-size: 1.1rem;
-
-  .soft {
-    color: var(--color-table-border);
+.expenses-table {
+  tr:nth-child(even) {
+    background-color: var(--color-table-row);
   }
 
-  .red {
-    color: var(--color-text-error);
+  tr {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .category {
+    padding: var(--padding-small);
+
+    select {
+      width: 100%;
+    }
   }
 }
 
@@ -345,13 +351,11 @@ table {
 
   .edit-form-section-header {
     grid-column: 1 / span 2;
-
     font-weight: bold;
   }
 
   .edit-form-field-wide {
     grid-column: 1 / span 2;
-
   }
 
   .edit-form-buttons {
@@ -363,7 +367,7 @@ table {
     justify-content: flex-end;
   }
 
-  input[type=checkbox] {
+  input[type="checkbox"] {
     justify-self: left;
   }
 }
@@ -386,7 +390,7 @@ table {
 
   .material-symbols-outlined {
     color: #555555;
-    font-variation-settings: 'opsz' 24
+    font-variation-settings: "opsz" 24;
   }
 }
 
@@ -394,7 +398,7 @@ table {
   padding: var(--padding-small) !important;
 
   .material-symbols-outlined {
-    font-variation-settings: 'opsz' 20
+    font-variation-settings: "opsz" 20;
   }
 }
 
@@ -402,7 +406,7 @@ table {
   font-size: 0.8rem;
   padding: 0.3rem;
   border: solid;
-  border-width: 1px;;
+  border-width: 1px;
   border-color: var(--color-hover);
   border-radius: var(--border-radius);
   background-color: var(--color-table-header);

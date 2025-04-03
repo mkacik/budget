@@ -164,7 +164,7 @@ function ExpenseRow({
 
   return (
     <tr onClick={onClick}>
-      <td className="date" title={dateTime}>
+      <td className="nowrap" title={dateTime}>
         {expense.transaction_date}
       </td>
       {budgetItemCell}

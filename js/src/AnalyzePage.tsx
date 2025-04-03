@@ -112,7 +112,7 @@ function MonthlySpendingTable({
   const columnWidth = 92.0 / budget.categories.length;
 
   return (
-    <table className="monthly-table">
+    <table>
       <colgroup>
         <col />
         {budget.categories.map((c, i) => (
