@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 
 export function ModalCard({
   title,
@@ -11,6 +12,17 @@ export function ModalCard({
   hideModal: () => void;
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    const handleKeys = (e) => {
+      if (e.key == "Escape") {
+        hideModal();
+      }
+    };
+    document.addEventListener("keydown", handleKeys);
+
+    return () => document.removeEventListener("keydown", handleKeys);
+  }, []);
+
   if (!visible) {
     return null;
   }
