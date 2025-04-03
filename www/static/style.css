@@ -21,7 +21,13 @@
 
   --gap-medium: 0.5rem;
   --gap-large: 1.5rem;
+ 
+  --padding-small: 0.2rem; 
+  --padding-medium: 0.5rem;
+  --padding-large: 1.5rem;
+
   --border-radius: 5px;
+
   --font-family: Ubuntu,Roboto,Helvetica,sans-serif;
 }
 
@@ -34,7 +40,7 @@ body {
 }
 
 input, select, button {
-  padding: 0.2rem;
+  padding: var(--padding-small);
   font-family: var(--font-family);
   font-size: inherit;
 }
@@ -56,15 +62,16 @@ pre {
 
 .header {
   display: flex;
+  flex-direction: row;
   gap: 1rem;
-  padding: 0.5rem;;
+  padding: var(--padding-medium);
 
   background-color: var(--color-main);
   font-size: 1.2rem;
 
   .header-item {
     border-radius: var(--border-radius);
-    padding: 0.5rem;
+    padding: var(--padding-medium);
 
     &:hover {
       background-color: var(--color-hover);
@@ -86,7 +93,6 @@ pre {
 
 .main {
   padding: 1rem;
-
   display: flex;
   flex-direction: column;
   gap: var(--gap-large);
@@ -99,7 +105,7 @@ pre {
 }
 
 .card {
-  padding: 0.5rem;
+  padding: var(--padding-medium);
   border: solid;
   border-width: 1px;
   border-radius: var(--border-radius);
@@ -111,6 +117,7 @@ pre {
 
 .status {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--gap-medium);
 }
@@ -151,6 +158,7 @@ pre {
   background: rgba(0, 0, 0, 0.5);
  
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -162,8 +170,8 @@ pre {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: var(--gap-large);
+  padding: var(--padding-large);
 
   .modal-header {
     display: flex;
@@ -198,7 +206,7 @@ pre {
 .legend {
   display: grid;
   grid-template-columns: auto auto;
-  gap: 0.2rem;
+  gap: var(--gap-small);
   column-gap: var(--gap-medium);
   box-shadow: 0 0 5px var(--color-card-border);
 }
@@ -231,7 +239,7 @@ pre {
 
   th, td {
     border-bottom: 1px solid var(--color-table-border);
-    padding: 0.5rem;
+    padding: var(--padding-medium);
     vertical-align: top;
   }
 
@@ -252,7 +260,7 @@ pre {
   }
 
   .category {
-    padding: 0.2rem;
+    padding: var(--padding-small);
   }
 
   .align-right {
@@ -279,7 +287,7 @@ pre {
 
   th, td {
     border-bottom: 1px solid var(--color-table-border);
-    padding: 0.5rem;
+    padding: var(--padding-medium);
     vertical-align: top;
   }
 
@@ -318,11 +326,10 @@ pre {
   border-collapse: collapse;
   text-align: left;
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
 
   th, td {
     border-bottom: 1px solid var(--color-table-border);
-    padding: 0.5rem;
+    padding: var(--padding-medium);
     vertical-align: top;
   }
 
@@ -365,6 +372,7 @@ pre {
 
   .login-row {
     display: flex;
+    flex-direction: row;
     align-items: center;
 
     > label {
@@ -435,7 +443,7 @@ pre {
 }
 
 .button-small {
-  padding: 0.2rem !important;
+  padding: var(--padding-small) !important;
 
   .material-symbols-outlined {
     font-variation-settings: 'opsz' 20
