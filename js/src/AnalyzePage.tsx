@@ -51,6 +51,13 @@ function parseData(
   return dataPoints;
 }
 
+function getMonths(year: number): Array<string> {
+  return [...Array(12).keys()].map((m) => {
+    const month = String(m + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  });
+}
+
 function MonthlySpendingTable({
   dataPoints,
   budget,
@@ -75,10 +82,8 @@ function MonthlySpendingTable({
     </th>
   ));
 
-  const months = [...Array(12).keys()].map((m) => {
-    // TODO: find some way to make this work in 2026
-    return "2025-" + String(m + 1).padStart(2, "0");
-  });
+  // TODO: find some way to make this work in 2026
+  const months = getMonths(2025);
 
   const rows: Array<React.ReactNode> = [];
   for (const month of months) {
