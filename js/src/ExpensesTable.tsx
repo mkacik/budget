@@ -5,6 +5,8 @@ import { Expense } from "./types/Expense";
 
 import { BudgetView, BudgetItemView } from "./BudgetView";
 
+import { Col } from "./ui/Common";
+
 const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 
 type KeyMap = Map<string, BudgetItemView | null>;
@@ -172,14 +174,6 @@ function ExpenseRow({
       <td>{expense.description}</td>
     </tr>
   );
-}
-
-function Col({ widthPct }: { widthPct?: number }) {
-  if (widthPct === undefined) {
-    return <col />;
-  }
-  const width = `${widthPct}%`;
-  return <col style={{ width: width }} />;
 }
 
 export function ExpensesTable({

@@ -142,3 +142,11 @@ export function Section({ children }: { children: React.ReactNode }) {
 export function SectionHeader({ children }: { children: React.ReactNode }) {
   return <span className="title">{children}</span>;
 }
+
+export function Col({ widthPct }: { widthPct?: number }) {
+  if (widthPct === undefined) {
+    return <col />;
+  }
+  const width = `${widthPct}%`;
+  return <col style={{ width: width }} />;
+}
