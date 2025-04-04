@@ -17,20 +17,23 @@ pub enum ImportResult {
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
 pub enum DateField {
     FromColumn { col: ColID, tz: TZ },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
 pub enum TimeField {
     FromColumn { col: ColID, tz: TZ },
     Empty,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
 pub enum AmountField {
     FromColumn {
         col: ColID,
@@ -46,7 +49,8 @@ pub enum AmountField {
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
 pub enum TextField {
     FromColumn { col: ColID },
 }

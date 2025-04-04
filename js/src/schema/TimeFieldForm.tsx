@@ -3,33 +3,14 @@ import React from "react";
 import { TimeField } from "../types/RecordMapping";
 import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
 
-const EMPTY: string = "Empty";
-const FROM_COLUMN: string = "FromColumn";
+const EMPTY = "Empty";
+const FROM_COLUMN = "FromColumn";
 
-type OptionName = typeof EMPTY | typeof FROM_COLUMN;
-type Empty = null;
-type OptionParams = Empty | FromColumnWithTZ;
+type Variant = typeof FROM_COLUMN | typeof EMPTY;
+type Params = FromColumnWithTZ | null;
 
-function getOptionName(field: TimeField): OptionName {
-  if (field === EMPTY) {
-    return EMPTY;
-  } else if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return FROM_COLUMN;
-  }
-  throw new Error("Unexpected shape of TimeField");
-}
-
-function getOptionParams(field: TimeField): OptionParams {
-  if (field === EMPTY) {
-    return null;
-  } else if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return field[FROM_COLUMN]!;
-  }
-  throw new Error("Unexpected shape of TimeField");
-}
-
-function getDefaultOptionParams(optionName: OptionName): OptionParams {
-  switch (optionName) {
+function getDefaultParams(variant: Variant): Params {
+  switch (variant) {
     case EMPTY:
       return null;
     case FROM_COLUMN:
@@ -45,40 +26,38 @@ export function TimeFieldForm({
   time: TimeField;
   updateTime: (TimeField) => void;
 }) {
-  const optionName = getOptionName(time);
-  const optionParams = getOptionParams(time);
+  const variant = time.variant;
+  const params = "params" in time ? time.params : null;
 
-  const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
-    switch (newOptionName) {
+  const update = (newVariant: Variant, newParams: Params) => {
+    switch (newVariant) {
       case FROM_COLUMN: {
-        updateTime({ FromColumn: newOptionParams });
-        break;
+        updateTime({ variant: FROM_COLUMN, params: newParams });
+        return;
       }
-      case EMPTY: {
-        updateTime(EMPTY);
-        break;
-      }
-      default:
-        throw new Error("Unexpected shape of DateField");
+      case EMPTY:
+        {
+          updateTime({ variant: EMPTY });
+          return;
+        }
+        throw new Error("Unexpected shape of TimeField");
     }
   };
 
-  const onOptionNameChange = (e: React.SyntheticEvent) => {
+  const onVariantChange = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLSelectElement;
-    const newOptionName = target.value as OptionName;
-    const newOptionParams = getDefaultOptionParams(newOptionName);
-    update(newOptionName, newOptionParams);
+    const newVariant = target.value as Variant;
+    const newParams = getDefaultParams(newVariant);
+    update(newVariant, newParams);
   };
 
-  let optionParamsSelector: React.ReactNode = null;
-  switch (optionName) {
+  let paramsSelector: React.ReactNode = null;
+  switch (variant) {
     case FROM_COLUMN: {
-      optionParamsSelector = (
+      paramsSelector = (
         <FromColumnWithTZForm
-          params={optionParams as FromColumnWithTZ}
-          updateParams={(newParams: OptionParams) =>
-            update(FROM_COLUMN, newParams)
-          }
+          params={params as FromColumnWithTZ}
+          updateParams={(newParams: Params) => update(FROM_COLUMN, newParams)}
         />
       );
       break;
@@ -92,11 +71,11 @@ export function TimeFieldForm({
   return (
     <>
       <label>Mapping function</label>
-      <select value={optionName} onChange={onOptionNameChange}>
+      <select value={variant} onChange={onVariantChange}>
         <option value={EMPTY}>{EMPTY}</option>
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
       </select>
-      {optionParamsSelector}
+      {paramsSelector}
     </>
   );
 }

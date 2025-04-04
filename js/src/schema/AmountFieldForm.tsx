@@ -11,31 +11,11 @@ import {
 const FROM_COLUMN: string = "FromColumn";
 const FROM_CREDIT_DEBIT_COLUMNS: string = "FromCreditDebitColumns";
 
-type OptionName = typeof FROM_COLUMN | typeof FROM_CREDIT_DEBIT_COLUMNS;
-type OptionParams = FromColumnWithInvert | FromCreditDebitColumns;
+type Variant = typeof FROM_COLUMN | typeof FROM_CREDIT_DEBIT_COLUMNS;
+type Params = FromColumnWithInvert | FromCreditDebitColumns;
 
-function getOptionName(field: AmountField): OptionName {
-  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return FROM_COLUMN;
-  }
-  if (Object.prototype.hasOwnProperty.call(field, FROM_CREDIT_DEBIT_COLUMNS)) {
-    return FROM_CREDIT_DEBIT_COLUMNS;
-  }
-  throw new Error("Unexpected shape of AmountField");
-}
-
-function getOptionParams(field: AmountField): OptionParams {
-  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return field[FROM_COLUMN]!;
-  }
-  if (Object.prototype.hasOwnProperty.call(field, FROM_CREDIT_DEBIT_COLUMNS)) {
-    return field[FROM_CREDIT_DEBIT_COLUMNS]!;
-  }
-  throw new Error("Unexpected shape of AmountField");
-}
-
-function getDefaultOptionParams(optionName: OptionName): OptionParams {
-  switch (optionName) {
+function getDefaultParams(variant: Variant): Params {
+  switch (variant) {
     case FROM_COLUMN:
       return { col: 2, invert: false, skip_pattern: null };
     case FROM_CREDIT_DEBIT_COLUMNS:
@@ -51,49 +31,50 @@ export function AmountFieldForm({
   amount: AmountField;
   updateAmount: (AmountField) => void;
 }) {
-  const optionName = getOptionName(amount);
-  const optionParams = getOptionParams(amount);
+  const variant = amount.variant;
+  const params = "params" in amount ? amount.params : null;
 
-  const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
-    switch (newOptionName) {
+  const update = (newVariant: Variant, newParams: Params) => {
+    switch (newVariant) {
       case FROM_COLUMN: {
-        updateAmount({ FromColumn: newOptionParams });
-        break;
+        updateAmount({ variant: FROM_COLUMN, params: newParams });
+        return;
       }
-      case FROM_CREDIT_DEBIT_COLUMNS: {
-        updateAmount({ FromCreditDebitColumns: newOptionParams });
-        break;
-      }
-      default:
+      case FROM_CREDIT_DEBIT_COLUMNS:
+        {
+          updateAmount({
+            variant: FROM_CREDIT_DEBIT_COLUMNS,
+            params: newParams,
+          });
+          return;
+        }
         throw new Error("Unexpected shape of AmountField");
     }
   };
 
-  const onOptionNameChange = (e: React.SyntheticEvent) => {
+  const onVariantChange = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLSelectElement;
-    const newOptionName = target.value as OptionName;
-    const newOptionParams = getDefaultOptionParams(newOptionName);
-    update(newOptionName, newOptionParams);
+    const newVariant = target.value as Variant;
+    const newParams = getDefaultParams(newVariant);
+    update(newVariant, newParams);
   };
 
-  let optionParamsSelector: React.ReactNode = null;
-  switch (optionName) {
+  let paramsSelector: React.ReactNode = null;
+  switch (variant) {
     case FROM_COLUMN: {
-      optionParamsSelector = (
+      paramsSelector = (
         <FromColumnWithInvertForm
-          params={optionParams as FromColumnWithInvert}
-          updateParams={(newParams: OptionParams) =>
-            update(FROM_COLUMN, newParams)
-          }
+          params={params as FromColumnWithInvert}
+          updateParams={(newParams: Params) => update(FROM_COLUMN, newParams)}
         />
       );
       break;
     }
     case FROM_CREDIT_DEBIT_COLUMNS: {
-      optionParamsSelector = (
+      paramsSelector = (
         <FromCreditDebitColumnsForm
-          params={optionParams as FromCreditDebitColumns}
-          updateParams={(newParams: OptionParams) =>
+          params={params as FromCreditDebitColumns}
+          updateParams={(newParams: Params) =>
             update(FROM_CREDIT_DEBIT_COLUMNS, newParams)
           }
         />
@@ -107,13 +88,13 @@ export function AmountFieldForm({
   return (
     <>
       <label>Mapping function</label>
-      <select value={optionName} onChange={onOptionNameChange}>
+      <select value={variant} onChange={onVariantChange}>
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
         <option value={FROM_CREDIT_DEBIT_COLUMNS}>
           {FROM_CREDIT_DEBIT_COLUMNS}
         </option>
       </select>
-      {optionParamsSelector}
+      {paramsSelector}
     </>
   );
 }

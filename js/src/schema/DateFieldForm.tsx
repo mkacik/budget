@@ -5,25 +5,11 @@ import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
 
 const FROM_COLUMN: string = "FromColumn";
 
-type OptionName = typeof FROM_COLUMN;
-type OptionParams = FromColumnWithTZ;
+type Variant = typeof FROM_COLUMN;
+type Params = FromColumnWithTZ;
 
-function getOptionName(field: DateField): OptionName {
-  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return FROM_COLUMN;
-  }
-  throw new Error("Unexpected shape of DateField");
-}
-
-function getOptionParams(field: DateField): OptionParams {
-  if (Object.prototype.hasOwnProperty.call(field, FROM_COLUMN)) {
-    return field[FROM_COLUMN]!;
-  }
-  throw new Error("Unexpected shape of DateField");
-}
-
-function getDefaultOptionParams(optionName: OptionName): OptionParams {
-  switch (optionName) {
+function getDefaultParams(variant: Variant): Params {
+  switch (variant) {
     case FROM_COLUMN:
       return { col: 0, tz: "Local" };
   }
@@ -37,36 +23,34 @@ export function DateFieldForm({
   date: DateField;
   updateDate: (DateField) => void;
 }) {
-  const optionName = getOptionName(date);
-  const optionParams = getOptionParams(date);
+  const variant = date.variant;
+  const params = date.params;
 
-  const update = (newOptionName: OptionName, newOptionParams: OptionParams) => {
-    switch (newOptionName) {
-      case FROM_COLUMN: {
-        updateDate({ FromColumn: newOptionParams });
-        break;
-      }
-      default:
+  const update = (newVariant: Variant, newParams: Params) => {
+    switch (newVariant) {
+      case FROM_COLUMN:
+        {
+          updateDate({ variant: FROM_COLUMN, params: newParams });
+          return;
+        }
         throw new Error("Unexpected shape of DateField");
     }
   };
 
-  const onOptionNameChange = (e: React.SyntheticEvent) => {
+  const onVariantChange = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLSelectElement;
-    const newOptionName = target.value as OptionName;
-    const newOptionParams = getDefaultOptionParams(newOptionName);
-    update(newOptionName, newOptionParams);
+    const newVariant = target.value as Variant;
+    const newParams = getDefaultParams(newVariant);
+    update(newVariant, newParams);
   };
 
-  let optionParamsSelector: React.ReactNode = null;
-  switch (optionName) {
+  let paramsSelector: React.ReactNode = null;
+  switch (variant) {
     case FROM_COLUMN: {
-      optionParamsSelector = (
+      paramsSelector = (
         <FromColumnWithTZForm
-          params={optionParams as FromColumnWithTZ}
-          updateParams={(newParams: OptionParams) =>
-            update(FROM_COLUMN, newParams)
-          }
+          params={params as FromColumnWithTZ}
+          updateParams={(newParams: Params) => update(FROM_COLUMN, newParams)}
         />
       );
       break;
@@ -78,10 +62,10 @@ export function DateFieldForm({
   return (
     <>
       <label>Mapping function</label>
-      <select value={optionName} onChange={onOptionNameChange}>
+      <select value={variant} onChange={onVariantChange}>
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
       </select>
-      {optionParamsSelector}
+      {paramsSelector}
     </>
   );
 }

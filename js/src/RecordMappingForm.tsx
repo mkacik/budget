@@ -16,10 +16,16 @@ import { FormSection } from "./ui/Form";
 
 export function getDefaultRecordMapping(): RecordMapping {
   const recordMapping: RecordMapping = {
-    transaction_date: { FromColumn: { col: 0, tz: "Local" } },
-    transaction_time: "Empty",
-    description: { FromColumn: { col: 1 } },
-    amount: { FromColumn: { col: 2, invert: false, skip_pattern: null } },
+    transaction_date: {
+      variant: "FromColumn",
+      params: { col: 0, tz: "Local" },
+    },
+    transaction_time: { variant: "Empty" },
+    description: { variant: "FromColumn", params: { col: 1 } },
+    amount: {
+      variant: "FromColumn",
+      params: { col: 2, invert: false, skip_pattern: null },
+    },
   } as RecordMapping;
 
   return recordMapping;
