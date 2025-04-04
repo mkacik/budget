@@ -4,52 +4,8 @@ import { useState, useEffect } from "react";
 import { SpendingDataPoint } from "./types/SpendingData";
 
 import { BudgetView } from "./BudgetView";
-import { Section, SectionHeader } from "./ui/Common";
-
-type CategoryID = number;
-
-type MonthlySpendingPerCategory = {
-  category: string;
-  month: string;
-  spend: number;
-};
-
-type MonthlySpendingData = Map<
-  string,
-  Map<CategoryID, MonthlySpendingPerCategory>
->;
-
-function parseData(
-  monthlySpending: Array<SpendingDataPoint>,
-  budget: BudgetView,
-): MonthlySpendingData {
-  const dataPoints: MonthlySpendingData = new Map();
-  for (const row of monthlySpending) {
-    const item = budget.getItem(row.budget_item_id);
-    const category = item.category;
-
-    if (category.ignored) {
-      continue;
-    }
-
-    const month = row.month;
-    if (!dataPoints.has(month)) {
-      dataPoints.set(month, new Map());
-    }
-    const monthDataPoints = dataPoints.get(month)!;
-    if (!monthDataPoints.has(category.id)) {
-      const categorySpend = {
-        category: category.name,
-        month: month,
-        spend: 0,
-      } as MonthlySpendingPerCategory;
-      monthDataPoints.set(category.id, categorySpend);
-    }
-    monthDataPoints.get(category.id)!.spend += row.amount;
-  }
-
-  return dataPoints;
-}
+import { parseData, MonthlySpendingData } from "./MonthlySpendingData";
+import { ErrorCard, Section, SectionHeader } from "./ui/Common";
 
 function getMonths(year: number): Array<string> {
   return [...Array(12).keys()].map((m) => {
@@ -58,19 +14,13 @@ function getMonths(year: number): Array<string> {
   });
 }
 
-function MonthlySpendingTable({
-  dataPoints,
+function MonthlySpendingPerCategoryTable({
+  data,
   budget,
 }: {
-  dataPoints: Array<SpendingDataPoint> | null;
+  data: MonthlySpendingData;
   budget: BudgetView;
 }) {
-  if (dataPoints === null) {
-    return null;
-  }
-
-  const data = parseData(dataPoints, budget);
-
   const headerRowNames = budget.categories.map((category, i) => (
     <th key={i} className="r-align">
       {category.name}
@@ -139,6 +89,27 @@ function MonthlySpendingTable({
       <tbody className="number">{rows}</tbody>
     </table>
   );
+}
+
+function MonthlySpendingTable({
+  dataPoints,
+  budget,
+}: {
+  dataPoints: Array<SpendingDataPoint> | null;
+  budget: BudgetView;
+}) {
+  if (dataPoints === null) {
+    return <i>fetching data...</i>;
+  }
+
+  try {
+    const data = parseData(dataPoints, budget);
+    return <MonthlySpendingPerCategoryTable data={data} budget={budget} />;
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "Could not parse spending data";
+    return <ErrorCard message={message} />;
+  }
 }
 
 export function AnalyzePage({ budget }: { budget: BudgetView }) {
