@@ -62,7 +62,7 @@ function BudgetCategoryRow({
   );
 
   return (
-    <tr className="bold">
+    <tr className="bold highlight">
       <td className="v-center">
         {category.name}
         <InlineGlyphButton glyph="edit" onClick={editCategory} />

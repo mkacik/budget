@@ -3,15 +3,38 @@ import { useState, useEffect } from "react";
 
 import { SpendingDataPoint } from "./types/SpendingData";
 
-import { BudgetView } from "./BudgetView";
+import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { parseData, MonthlySpendingData } from "./MonthlySpendingData";
-import { Col, ErrorCard, Section, SectionHeader } from "./ui/Common";
+import {
+  Col,
+  SmallInlineGlyph,
+  ErrorCard,
+  Section,
+  SectionHeader,
+} from "./ui/Common";
 
 function getMonths(year: number): Array<string> {
   return [...Array(12).keys()].map((m) => {
     const month = String(m + 1).padStart(2, "0");
     return `${year}-${month}`;
   });
+}
+
+function SpendingTableCell({
+  obj,
+  spend,
+}: {
+  obj: BudgetItemView | BudgetCategoryView;
+  spend: number;
+}) {
+  const classNames = ["number", "r-align"];
+  if (spend <= 0) {
+    classNames.push("soft");
+  } else if (spend > obj.amountPerMonth) {
+    classNames.push("red");
+  }
+
+  return <td className={classNames.join(" ")}>{spend.toFixed(2)}</td>;
 }
 
 function MonthlySpendingPerCategoryTable({
@@ -32,48 +55,37 @@ function MonthlySpendingPerCategoryTable({
     );
   });
 
-  /*
-  const headerRow = budget.categories.map((category, i) => (
-    <th key={i} className="r-align">
-      {category.name}
-    </th>
-  ));
-  */
-  /*
-  const headerRowAmounts = budget.categories.map((category, i) => (
-    <th key={i} className="r-align">
-      <span className="number">{category.amountPerMonth.toFixed(2)}</span>/mo
-    </th>
-  ));
-  */
-
   const rows: Array<React.ReactNode> = [];
   for (const category of budget.categories) {
-    const cols: Array<React.ReactNode> = [
-      <td className="bold" key={category.id}>
-        {category.name}
-      </td>,
-    ];
+    const cols: Array<React.ReactNode> = [<td key="hdr">{category.name}</td>];
 
     for (const month of months) {
       const spend = data.get(month)?.get(category.id)?.spend ?? 0;
-
-      const classNames = ["number", "r-align"];
-      if (spend <= 0) {
-        classNames.push("soft");
-      } else if (spend > category.amountPerMonth) {
-        classNames.push("red");
-      }
-
-      const key = `${category.id}-${month}`;
-      cols.push(
-        <td key={key} className={classNames.join(" ")}>
-          {spend.toFixed(2)}
-        </td>,
-      );
+      cols.push(<SpendingTableCell key={month} obj={category} spend={spend} />);
     }
 
-    rows.push(<tr key={category.id}>{cols}</tr>);
+    rows.push(
+      <tr key={`${category.id}`} className="bold highlight">
+        {cols}
+      </tr>,
+    );
+
+    for (const item of category.items) {
+      const cols: Array<React.ReactNode> = [
+        <td key="hdr" className="v-center">
+          <SmallInlineGlyph glyph="chevron_right" />
+          {item.name}
+        </td>,
+      ];
+
+      for (const month of months) {
+        const spend =
+          data.get(month)?.get(category.id)?.items.get(item.id)?.spend ?? 0;
+        cols.push(<SpendingTableCell key={month} obj={item} spend={spend} />);
+      }
+
+      rows.push(<tr key={`${category.id}-${item.id}`}>{cols}</tr>);
+    }
   }
 
   return (
@@ -87,7 +99,7 @@ function MonthlySpendingPerCategoryTable({
 
       <thead>
         <tr>
-          <th>Category ↓</th>
+          <th>Name</th>
           {headerRow}
         </tr>
       </thead>

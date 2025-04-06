@@ -272,6 +272,10 @@ table {
     font-weight: bold;
   }
 
+  .highlight {
+    background-color: var(--color-table-row);
+  }
+
   .nowrap {
     white-space: nowrap;
   }
@@ -372,6 +376,10 @@ table {
   }
 }
 
+.material-symbols-outlined {
+  font-variation-settings: "opsz" 24;
+}
+
 .button {
   border: none;
   border-radius: var(--border-radius);
@@ -390,16 +398,12 @@ table {
 
   .material-symbols-outlined {
     color: #555555;
-    font-variation-settings: "opsz" 24;
   }
 }
 
 .button-small {
   padding: var(--padding-small) !important;
 
-  .material-symbols-outlined {
-    font-variation-settings: "opsz" 20;
-  }
 }
 
 .pill {

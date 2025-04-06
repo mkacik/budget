@@ -17,7 +17,7 @@ type MonthlySpendingPerCategory = {
   category: string;
   month: string;
   spend: number;
-  items: Array<MonthlySpendingPerItem>;
+  items: Map<ID, MonthlySpendingPerItem>;
 };
 
 export type MonthlySpendingData = Map<
@@ -49,7 +49,7 @@ export function parseData(
         category: category.name,
         month: month,
         spend: 0,
-        items: [],
+        items: new Map(),
       } as MonthlySpendingPerCategory;
       monthDataPoints.set(category.id, categorySpend);
     }
@@ -64,7 +64,7 @@ export function parseData(
 
     const monthSpendPerCategory = monthDataPoints.get(category.id)!;
     monthSpendPerCategory.spend += row.amount;
-    monthSpendPerCategory.items.push(monthSpendPerItem);
+    monthSpendPerCategory.items.set(item.id, monthSpendPerItem);
   }
 
   return dataPoints;

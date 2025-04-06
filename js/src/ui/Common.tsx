@@ -121,7 +121,9 @@ export function InlineGlyphButton({
 }) {
   return (
     <div className="button button-small" onClick={onClick}>
-      <span className="material-symbols-outlined">{glyph}</span>
+      <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+        {glyph}
+      </span>
       {text}
     </div>
   );
@@ -129,6 +131,14 @@ export function InlineGlyphButton({
 
 export function InlineGlyph({ glyph }: { glyph: Glyph }) {
   return <span className="material-symbols-outlined">{glyph}</span>;
+}
+
+export function SmallInlineGlyph({ glyph }: { glyph: Glyph }) {
+  return (
+    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+      {glyph}
+    </span>
+  );
 }
 
 export function Pill({ children }: { children: string }) {
