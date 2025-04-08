@@ -160,3 +160,23 @@ export function Col({ widthPct }: { widthPct?: number }) {
   const width = `${widthPct}%`;
   return <col style={{ width: width }} />;
 }
+
+export function LoadingBanner({ isLoading }: { isLoading: boolean }) {
+  const opacity = isLoading ? 1 : 0;
+  const events = isLoading ? "auto" : "none";
+  return (
+    <span
+      className="loading-container"
+      style={{ opacity: opacity, pointerEvents: events }}
+    >
+      {isLoading ? (
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      ) : null}
+    </span>
+  );
+}

@@ -290,6 +290,7 @@ dependencies = [
  "csv",
  "dateparser",
  "libsodium-sys-stable",
+ "regex",
  "rocket",
  "serde",
  "serde_json",

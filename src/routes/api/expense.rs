@@ -1,3 +1,4 @@
+use regex::Regex;
 use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
 use rocket::serde::json::Json;
@@ -8,7 +9,7 @@ use tokio::fs::remove_file;
 use crate::account::Account;
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
-use crate::expense::Expense;
+use crate::expense::{Expense, ExpenseCategory};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
@@ -102,8 +103,36 @@ pub async fn import_expenses(
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct UpdateExpenseRequest {
-    budget_item_id: Option<ID>,
+pub struct DeleteExpensesRequest {
+    newer_than_date: String,
+}
+
+#[post(
+    "/accounts/<account_id>/expenses/delete",
+    format = "json",
+    data = "<json>"
+)]
+pub async fn delete_expenses(
+    db: &State<Database>,
+    log_entry: &WriteLogEntry,
+    account_id: ID,
+    json: Json<DeleteExpensesRequest>,
+) -> ApiResponse {
+    let request = json.into_inner();
+    log_entry.set_content(&request);
+
+    let date = request.newer_than_date;
+    let re = Regex::new(r"^20\d\d-[01]\d-[0123]\d$").unwrap();
+    if !re.is_match(&date) {
+        return ApiResponse::BadRequest {
+            message: format!("Incorrect date '{}', expected 'yyyy-MM-dd' format", date),
+        };
+    }
+
+    match Expense::delete_by_account_id_and_date(&db, account_id, &date).await {
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
+    }
 }
 
 #[post("/expenses/<expense_id>", format = "json", data = "<json>")]
@@ -111,7 +140,7 @@ pub async fn update_expense(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
     expense_id: ID,
-    json: Json<UpdateExpenseRequest>,
+    json: Json<ExpenseCategory>,
 ) -> ApiResponse {
     let request = json.into_inner();
     log_entry.set_content(&request);

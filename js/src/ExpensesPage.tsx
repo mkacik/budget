@@ -7,14 +7,10 @@ import { Expense, Expenses } from "./types/Expense";
 import { BudgetView } from "./BudgetView";
 import { ExpensesTable } from "./ExpensesTable";
 import {
-  ErrorCard,
-  InlineGlyphButton,
-  ItemCard,
-  ModalCard,
-  Section,
-  SectionHeader,
-} from "./ui/Common";
-import { Form, FormButtons } from "./ui/Form";
+  ImportExpensesButton,
+  DeleteExpensesButton,
+} from "./AccountExpensesButtons";
+import { ItemCard, Section, SectionHeader } from "./ui/Common";
 
 export function AccountSelector({
   accounts,
@@ -44,108 +40,6 @@ export function AccountSelector({
         </option>
       ))}
     </select>
-  );
-}
-
-function StatementImportForm({
-  account,
-  onSuccess,
-}: {
-  account: Account;
-  onSuccess: () => void;
-}) {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
-
-  const onSubmit = (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const maybeFile = formData.get("file") as File;
-    if (maybeFile?.name === "") {
-      setErrorMessage("File must be selected.");
-      return;
-    }
-    setLoading(true);
-    fetch(`api/accounts/${account.id}/expenses`, {
-      method: "POST",
-      body: formData,
-    }).then((response) => {
-      setLoading(false);
-      form.reset();
-      if (response.ok) {
-        clearErrorMessage();
-        onSuccess();
-      } else {
-        response
-          .json()
-          .then((json) => {
-            const message = json.error ?? "Something went wrong!";
-            setErrorMessage(message);
-          })
-          .catch((error) => {
-            console.log(response, error);
-            setErrorMessage("Something went wrong.");
-          });
-      }
-    });
-  };
-
-  if (loading) {
-    return "LOADING";
-  }
-
-  return (
-    <>
-      <ErrorCard message={errorMessage} />
-      <Form onSubmit={onSubmit}>
-        <label htmlFor="file">Choose statement to upload (.csv,.txt)</label>
-        <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
-        <FormButtons>
-          <input className="button" type="submit" value="Upload" />
-        </FormButtons>
-      </Form>
-    </>
-  );
-}
-
-export function StatementImportButton({
-  account,
-  onImportSuccess,
-}: {
-  account: Account;
-  onImportSuccess: () => void;
-}) {
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-
-  const onSuccess = () => {
-    onImportSuccess();
-    setModalVisible(false);
-  };
-
-  return (
-    <>
-      <small>
-        <InlineGlyphButton
-          glyph="add"
-          text="import expenses"
-          onClick={() => setModalVisible(true)}
-        />
-      </small>
-      <ModalCard
-        title="Import Expenses"
-        visible={modalVisible}
-        hideModal={() => setModalVisible(false)}
-      >
-        <StatementImportForm account={account} onSuccess={onSuccess} />
-      </ModalCard>
-    </>
   );
 }
 
@@ -194,7 +88,11 @@ export function ExpensesPage({
             selected={account}
             updateAccount={updateAccount}
           />
-          <StatementImportButton
+          <ImportExpensesButton
+            account={account}
+            onImportSuccess={fetchExpenses}
+          />
+          <DeleteExpensesButton
             account={account}
             onImportSuccess={fetchExpenses}
           />

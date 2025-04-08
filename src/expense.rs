@@ -1,14 +1,3 @@
-/*
-Expense table schema
-- date and, if provided, time
-- description
-- amount
-- details (vendor address, item description, etc., all the garbage)
-- optional payment method/account, for x-account moves, like paying off CC from bank account
-
-Additionally, the table where Amazon purchases are logged should have following:
-- vendor order/transaction id (used for grouping)
-*/
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
@@ -84,6 +73,23 @@ impl Expense {
         .unwrap();
 
         Ok(id)
+    }
+
+    pub async fn delete_by_account_id_and_date(
+        db: &Database,
+        account_id: ID,
+        date: &str,
+    ) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!(
+            "DELETE FROM expenses WHERE account_id = ?1 AND transaction_date > ?2",
+            account_id,
+            date,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
     }
 
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<Expense> {
