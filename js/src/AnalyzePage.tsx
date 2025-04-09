@@ -11,6 +11,7 @@ import {
   ErrorCard,
   Section,
   SectionHeader,
+  LoadingBanner,
 } from "./ui/Common";
 
 function getMonths(year: number): Array<string> {
@@ -117,7 +118,7 @@ function MonthlySpendingTable({
   budget: BudgetView;
 }) {
   if (dataPoints === null) {
-    return <i>fetching data...</i>;
+    return null;
   }
 
   try {
@@ -133,19 +134,28 @@ function MonthlySpendingTable({
 export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [spendingData, setSpendingData] =
     useState<Array<SpendingDataPoint> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchSpendingData = () => {
+    setError(null);
+    setLoading(true);
     fetch("/api/spending")
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         const data = result.data as Array<SpendingDataPoint>;
         setSpendingData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+        setError("Something went wrong! Please refresh the page");
       });
   };
 
   useEffect(() => {
-    if (spendingData === null) {
+    if (spendingData === null && error === null) {
       fetchSpendingData();
     }
   }, [spendingData, fetchSpendingData]);
@@ -154,6 +164,9 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     <Section>
       <SectionHeader>Analyze spending</SectionHeader>
       <MonthlySpendingTable dataPoints={spendingData} budget={budget} />
+
+      <LoadingBanner isLoading={loading} />
+      <ErrorCard message={error} />
     </Section>
   );
 }
