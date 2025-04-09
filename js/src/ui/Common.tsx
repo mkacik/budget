@@ -27,13 +27,9 @@ export function ModalCard({
     return null;
   }
 
-  const preventParentOnClick = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-  };
-
   return (
-    <div className="modal-container" onClick={hideModal}>
-      <div className="card modal" onClick={preventParentOnClick}>
+    <div className="modal-container">
+      <div className="card modal">
         <div className="modal-header title">
           <span className="modal-title">{title}</span>
           <span className="modal-close-button" onClick={hideModal}>
