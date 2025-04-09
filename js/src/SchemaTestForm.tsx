@@ -98,9 +98,10 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
 
       <Form onSubmit={onSubmit}>
         <FormFieldWide>
-          <label>
-            Paste row from your statement to test it against new schema
-          </label>
+          <small>
+            Paste row from your statement to test it against new schema. Works
+            on unsaved changes.
+          </small>
         </FormFieldWide>
         <FormFieldWide>
           <textarea value={row} onChange={updateRow}></textarea>

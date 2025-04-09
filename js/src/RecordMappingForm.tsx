@@ -12,7 +12,7 @@ import { AmountFieldForm } from "./schema/AmountFieldForm";
 import { DateFieldForm } from "./schema/DateFieldForm";
 import { TimeFieldForm } from "./schema/TimeFieldForm";
 import { TextFieldForm } from "./schema/TextFieldForm";
-import { FormSection } from "./ui/Form";
+import { FormSection, FormFieldWide } from "./ui/Form";
 
 export function getDefaultRecordMapping(): RecordMapping {
   const recordMapping: RecordMapping = {
@@ -60,6 +60,14 @@ export function RecordMappingForm({
 
   return (
     <>
+      <FormFieldWide>
+        <small>
+          Choose mapping function for each of the required Expense fields below.
+          Columns are 0-indexed. Amount is expexted to be a positive number, use
+          "Flip sign" option if statement stores it as negative value.
+        </small>
+      </FormFieldWide>
+
       <FormSection title="Transaction Date">
         <DateFieldForm
           date={recordMapping.transaction_date}
