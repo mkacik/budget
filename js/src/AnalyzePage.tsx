@@ -97,7 +97,7 @@ function MonthlySpendingTable({
         const spend =
           data.get(month)?.get(category.id)?.items.get(item.id)?.spend ?? 0;
         const onClick = () => {
-          updateSelected(item.id, month);
+          updateSelected(item, month);
         };
         const cell = (
           <SpendingTableCell
@@ -135,6 +135,43 @@ function MonthlySpendingTable({
   );
 }
 
+function ExpensesSection({
+  selected,
+  expenses,
+  budget,
+  onExpenseCategoryChange,
+}: {
+  selected: [BudgetItemView, string] | null;
+  expenses: Array<Expense> | null;
+  budget: BudgetView;
+  onExpenseCategoryChange: () => void;
+}) {
+  if (expenses === null || selected === null) {
+    return null;
+  }
+
+  const [budgetItem, month] = selected;
+  const expensesTable =
+    expenses.length > 0 ? (
+      <ExpensesTable
+        expenses={expenses}
+        onSuccess={onExpenseCategoryChange}
+        budget={budget}
+      />
+    ) : (
+      <span>No expenses</span>
+    );
+
+  return (
+    <Section>
+      <b>
+        [{month}] {budgetItem.displayName}
+      </b>
+      {expensesTable}
+    </Section>
+  );
+}
+
 export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [spendingData, setSpendingData] = useState<MonthlySpendingData | null>(
     null,
@@ -142,7 +179,9 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [expenses, setExpenses] = useState<Array<Expense> | null>(null);
-  const [selected, setSelected] = useState<[number, string] | null>(null);
+  const [selected, setSelected] = useState<[BudgetItemView, string] | null>(
+    null,
+  );
 
   const fetchSpendingData = () => {
     setError(null);
@@ -174,8 +213,8 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     }
 
     setLoading(true);
-    const [budgetItemID, month] = selected;
-    fetch(`/api/expenses/monthly/${budgetItemID}/${month}`)
+    const [budgetItem, month] = selected;
+    fetch(`/api/expenses/monthly/${budgetItem.id}/${month}`)
       .then((response) => response.json())
       .then((result) => {
         const expenses = result.expenses as Array<Expense>;
@@ -195,8 +234,13 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     }
   }, [selected]);
 
-  const updateSelected = (budgetItemID: number, month: string) => {
-    setSelected([budgetItemID, month]);
+  const updateSelected = (budgetItem: BudgetItemView, month: string) => {
+    setSelected([budgetItem, month]);
+  };
+
+  const onExpenseCategoryChange = () => {
+    fetchSpendingData();
+    fetchExpenses();
   };
 
   const spendingTable =
@@ -208,20 +252,6 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
       />
     ) : null;
 
-  const onExpenseCategoryChange = () => {
-    fetchSpendingData();
-    fetchExpenses();
-  };
-
-  const expensesTable =
-    expenses !== null ? (
-      <ExpensesTable
-        expenses={expenses}
-        onSuccess={onExpenseCategoryChange}
-        budget={budget}
-      />
-    ) : null;
-
   return (
     <>
       <Section>
@@ -229,7 +259,12 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
         <ErrorCard message={error} />
         {spendingTable}
       </Section>
-      <Section>{expensesTable}</Section>
+      <ExpensesSection
+        selected={selected}
+        expenses={expenses}
+        budget={budget}
+        onExpenseCategoryChange={onExpenseCategoryChange}
+      />
       <LoadingBanner isLoading={loading} />
     </>
   );
