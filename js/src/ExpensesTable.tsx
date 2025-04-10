@@ -220,6 +220,10 @@ export function ExpensesTable({
           setActiveRow(expenses.length - 1);
           return;
         }
+        case "Escape": {
+          setActiveRow(null);
+          return;
+        }
       }
     };
     document.addEventListener("keydown", handleNavigationKeys);
