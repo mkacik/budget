@@ -2,7 +2,8 @@
   --color-main: #ffbf00;
   --color-table-row: #f9f9fb;
   --color-table-header: #fff8e2;
-  --color-hover: #ffd34f;
+  --color-hover: #ffe595;
+  --color-hover-dark: #ffd558;
   --color-card-background: #f9f9fb;
   --color-card-border: #cdcdcd;
   --color-table-border: #d0d0d0;
@@ -81,7 +82,7 @@ pre {
     padding: var(--padding-medium);
 
     &:hover {
-      background-color: var(--color-hover);
+      background-color: var(--color-hover-dark);
       cursor: pointer;
     }
   }
@@ -248,9 +249,11 @@ table {
     border-top: 1px solid var(--color-table-border);
   }
 
-  tr {
-    &:hover {
-      background-color: var(--color-hover);
+  tbody {
+    tr {
+      &:hover {
+        background-color: var(--color-hover);
+      }
     }
   }
 
@@ -294,6 +297,14 @@ table {
     gap: var(--gap-medium);
     align-items: center;
   }
+
+  .td-button {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--color-hover-dark);
+    }
+  }
 }
 
 .expenses-table {
@@ -301,9 +312,11 @@ table {
     background-color: var(--color-table-row);
   }
 
-  tr {
-    &:hover {
-      cursor: pointer;
+  tbody {
+    tr {
+      &:hover {
+        cursor: pointer;
+      }
     }
   }
 

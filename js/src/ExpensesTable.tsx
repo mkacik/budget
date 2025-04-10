@@ -252,7 +252,9 @@ export function ExpensesTable({
             expense={expense}
             active={idx === activeRow}
             budget={budget}
-            onClick={() => setActiveRow(idx)}
+            onClick={() =>
+              idx === activeRow ? setActiveRow(null) : setActiveRow(idx)
+            }
             onSuccess={() => {
               nextRow();
               onSuccess();

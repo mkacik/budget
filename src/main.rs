@@ -64,6 +64,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::expense::import_expenses,
                 routes::api::expense::delete_expenses,
                 routes::api::expense::update_expense,
+                routes::api::expense::get_expenses_for_budget_item,
                 routes::api::statement_schema::get_schemas,
                 routes::api::statement_schema::add_schema,
                 routes::api::statement_schema::update_schema,

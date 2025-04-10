@@ -169,3 +169,24 @@ pub async fn update_expense(
         Err(_) => ApiResponse::ServerError,
     }
 }
+
+#[get("/expenses/monthly/<budget_item_id>/<month>")]
+pub async fn get_expenses_for_budget_item(
+    db: &State<Database>,
+    budget_item_id: ID,
+    month: String,
+) -> ApiResponse {
+    let re = Regex::new(r"^20\d\d-[01]\d$").unwrap();
+    if !re.is_match(&month) {
+        return ApiResponse::BadRequest {
+            message: format!("Incorrect date '{}', expected 'yyyy-MM' format", month),
+        };
+    }
+
+    let result = Expense::fetch_by_budget_item_id_and_month(&db, budget_item_id, month).await;
+
+    match serialize_result(result) {
+        Ok(value) => ApiResponse::SuccessWithData { data: value },
+        Err(_) => ApiResponse::ServerError,
+    }
+}

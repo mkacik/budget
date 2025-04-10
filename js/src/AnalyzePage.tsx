@@ -2,9 +2,11 @@ import React from "react";
 import { useState, useEffect } from "react";
 
 import { SpendingDataPoint } from "./types/SpendingData";
+import { Expense } from "./types/Expense";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { parseData, MonthlySpendingData } from "./MonthlySpendingData";
+import { ExpensesTable } from "./ExpensesTable";
 import {
   Col,
   SmallInlineGlyph,
@@ -24,9 +26,11 @@ function getMonths(year: number): Array<string> {
 function SpendingTableCell({
   obj,
   spend,
+  onClick,
 }: {
   obj: BudgetItemView | BudgetCategoryView;
   spend: number;
+  onClick?: () => void;
 }) {
   const classNames = ["number", "r-align"];
   if (spend <= 0) {
@@ -35,15 +39,25 @@ function SpendingTableCell({
     classNames.push("red");
   }
 
-  return <td className={classNames.join(" ")}>{spend.toFixed(2)}</td>;
+  if (onClick !== undefined) {
+    classNames.push("td-button");
+  }
+
+  return (
+    <td className={classNames.join(" ")} onClick={onClick}>
+      {spend.toFixed(2)}
+    </td>
+  );
 }
 
-function MonthlySpendingPerCategoryTable({
+function MonthlySpendingTable({
   data,
   budget,
+  updateSelected,
 }: {
   data: MonthlySpendingData;
   budget: BudgetView;
+  updateSelected: (number, string) => void;
 }) {
   // TODO: find some way to make this work in 2026
   const months = getMonths(2025);
@@ -82,7 +96,18 @@ function MonthlySpendingPerCategoryTable({
       for (const month of months) {
         const spend =
           data.get(month)?.get(category.id)?.items.get(item.id)?.spend ?? 0;
-        cols.push(<SpendingTableCell key={month} obj={item} spend={spend} />);
+        const onClick = () => {
+          updateSelected(item.id, month);
+        };
+        const cell = (
+          <SpendingTableCell
+            key={month}
+            obj={item}
+            spend={spend}
+            onClick={onClick}
+          />
+        );
+        cols.push(cell);
       }
 
       rows.push(<tr key={`${category.id}-${item.id}`}>{cols}</tr>);
@@ -110,32 +135,14 @@ function MonthlySpendingPerCategoryTable({
   );
 }
 
-function MonthlySpendingTable({
-  dataPoints,
-  budget,
-}: {
-  dataPoints: Array<SpendingDataPoint> | null;
-  budget: BudgetView;
-}) {
-  if (dataPoints === null) {
-    return null;
-  }
-
-  try {
-    const data = parseData(dataPoints, budget);
-    return <MonthlySpendingPerCategoryTable data={data} budget={budget} />;
-  } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Could not parse spending data";
-    return <ErrorCard message={message} />;
-  }
-}
-
 export function AnalyzePage({ budget }: { budget: BudgetView }) {
-  const [spendingData, setSpendingData] =
-    useState<Array<SpendingDataPoint> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [spendingData, setSpendingData] = useState<MonthlySpendingData | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expenses, setExpenses] = useState<Array<Expense> | null>(null);
+  const [selected, setSelected] = useState<[number, string] | null>(null);
 
   const fetchSpendingData = () => {
     setError(null);
@@ -143,7 +150,8 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     fetch("/api/spending")
       .then((response) => response.json())
       .then((result) => {
-        const data = result.data as Array<SpendingDataPoint>;
+        const dataPoints = result.data as Array<SpendingDataPoint>;
+        const data = parseData(dataPoints, budget);
         setSpendingData(data);
         setLoading(false);
       })
@@ -158,15 +166,71 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     if (spendingData === null && error === null) {
       fetchSpendingData();
     }
-  }, [spendingData, fetchSpendingData]);
+  }, []);
+
+  const fetchExpenses = () => {
+    if (selected === null) {
+      return;
+    }
+
+    setLoading(true);
+    const [budgetItemID, month] = selected;
+    fetch(`/api/expenses/monthly/${budgetItemID}/${month}`)
+      .then((response) => response.json())
+      .then((result) => {
+        const expenses = result.expenses as Array<Expense>;
+        setExpenses(expenses);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+        setError("Something went wrong! Please refresh the page");
+      });
+  };
+
+  useEffect(() => {
+    if (error === null) {
+      fetchExpenses();
+    }
+  }, [selected]);
+
+  const updateSelected = (budgetItemID: number, month: string) => {
+    setSelected([budgetItemID, month]);
+  };
+
+  const spendingTable =
+    spendingData !== null ? (
+      <MonthlySpendingTable
+        data={spendingData}
+        budget={budget}
+        updateSelected={updateSelected}
+      />
+    ) : null;
+
+  const onExpenseCategoryChange = () => {
+    fetchSpendingData();
+    fetchExpenses();
+  };
+
+  const expensesTable =
+    expenses !== null ? (
+      <ExpensesTable
+        expenses={expenses}
+        onSuccess={onExpenseCategoryChange}
+        budget={budget}
+      />
+    ) : null;
 
   return (
-    <Section>
-      <SectionHeader>Analyze spending</SectionHeader>
-      <MonthlySpendingTable dataPoints={spendingData} budget={budget} />
-
+    <>
+      <Section>
+        <SectionHeader>Analyze spending</SectionHeader>
+        <ErrorCard message={error} />
+        {spendingTable}
+      </Section>
+      <Section>{expensesTable}</Section>
       <LoadingBanner isLoading={loading} />
-      <ErrorCard message={error} />
-    </Section>
+    </>
   );
 }

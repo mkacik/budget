@@ -115,6 +115,26 @@ impl Expense {
         Ok(Expenses { expenses: results })
     }
 
+    pub async fn fetch_by_budget_item_id_and_month(
+        db: &Database,
+        budget_item_id: ID,
+        month: String,
+    ) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT * FROM expenses WHERE
+              budget_item_id = ?1
+              AND transaction_date LIKE ?2
+            ORDER BY transaction_date DESC, transaction_time DESC",
+        )
+        .bind(budget_item_id)
+        .bind(format!("{}-%", month))
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
     pub async fn fetch_latest_expenses(
         db: &Database,
         account_id: ID,
