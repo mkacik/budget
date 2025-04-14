@@ -8,7 +8,7 @@ export function Form({
   children: React.ReactNode;
 }) {
   return (
-    <form className="edit-form" onSubmit={onSubmit}>
+    <form className="edit-form" onSubmit={onSubmit} autoComplete="off">
       {children}
     </form>
   );
