@@ -1,4 +1,5 @@
 use csv::StringRecord;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -160,7 +161,7 @@ impl AmountField {
     }
 
     fn parse_from_str(field: &str, invert: bool) -> Result<f64, ImportResult> {
-        let value = match field.parse::<f64>() {
+        let value = match strip_thousands_separator(field).parse::<f64>() {
             Ok(value) => {
                 if invert {
                     -value
@@ -175,6 +176,16 @@ impl AmountField {
         };
 
         Ok(value)
+    }
+}
+
+fn strip_thousands_separator(string: &str) -> String {
+    // string.parse::<f64>() does not understand commas as thousands separator.
+    let re = Regex::new(r"-?\d+,\d+\.\d\d").unwrap();
+
+    match re.is_match(string) {
+        true => string.replace(",", ""),
+        false => string.to_string(),
     }
 }
 
@@ -243,6 +254,71 @@ mod tests {
         let result = TextField::FromColumn { col: 1 }.from_record(&record);
         assert!(result.is_ok());
         assert_eq!(&result.unwrap(), "");
+    }
+
+    #[test]
+    fn test_amount_field() {
+        let record = StringRecord::from(vec!["ab", "0.69"]);
+        let result = AmountField::FromColumn {
+            col: 1,
+            invert: false,
+            skip_pattern: None,
+        }
+        .from_record(&record);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0.69);
+    }
+
+    #[test]
+    fn test_amount_field_thousand_separators() {
+        let record = StringRecord::from(vec!["ab", "12,345.67"]);
+        let result = AmountField::FromColumn {
+            col: 1,
+            invert: false,
+            skip_pattern: None,
+        }
+        .from_record(&record);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 12345.67);
+    }
+
+    #[test]
+    fn test_amount_field_invert() {
+        let record = StringRecord::from(vec!["ab", "0.69"]);
+        let result = AmountField::FromColumn {
+            col: 1,
+            invert: true,
+            skip_pattern: None,
+        }
+        .from_record(&record);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), -0.69);
+    }
+
+    #[test]
+    fn test_amount_field_skip_pattern() {
+        let record = StringRecord::from(vec!["ab", "N/A"]);
+        let result_err = AmountField::FromColumn {
+            col: 1,
+            invert: false,
+            skip_pattern: None,
+        }
+        .from_record(&record);
+        match result_err {
+            Err(ImportResult::Error { message }) => {}
+            _ => assert!(false, "Expected Err(ImportResult::Error {{ ... }})"),
+        }
+
+        let result_skip = AmountField::FromColumn {
+            col: 1,
+            invert: false,
+            skip_pattern: Some(String::from("N/A")),
+        }
+        .from_record(&record);
+        match result_skip {
+            Err(ImportResult::Skip) => {}
+            _ => assert!(false, "Expected Err(ImportResult::Skip)"),
+        }
     }
 
     #[test]
