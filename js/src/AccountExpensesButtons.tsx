@@ -5,22 +5,25 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { Account } from "./types/Account";
+import { StatementSchema } from "./types/StatementSchema";
+
 import {
   ErrorCard,
   InlineGlyphButton,
   ModalCard,
   Section,
-  SectionHeader,
   LoadingBanner,
 } from "./ui/Common";
-import { Form, FormButtons, FormSection, FormSubmitButton } from "./ui/Form";
+import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 import { JSON_HEADERS } from "./Common";
 
 function ImportExpensesForm({
   account,
+  schema,
   onSuccess,
 }: {
   account: Account;
+  schema: StatementSchema;
   onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -66,9 +69,21 @@ function ImportExpensesForm({
     });
   };
 
+  const notes =
+    schema.notes === null || schema.notes === "" ? (
+      <>
+        Using <b>{schema.name}</b> schema.
+      </>
+    ) : (
+      <>
+        Notes for <b>{schema.name}</b> schema:<div>{schema.notes}</div>
+      </>
+    );
+
   return (
     <Section>
       <ErrorCard message={errorMessage} />
+      <small>{notes}</small>
       <Form onSubmit={onSubmit}>
         <label htmlFor="file">Choose statement to upload (.csv,.txt)</label>
         <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
@@ -154,9 +169,11 @@ function DeleteExpensesForm({
 
 export function ImportExpensesButton({
   account,
+  schema,
   onImportSuccess,
 }: {
   account: Account;
+  schema: StatementSchema | null;
   onImportSuccess: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -165,6 +182,19 @@ export function ImportExpensesButton({
     onImportSuccess();
     setModalVisible(false);
   };
+
+  const cardContent =
+    schema !== null ? (
+      <ImportExpensesForm
+        account={account}
+        schema={schema}
+        onSuccess={onSuccess}
+      />
+    ) : (
+      <ErrorCard
+        message={`Account does not have import schema attached, add one in Accounts tab.`}
+      />
+    );
 
   return (
     <>
@@ -180,7 +210,7 @@ export function ImportExpensesButton({
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
-        <ImportExpensesForm account={account} onSuccess={onSuccess} />
+        {cardContent}
       </ModalCard>
     </>
   );

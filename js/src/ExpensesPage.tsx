@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 
 import { Account } from "./types/Account";
+import { StatementSchema } from "./types/StatementSchema";
 import { Expense, Expenses } from "./types/Expense";
 
 import { BudgetView } from "./BudgetView";
@@ -12,7 +13,7 @@ import {
 } from "./AccountExpensesButtons";
 import { ItemCard, Section, SectionHeader } from "./ui/Common";
 
-export function AccountSelector({
+function AccountSelector({
   accounts,
   selected,
   updateAccount,
@@ -43,11 +44,29 @@ export function AccountSelector({
   );
 }
 
+function getSchemaById(
+  id: number | null,
+  schemas: Array<StatementSchema>,
+): StatementSchema | null {
+  if (id === null) {
+    return null;
+  }
+
+  const schema = schemas.find((schema) => schema.id == id);
+  if (schema === undefined || schema === null) {
+    return null;
+  }
+
+  return schema;
+}
+
 export function ExpensesPage({
   accounts,
+  schemas,
   budget,
 }: {
   accounts: Array<Account>;
+  schemas: Array<StatementSchema>;
   budget: BudgetView;
 }) {
   const [account, setAccount] = useState<Account>(accounts[0] || null);
@@ -90,6 +109,7 @@ export function ExpensesPage({
           />
           <ImportExpensesButton
             account={account}
+            schema={getSchemaById(account.statement_schema_id, schemas)}
             onImportSuccess={fetchExpenses}
           />
           <DeleteExpensesButton

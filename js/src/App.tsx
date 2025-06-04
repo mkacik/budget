@@ -84,7 +84,11 @@ function App() {
 
   const budgetPage = <BudgetPage budget={budget} refreshBudget={fetchBudget} />;
   const expensesPage = (
-    <ExpensesPage accounts={accounts.accounts} budget={budget} />
+    <ExpensesPage
+      accounts={accounts.accounts}
+      schemas={schemas.schemas}
+      budget={budget}
+    />
   );
   const accountsPage = (
     <AccountsPage
