@@ -9,6 +9,7 @@ use crate::record_mapping::RecordMapping;
 #[ts(export_to = "StatementSchema.ts")]
 pub struct StatementSchemaFields {
     pub name: String,
+    pub notes: String,
     pub record_mapping: RecordMapping,
 }
 
@@ -32,9 +33,10 @@ impl StatementSchema {
     pub async fn create(db: &Database, fields: StatementSchemaFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO statement_schemas (name, record_mapping)
-            VALUES (?1, ?2) RETURNING id",
+            "INSERT INTO statement_schemas (name, notes, record_mapping)
+            VALUES (?1, ?2, ?3) RETURNING id",
             fields.name,
+            fields.notes,
             fields.record_mapping,
         )
         .fetch_one(&mut *conn)
@@ -56,23 +58,21 @@ impl StatementSchema {
 
     pub async fn fetch_all(db: &Database) -> anyhow::Result<StatementSchemas> {
         let mut conn = db.acquire_db_conn().await?;
-        let results = sqlx::query_as::<_, StatementSchema>(
-            "SELECT id, name, record_mapping FROM statement_schemas ORDER BY name",
-        )
-        .fetch_all(&mut *conn)
-        .await?;
+        let results =
+            sqlx::query_as::<_, StatementSchema>("SELECT * FROM statement_schemas ORDER BY name")
+                .fetch_all(&mut *conn)
+                .await?;
 
         Ok(StatementSchemas { schemas: results })
     }
 
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<StatementSchema> {
         let mut conn = db.acquire_db_conn().await?;
-        let result = sqlx::query_as::<_, StatementSchema>(
-            "SELECT id, name, record_mapping FROM statement_schemas WHERE id = ?1",
-        )
-        .bind(id)
-        .fetch_one(&mut *conn)
-        .await?;
+        let result =
+            sqlx::query_as::<_, StatementSchema>("SELECT * FROM statement_schemas WHERE id = ?1")
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?;
 
         Ok(result)
     }
@@ -83,10 +83,12 @@ impl StatementSchema {
         sqlx::query!(
             "UPDATE statement_schemas SET
                 name = ?2,
-                record_mapping = ?3
+                notes = ?3,
+                record_mapping = ?4
             WHERE id = ?1",
             self.id,
             self.fields.name,
+            self.fields.notes,
             self.fields.record_mapping,
         )
         .execute(&mut *conn)

@@ -59,6 +59,7 @@ function StatementSchemaForm({
 }) {
   const initialFields = {
     name: schema?.name ?? "",
+    notes: schema?.notes ?? "",
     record_mapping: schema?.record_mapping ?? getDefaultRecordMapping(),
   };
 
@@ -73,8 +74,12 @@ function StatementSchemaForm({
 
   const setName = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLInputElement;
-    const newName = target.value;
-    setFields({ ...fields, name: newName });
+    setFields({ ...fields, name: target.value });
+  };
+
+  const setNotes = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    setFields({ ...fields, notes: target.value });
   };
 
   const setRecordMapping = (newRecordMapping: RecordMapping) => {
@@ -95,6 +100,7 @@ function StatementSchemaForm({
 
       const schemaFields: StatementSchemaFields = {
         name: updatedName,
+        notes: fields.notes,
         record_mapping: fields.record_mapping,
       } as StatementSchemaFields;
 
@@ -161,8 +167,11 @@ function StatementSchemaForm({
       <ErrorCard message={errorMessage} />
 
       <Form onSubmit={onSubmit}>
-        <label>StatementSchema Name</label>
+        <label>Statement Schema Name</label>
         <input type="text" value={fields.name} onChange={setName} />
+
+        <label>Notes/Instructions</label>
+        <input type="text" value={fields.notes} onChange={setNotes} />
 
         <RecordMappingForm
           recordMapping={fields.record_mapping}
