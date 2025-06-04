@@ -64,7 +64,7 @@ export function RecordMappingForm({
         <small>
           Choose mapping function for each of the required Expense fields below.
           Columns are 0-indexed. Amount is expexted to be a positive number, use
-          "Flip sign" option if statement stores it as negative value.
+          &quot;Flip sign&quot; option if statement stores it as negative value.
         </small>
       </FormFieldWide>
 
