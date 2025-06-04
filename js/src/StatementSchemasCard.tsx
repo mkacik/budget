@@ -171,7 +171,7 @@ function StatementSchemaForm({
         <input type="text" value={fields.name} onChange={setName} />
 
         <label>Notes/Instructions</label>
-        <input type="text" value={fields.notes} onChange={setNotes} />
+        <textarea value={fields.notes} onChange={setNotes} />
 
         <RecordMappingForm
           recordMapping={fields.record_mapping}
