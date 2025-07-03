@@ -26,19 +26,30 @@ function getKeyMap(budget: BudgetView): KeyMap {
   return keyMap;
 }
 
-function KeyMapLegend({ keyMap }: { keyMap: KeyMap }) {
-  const items: Array<React.ReactNode> = [];
+function KeyMapLegend({
+  setCategory,
+  keyMap,
+}: {
+  setCategory: (id: number | null) => void;
+  keyMap: KeyMap;
+}) {
+  const rows: Array<React.ReactNode> = [];
   for (const [key, item] of keyMap.entries()) {
-    items.push(<b>{key}</b>);
-    items.push(item?.displayName ?? <i>delete categorization</i>);
+    const row = (
+      <tr key={key} onClick={() => setCategory(item?.id || null)}>
+        <td>
+          <b>{key}</b>
+        </td>
+        <td>{item?.displayName ?? <i>delete categorization</i>}</td>
+      </tr>
+    );
+    rows.push(row);
   }
 
   return (
     <div className="legend-container">
       <div className="card legend">
-        {items.map((item, idx) => (
-          <span key={idx}>{item}</span>
-        ))}
+        <table className="legend-table">{rows}</table>
       </div>
     </div>
   );
@@ -102,7 +113,7 @@ function BudgetItemSelect({
 
   return (
     <>
-      <KeyMapLegend keyMap={keyMap} />
+      <KeyMapLegend setCategory={updateBudgetItemID} keyMap={keyMap} />
       <select
         value={selectedBudgetItemID ?? UNSET_ID}
         onChange={onSelectChange}
@@ -165,7 +176,7 @@ function ExpenseRow({
       : expense.transaction_date + " " + expense.transaction_time;
 
   return (
-    <tr onClick={onClick}>
+    <tr className={active ? "active-row" : undefined} onClick={onClick}>
       <td className="nowrap" title={dateTime}>
         {expense.transaction_date}
       </td>
