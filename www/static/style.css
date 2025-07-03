@@ -213,11 +213,19 @@ pre {
 }
 
 .legend {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: var(--gap-small);
-  column-gap: var(--gap-medium);
   box-shadow: 0 0 5px var(--color-card-border);
+  padding: 0;
+}
+
+.legend-table {
+  td {
+    padding: var(--padding-small);
+    border-radius: var(--border-radius);
+  }
+
+  tr {
+    border-radius: var(--border-radius);
+  }
 }
 
 .title {
@@ -253,7 +261,7 @@ table {
   tbody {
     tr {
       &:hover {
-        background-color: var(--color-hover);
+        background-color: var(--color-hover) !important;
       }
     }
   }
@@ -327,6 +335,10 @@ table {
     select {
       width: 100%;
     }
+  }
+
+  .active-row {
+    background-color: var(--color-hover-dark) !important;
   }
 }
 
