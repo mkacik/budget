@@ -1,10 +1,11 @@
 :root {
   --color-main: #ffbf00;
-  --color-table-row: #f9f9fb;
+  --color-main-background: #fcfcff;
+  --color-table-row: #f7f7f9;
   --color-table-header: #fff8e2;
   --color-hover: #ffe595;
   --color-hover-dark: #ffd558;
-  --color-card-background: #f9f9fb;
+  --color-card-background: #ffffff;
   --color-card-border: #cdcdcd;
   --color-table-border: #d0d0d0;
 
@@ -43,6 +44,8 @@ body {
 
   font-family: var(--font-family);
   font-size: var(--font-content-medium);
+
+  background-color: var(--color-main-background);
 }
 
 input,
@@ -181,6 +184,7 @@ pre {
   overflow: auto;
   gap: var(--gap-large);
   padding: var(--padding-large);
+  background-color: var(--color-main-background) !important;
 
   .modal-header {
     display: flex;
