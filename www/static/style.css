@@ -463,3 +463,14 @@ table {
   transition-property: opacity;
   transition-duration: 0.5s;
 }
+
+.flexrow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--gap-medium);
+
+  select {
+    width: 100%;
+  }
+}

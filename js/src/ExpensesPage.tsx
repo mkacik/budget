@@ -100,7 +100,7 @@ export function ExpensesPage({
     <>
       <Section>
         <SectionHeader>Expenses</SectionHeader>
-        <ItemCard>
+        <div className="flexrow">
           Account
           <AccountSelector
             accounts={accounts}
@@ -116,7 +116,7 @@ export function ExpensesPage({
             account={account}
             onImportSuccess={fetchExpenses}
           />
-        </ItemCard>
+        </div>
       </Section>
 
       <Section>
