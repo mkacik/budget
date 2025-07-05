@@ -12,7 +12,7 @@ const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 type KeyMap = Map<string, BudgetItemView | null>;
 
 function getKeyMap(budget: BudgetView): KeyMap {
-  const keyMap: KeyMap = new Map([["Backspace", null]]);
+  const keyMap: KeyMap = new Map();
 
   const items = [budget.items, budget.ignoredItems].flat();
   for (const [idx, item] of items.entries()) {
@@ -22,6 +22,7 @@ function getKeyMap(budget: BudgetView): KeyMap {
       break;
     }
   }
+  keyMap.set("Backspace", null);
 
   return keyMap;
 }
@@ -49,7 +50,15 @@ function KeyMapLegend({
   return (
     <div className="legend-container">
       <div className="card legend">
-        <table className="legend-table">{rows}</table>
+        <table className="legend-table">
+          <thead>
+            <tr>
+              <td>Key</td>
+              <td>Category</td>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
       </div>
     </div>
   );
