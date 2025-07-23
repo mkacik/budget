@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Expense } from "./types/Expense";
 
@@ -137,13 +137,11 @@ function BudgetItemSelect({
 function ExpenseRow({
   expense,
   active,
-  onClick,
   onSuccess,
   budget,
 }: {
   expense: Expense;
   active: boolean;
-  onClick: () => void;
   onSuccess: () => void;
   budget: BudgetView;
 }) {
@@ -185,14 +183,14 @@ function ExpenseRow({
       : expense.transaction_date + " " + expense.transaction_time;
 
   return (
-    <tr className={active ? "active-row" : undefined} onClick={onClick}>
+    <>
       <td className="nowrap" title={dateTime}>
         {expense.transaction_date}
       </td>
       {budgetItemCell}
       <td className="number r-align">{expense.amount.toFixed(2)}</td>
       <td>{expense.description}</td>
-    </tr>
+    </>
   );
 }
 
@@ -205,17 +203,47 @@ export function ExpensesTable({
   onSuccess: () => void;
   budget: BudgetView;
 }) {
+  // following stores a map of references to rendered expense, for the purpose of scrolling
+  // the expense into view when it becomes active. Pattern comes from this guide:
+  // https://react.dev/learn/manipulating-the-dom-with-refs#example-scrolling-to-an-element
+  const expensesRefMap = useRef<Map<number, HTMLTableRowElement> | null>(null);
+
+  const getExpensesRefMap = () => {
+    if (!expensesRefMap.current) {
+      expensesRefMap.current = new Map();
+    }
+    return expensesRefMap.current;
+  };
+
   const [activeRow, setActiveRow] = useState<number | null>(null);
+
+  const setAndScrollToActiveRow = (newActiveRow: number | null) => {
+    if (newActiveRow !== null) {
+      const map = getExpensesRefMap();
+      const row = map.get(newActiveRow);
+
+      if (row === null || row === undefined) {
+        console.log(`Unexpected empty DOM reference to row ${newActiveRow}`);
+      } else {
+        row.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+    setActiveRow(newActiveRow);
+  };
 
   const prevRow = () => {
     if (activeRow !== null) {
-      setActiveRow(Math.max(activeRow - 1, 0));
+      setAndScrollToActiveRow(Math.max(activeRow - 1, 0));
     }
   };
 
   const nextRow = () => {
     if (activeRow !== null) {
-      setActiveRow(Math.min(activeRow + 1, expenses.length - 1));
+      setAndScrollToActiveRow(Math.min(activeRow + 1, expenses.length - 1));
     }
   };
 
@@ -233,15 +261,15 @@ export function ExpensesTable({
           return;
         }
         case "PageUp": {
-          setActiveRow(0);
+          setAndScrollToActiveRow(0);
           return;
         }
         case "PageDown": {
-          setActiveRow(expenses.length - 1);
+          setAndScrollToActiveRow(expenses.length - 1);
           return;
         }
         case "Escape": {
-          setActiveRow(null);
+          setAndScrollToActiveRow(null);
           return;
         }
       }
@@ -271,19 +299,33 @@ export function ExpensesTable({
 
       <tbody>
         {expenses.map((expense, idx) => (
-          <ExpenseRow
+          <tr
             key={expense.id}
-            expense={expense}
-            active={idx === activeRow}
-            budget={budget}
+            className={idx === activeRow ? "active-row" : undefined}
             onClick={() =>
-              idx === activeRow ? setActiveRow(null) : setActiveRow(idx)
+              idx === activeRow
+                ? setAndScrollToActiveRow(null)
+                : setAndScrollToActiveRow(idx)
             }
-            onSuccess={() => {
-              nextRow();
-              onSuccess();
+            ref={(node: HTMLTableRowElement) => {
+              const map = getExpensesRefMap();
+              map.set(idx, node);
+
+              return () => {
+                map.delete(idx);
+              };
             }}
-          />
+          >
+            <ExpenseRow
+              expense={expense}
+              active={idx === activeRow}
+              budget={budget}
+              onSuccess={() => {
+                nextRow();
+                onSuccess();
+              }}
+            />
+          </tr>
         ))}
       </tbody>
     </table>
