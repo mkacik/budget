@@ -11,7 +11,7 @@ import {
   ImportExpensesButton,
   DeleteExpensesButton,
 } from "./AccountExpensesButtons";
-import { ItemCard, Section, SectionHeader } from "./ui/Common";
+import { Section, SectionHeader } from "./ui/Common";
 
 function AccountSelector({
   accounts,
