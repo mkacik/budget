@@ -7,6 +7,9 @@ import { Budget } from "./types/Budget";
 import { StatementSchemas } from "./types/StatementSchema";
 
 import { BudgetView } from "./BudgetView";
+import { BudgetViewContext } from "./BudgetViewContext";
+
+import { AccountsView } from "./AccountsView";
 
 import { AccountsPage } from "./AccountsPage";
 import { BudgetPage } from "./BudgetPage";
@@ -36,7 +39,6 @@ function App() {
     fetch("/api/budget")
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         const budget = new BudgetView(result as Budget);
         setBudget(budget);
       });
@@ -52,7 +54,6 @@ function App() {
     fetch("/api/accounts")
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         setAccounts(result as Accounts);
       });
   };
@@ -67,7 +68,6 @@ function App() {
     fetch("/api/schemas")
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         setSchemas(result as StatementSchemas);
       });
   };
@@ -82,14 +82,10 @@ function App() {
     return null;
   }
 
+  const accountsView = new AccountsView(accounts, schemas);
+
   const budgetPage = <BudgetPage budget={budget} refreshBudget={fetchBudget} />;
-  const expensesPage = (
-    <ExpensesPage
-      accounts={accounts.accounts}
-      schemas={schemas.schemas}
-      budget={budget}
-    />
-  );
+  const expensesPage = <ExpensesPage accounts={accountsView} />;
   const accountsPage = (
     <AccountsPage
       accounts={accounts.accounts}
@@ -123,10 +119,12 @@ function App() {
         </span>
       </div>
       <div className="main">
-        {render_if(tab == Tab.Budget, budgetPage)}
-        {render_if(tab == Tab.Expenses, expensesPage)}
-        {render_if(tab == Tab.Accounts, accountsPage)}
-        {render_if(tab == Tab.Analyze, analyzePage)}
+        <BudgetViewContext.Provider value={budget}>
+          {render_if(tab == Tab.Budget, budgetPage)}
+          {render_if(tab == Tab.Expenses, expensesPage)}
+          {render_if(tab == Tab.Accounts, accountsPage)}
+          {render_if(tab == Tab.Analyze, analyzePage)}
+        </BudgetViewContext.Provider>
       </div>
     </>
   );

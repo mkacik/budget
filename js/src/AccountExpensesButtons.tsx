@@ -170,16 +170,16 @@ function DeleteExpensesForm({
 export function ImportExpensesButton({
   account,
   schema,
-  onImportSuccess,
+  onSuccess,
 }: {
   account: Account;
   schema: StatementSchema | null;
-  onImportSuccess: () => void;
+  onSuccess: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  const onSuccess = () => {
-    onImportSuccess();
+  const onImportSuccess = () => {
+    onSuccess();
     setModalVisible(false);
   };
 
@@ -188,7 +188,7 @@ export function ImportExpensesButton({
       <ImportExpensesForm
         account={account}
         schema={schema}
-        onSuccess={onSuccess}
+        onSuccess={onImportSuccess}
       />
     ) : (
       <ErrorCard
@@ -218,15 +218,15 @@ export function ImportExpensesButton({
 
 export function DeleteExpensesButton({
   account,
-  onImportSuccess,
+  onSuccess,
 }: {
   account: Account;
-  onImportSuccess: () => void;
+  onSuccess: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  const onSuccess = () => {
-    onImportSuccess();
+  const onDeleteSuccess = () => {
+    onSuccess();
     setModalVisible(false);
   };
 
@@ -244,7 +244,7 @@ export function DeleteExpensesButton({
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
-        <DeleteExpensesForm account={account} onSuccess={onSuccess} />
+        <DeleteExpensesForm account={account} onSuccess={onDeleteSuccess} />
       </ModalCard>
     </>
   );

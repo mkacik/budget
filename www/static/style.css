@@ -270,7 +270,10 @@ table {
     }
   }
 
-  th,
+  th {
+    padding: var(--padding-medium);
+  }
+
   td {
     padding: var(--padding-medium);
     vertical-align: top;

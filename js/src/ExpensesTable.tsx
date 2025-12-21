@@ -3,9 +3,11 @@ import { useState, useEffect, useRef } from "react";
 
 import { Expense } from "./types/Expense";
 
+import { useBudgetViewContext } from "./BudgetViewContext";
 import { BudgetView, BudgetItemView } from "./BudgetView";
+import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
-import { Col } from "./ui/Common";
+import { Col, InlineGlyphButton } from "./ui/Common";
 
 const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 
@@ -196,13 +198,15 @@ function ExpenseRow({
 
 export function ExpensesTable({
   expenses,
-  onSuccess,
-  budget,
+  onExpenseCategoryChange,
+  updateSortBy,
 }: {
   expenses: Array<Expense>;
-  onSuccess: () => void;
-  budget: BudgetView;
+  onExpenseCategoryChange: () => void;
+  updateSortBy: (SortBy) => void;
 }) {
+  const budget = useBudgetViewContext();
+
   // following stores a map of references to rendered expense, for the purpose of scrolling
   // the expense into view when it becomes active. Pattern comes from this guide:
   // https://react.dev/learn/manipulating-the-dom-with-refs#example-scrolling-to-an-element
@@ -279,6 +283,13 @@ export function ExpensesTable({
     return () => document.removeEventListener("keydown", handleNavigationKeys);
   }, [expenses, activeRow, setActiveRow]);
 
+  const sortByField = (field: SortField) => {
+    return (order: SortOrder) => {
+      const newSortBy = { field: field, order: order } as SortBy;
+      updateSortBy(newSortBy);
+    };
+  };
+
   return (
     <table className="expenses-table">
       <colgroup>
@@ -290,10 +301,20 @@ export function ExpensesTable({
 
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th className="r-align">Amount</th>
-          <th>Details</th>
+          <HeaderCell
+            title="Date"
+            sortByField={sortByField(SortField.DateTime)}
+          />
+          <HeaderCell title="Category" sortByField={null} />
+          <HeaderCell
+            title="Amount"
+            sortByField={sortByField(SortField.Amount)}
+            alignRight
+          />
+          <HeaderCell
+            title="Details"
+            sortByField={sortByField(SortField.Description)}
+          />
         </tr>
       </thead>
 
@@ -322,12 +343,45 @@ export function ExpensesTable({
               budget={budget}
               onSuccess={() => {
                 nextRow();
-                onSuccess();
+                onExpenseCategoryChange();
               }}
             />
           </tr>
         ))}
       </tbody>
     </table>
+  );
+}
+function HeaderCell({
+  title,
+  sortByField,
+  alignRight,
+}: {
+  title: string;
+  sortByField: ((SortOrder) => void) | null;
+  alignRight?: boolean;
+}) {
+  const className = alignRight ? "r-align flexrow" : "flexrow";
+  const sortButtonss =
+    sortByField === null ? null : (
+      <>
+        <InlineGlyphButton
+          glyph="arrow_downward"
+          onClick={() => sortByField(SortOrder.Asc)}
+        />
+        <InlineGlyphButton
+          glyph="arrow_upward"
+          onClick={() => sortByField(SortOrder.Desc)}
+        />
+      </>
+    );
+
+  return (
+    <th>
+      <div className={className}>
+        {title}
+        {sortButtonss}
+      </div>
+    </th>
   );
 }

@@ -87,7 +87,9 @@ export type Glyph =
   | "edit"
   | "error"
   | "info"
-  | "pie_chart";
+  | "pie_chart"
+  | "arrow_upward"
+  | "arrow_downward";
 
 export function GlyphButton({
   glyph,

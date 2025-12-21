@@ -2,11 +2,10 @@ import React from "react";
 import { useState, useEffect } from "react";
 
 import { SpendingDataPoint } from "./types/SpendingData";
-import { Expense } from "./types/Expense";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { parseData, MonthlySpendingData } from "./MonthlySpendingData";
-import { ExpensesTable } from "./ExpensesTable";
+import { ExpensesQuery, ExpensesList } from "./ExpensesList";
 import {
   Col,
   SmallInlineGlyph,
@@ -53,11 +52,11 @@ function SpendingTableCell({
 function MonthlySpendingTable({
   data,
   budget,
-  updateSelected,
+  updateExpensesQuery,
 }: {
   data: MonthlySpendingData;
   budget: BudgetView;
-  updateSelected: (number, string) => void;
+  updateExpensesQuery: (ExpensesQuery) => void;
 }) {
   // TODO: find some way to make this work in 2026
   const months = getMonths(2025);
@@ -97,7 +96,11 @@ function MonthlySpendingTable({
         const spend =
           data.get(month)?.get(category.id)?.items.get(item.id)?.spend ?? 0;
         const onClick = () => {
-          updateSelected(item, month);
+          updateExpensesQuery({
+            variant: "item-month",
+            budgetItem: item,
+            month: month,
+          } as ExpensesQuery);
         };
         const cell = (
           <SpendingTableCell
@@ -136,38 +139,25 @@ function MonthlySpendingTable({
 }
 
 function ExpensesSection({
-  selected,
-  expenses,
-  budget,
+  query,
   onExpenseCategoryChange,
 }: {
-  selected: [BudgetItemView, string] | null;
-  expenses: Array<Expense> | null;
-  budget: BudgetView;
+  query: ExpensesQuery | null;
   onExpenseCategoryChange: () => void;
 }) {
-  if (expenses === null || selected === null) {
+  if (query === null || query.variant !== "item-month") {
     return null;
   }
 
-  const [budgetItem, month] = selected;
-  const expensesTable =
-    expenses.length > 0 ? (
-      <ExpensesTable
-        expenses={expenses}
-        onSuccess={onExpenseCategoryChange}
-        budget={budget}
-      />
-    ) : (
-      <span>No expenses</span>
-    );
-
   return (
     <Section>
-      <b>
-        [{month}] {budgetItem.displayName}
-      </b>
-      {expensesTable}
+      <SectionHeader>
+        [{query.month}] {query.budgetItem.displayName}
+      </SectionHeader>
+      <ExpensesList
+        query={query}
+        onExpenseCategoryChange={onExpenseCategoryChange}
+      />
     </Section>
   );
 }
@@ -178,8 +168,7 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [expenses, setExpenses] = useState<Array<Expense> | null>(null);
-  const [selected, setSelected] = useState<[BudgetItemView, string] | null>(
+  const [expensesQuery, setExpensesQuery] = useState<ExpensesQuery | null>(
     null,
   );
 
@@ -207,48 +196,12 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     }
   }, []);
 
-  const fetchExpenses = () => {
-    if (selected === null) {
-      return;
-    }
-
-    setLoading(true);
-    const [budgetItem, month] = selected;
-    fetch(`/api/expenses/monthly/${budgetItem.id}/${month}`)
-      .then((response) => response.json())
-      .then((result) => {
-        const expenses = result.expenses as Array<Expense>;
-        setExpenses(expenses);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setLoading(false);
-        setError("Something went wrong! Please refresh the page");
-      });
-  };
-
-  useEffect(() => {
-    if (error === null) {
-      fetchExpenses();
-    }
-  }, [selected]);
-
-  const updateSelected = (budgetItem: BudgetItemView, month: string) => {
-    setSelected([budgetItem, month]);
-  };
-
-  const onExpenseCategoryChange = () => {
-    fetchSpendingData();
-    fetchExpenses();
-  };
-
   const spendingTable =
     spendingData !== null ? (
       <MonthlySpendingTable
         data={spendingData}
         budget={budget}
-        updateSelected={updateSelected}
+        updateExpensesQuery={(query) => setExpensesQuery(query)}
       />
     ) : null;
 
@@ -260,10 +213,8 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
         {spendingTable}
       </Section>
       <ExpensesSection
-        selected={selected}
-        expenses={expenses}
-        budget={budget}
-        onExpenseCategoryChange={onExpenseCategoryChange}
+        query={expensesQuery}
+        onExpenseCategoryChange={fetchSpendingData}
       />
       <LoadingBanner isLoading={loading} />
     </>
