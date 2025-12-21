@@ -196,14 +196,21 @@ function ExpenseRow({
   );
 }
 
+export type ExpensesTableSettings = {
+  // if set to true, advance to next row on category change
+  autoadvance: boolean;
+};
+
 export function ExpensesTable({
   expenses,
   onExpenseCategoryChange,
   updateSortBy,
+  settings,
 }: {
   expenses: Array<Expense>;
   onExpenseCategoryChange: () => void;
   updateSortBy: (SortBy) => void;
+  settings: ExpensesTableSettings;
 }) {
   const budget = useBudgetViewContext();
 
@@ -342,7 +349,9 @@ export function ExpensesTable({
               active={idx === activeRow}
               budget={budget}
               onSuccess={() => {
-                nextRow();
+                if (settings.autoadvance) {
+                  nextRow();
+                }
                 onExpenseCategoryChange();
               }}
             />

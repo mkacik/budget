@@ -9,7 +9,7 @@ import {
   SortField,
   SortOrder,
 } from "./ExpensesSort";
-import { ExpensesTable } from "./ExpensesTable";
+import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
 
 import {
   ImportExpensesButton,
@@ -32,6 +32,17 @@ function getFetchExpenses(query: ExpensesQuery): Promise<Response> {
       return fetch(
         `/api/expenses/monthly/${query.budgetItem.id}/${query.month}`,
       );
+    default:
+      throw new Error("malformed expenses query!");
+  }
+}
+
+function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
+  switch (query.variant) {
+    case "account":
+      return { autoadvance: true } as ExpensesTableSettings;
+    case "item-month":
+      return { autoadvance: false } as ExpensesTableSettings;
     default:
       throw new Error("malformed expenses query!");
   }
@@ -88,6 +99,7 @@ export function ExpensesList({
         expenses={expenses}
         onExpenseCategoryChange={handleExpenseCategoryChange}
         updateSortBy={updateSortBy}
+        settings={getExpensesTableSettings(query)}
       />
     </>
   );
