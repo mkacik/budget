@@ -8,16 +8,6 @@ import {
   SortOrder,
 } from "../ExpensesSort";
 
-/* export type Expense = {
-  id: number,
-  account_id: number,
-  transaction_date: string,
-  transaction_time: string | null,
-  description: string,
-  amount: number,
-  budget_item_id: number | null,
-}; */
-
 function sortBy(field: SortField, order: SortOrder): SortBy {
   return {
     field: field,

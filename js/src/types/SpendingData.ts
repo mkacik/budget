@@ -2,4 +2,4 @@
 
 export type SpendingData = { data: Array<SpendingDataPoint>, };
 
-export type SpendingDataPoint = { budget_item_id: number, month: string, amount: number, };
+export type SpendingDataPoint = { budget_item_id: number | null, month: string, amount: number, };

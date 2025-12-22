@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { SpendingDataPoint } from "./types/SpendingData";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
-import { parseData, MonthlySpendingData } from "./MonthlySpendingData";
+import { MonthlySpendingData } from "./MonthlySpendingData";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
 import {
   Col,
@@ -27,14 +27,15 @@ function SpendingTableCell({
   spend,
   onClick,
 }: {
-  obj: BudgetItemView | BudgetCategoryView;
+  obj: BudgetItemView | BudgetCategoryView | null;
   spend: number;
   onClick?: () => void;
 }) {
+  const amountPerMonth = obj === null ? 0 : obj.amountPerMonth;
   const classNames = ["number", "r-align"];
   if (spend <= 0) {
     classNames.push("soft");
-  } else if (spend > obj.amountPerMonth) {
+  } else if (spend > amountPerMonth) {
     classNames.push("red");
   }
 
@@ -58,7 +59,6 @@ function MonthlySpendingTable({
   budget: BudgetView;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
-  // TODO: find some way to make this work in 2026
   const months = getMonths(2025);
 
   const headerRow = months.map((month, idx) => {
@@ -74,7 +74,7 @@ function MonthlySpendingTable({
     const cols: Array<React.ReactNode> = [<td key="hdr">{category.name}</td>];
 
     for (const month of months) {
-      const spend = data.get(month)?.get(category.id)?.spend ?? 0;
+      const spend = data.getCategorySpend(category.id, month);
       cols.push(<SpendingTableCell key={month} obj={category} spend={spend} />);
     }
 
@@ -93,8 +93,7 @@ function MonthlySpendingTable({
       ];
 
       for (const month of months) {
-        const spend =
-          data.get(month)?.get(category.id)?.items.get(item.id)?.spend ?? 0;
+        const spend = data.getItemSpend(item.id, month);
         const onClick = () => {
           updateExpensesQuery({
             variant: "item-month",
@@ -116,6 +115,23 @@ function MonthlySpendingTable({
       rows.push(<tr key={`${category.id}-${item.id}`}>{cols}</tr>);
     }
   }
+
+  const colsUncategorized: Array<React.ReactNode> = [
+    <td key="hdr">
+      <i>uncategorized</i>
+    </td>,
+  ];
+  for (const month of months) {
+    const spend = data.getUncategorizedSpend(month);
+    colsUncategorized.push(
+      <SpendingTableCell key={month} obj={null} spend={spend} />,
+    );
+  }
+  rows.push(
+    <tr key={"__uncategorized"} className="bold highlight">
+      {colsUncategorized}
+    </tr>,
+  );
 
   return (
     <table>
@@ -179,7 +195,7 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
       .then((response) => response.json())
       .then((result) => {
         const dataPoints = result.data as Array<SpendingDataPoint>;
-        const data = parseData(dataPoints, budget);
+        const data = new MonthlySpendingData(dataPoints, budget);
         setSpendingData(data);
         setLoading(false);
       })

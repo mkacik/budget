@@ -53,6 +53,7 @@ async fn add_statement_schemas(db: &Database) -> anyhow::Result<()> {
         db,
         StatementSchemaFields {
             name: String::from("bank"),
+            notes: String::from(""),
             record_mapping: get_bank_record_mapping(),
         },
     )
@@ -62,6 +63,7 @@ async fn add_statement_schemas(db: &Database) -> anyhow::Result<()> {
         db,
         StatementSchemaFields {
             name: String::from("shop"),
+            notes: String::from("Note about how to export data"),
             record_mapping: get_shop_record_mapping(),
         },
     )
