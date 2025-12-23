@@ -1,7 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { Expense, Expenses } from "./types/Expense";
+import {
+  Expense,
+  Expenses,
+  QueryExpensesRequest,
+  QueryExpensesCategorySelector,
+} from "./types/Expense";
 
 import {
   getSortComparator,
@@ -24,14 +29,29 @@ export type ExpensesQuery =
   | { variant: "account"; account: AccountView }
   | { variant: "item-month"; budgetItem: BudgetItemView; month: string };
 
-function getFetchExpenses(query: ExpensesQuery): Promise<Response> {
+function toServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
   switch (query.variant) {
     case "account":
-      return fetch(`/api/accounts/${query.account.id}/expenses`);
+      return {
+        variant: "ByAccount",
+        params: {
+          id: query.account.id,
+        },
+      } as QueryExpensesRequest;
     case "item-month":
-      return fetch(
-        `/api/expenses/monthly/${query.budgetItem.id}/${query.month}`,
-      );
+      return {
+        variant: "ByMonth",
+        params: {
+          year: 2025,
+          month: query.month,
+          category: {
+            variant: "BudgetItem",
+            params: {
+              id: query.budgetItem.id,
+            },
+          } as QueryExpensesCategorySelector,
+        },
+      } as QueryExpensesRequest;
     default:
       throw new Error("malformed expenses query!");
   }
@@ -62,7 +82,13 @@ export function ExpensesList({
   } as SortBy);
 
   const fetchExpenses = () => {
-    getFetchExpenses(query)
+    fetch(`/api/expenses/query`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify(toServerQueryParams(query)),
+    })
       .then((response) => response.json())
       .then((result) => {
         const expensesContainer = result as Expenses;

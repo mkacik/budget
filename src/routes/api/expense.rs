@@ -5,6 +5,7 @@ use rocket::serde::json::Json;
 use rocket::{get, post, State};
 use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
+use ts_rs::TS;
 
 use crate::account::Account;
 use crate::budget::BudgetItem;
@@ -14,16 +15,6 @@ use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::statement_schema::StatementSchema;
-
-#[get("/accounts/<account_id>/expenses")]
-pub async fn get_expenses(db: &State<Database>, account_id: ID) -> ApiResponse {
-    let result = Expense::fetch_by_account_id(&db, account_id).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
-}
 
 #[derive(FromForm)]
 pub struct UploadStatementForm<'f> {
@@ -170,20 +161,70 @@ pub async fn update_expense(
     }
 }
 
-#[get("/expenses/monthly/<budget_item_id>/<month>")]
-pub async fn get_expenses_for_budget_item(
-    db: &State<Database>,
-    budget_item_id: ID,
-    month: String,
-) -> ApiResponse {
-    let re = Regex::new(r"^20\d\d-[01]\d$").unwrap();
-    if !re.is_match(&month) {
-        return ApiResponse::BadRequest {
-            message: format!("Incorrect date '{}', expected 'yyyy-MM' format", month),
-        };
-    }
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
+pub enum QueryExpensesCategorySelector {
+    Uncategorized,
+    BudgetItem { id: ID },
+    BudgetCategory { id: ID },
+}
 
-    let result = Expense::fetch_by_budget_item_id_and_month(&db, budget_item_id, month).await;
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
+pub enum QueryExpensesRequest {
+    // used on Expenses tab
+    ByAccount {
+        id: ID,
+    },
+
+    // used on Analyze tab
+    ByYear {
+        year: i32,
+        category: QueryExpensesCategorySelector,
+    },
+    ByMonth {
+        year: i32,
+        month: String,
+        category: QueryExpensesCategorySelector,
+    },
+}
+
+#[post("/expenses/query", format = "json", data = "<json>")]
+pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesRequest>) -> ApiResponse {
+    let request = json.into_inner();
+    let result = match request {
+        QueryExpensesRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
+        QueryExpensesRequest::ByMonth {
+            year,
+            month,
+            category,
+        } => {
+            let re = Regex::new(r"^20\d\d-[01]\d$").unwrap();
+            if !re.is_match(&month) {
+                return ApiResponse::BadRequest {
+                    message: format!("Incorrect date '{}', expected 'yyyy-MM' format", month),
+                };
+            }
+
+            match category {
+                QueryExpensesCategorySelector::BudgetItem { id } => {
+                    Expense::fetch_by_budget_item_id_and_month(&db, id, month).await
+                }
+                _ => {
+                    return ApiResponse::BadRequest {
+                        message: ("This type of query is not yet supported".to_string()),
+                    };
+                }
+            }
+        }
+        _ => {
+            return ApiResponse::BadRequest {
+                message: ("This type of query is not yet supported".to_string()),
+            };
+        }
+    };
 
     match serialize_result(result) {
         Ok(value) => ApiResponse::SuccessWithData { data: value },
