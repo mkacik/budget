@@ -9,6 +9,12 @@ import {
 } from "./types/Expense";
 
 import {
+  ImportExpensesButton,
+  DeleteExpensesButton,
+} from "./AccountExpensesButtons";
+import { AccountView } from "./AccountsView";
+import { BudgetItemView, BudgetCategoryView } from "./BudgetView";
+import {
   getSortComparator,
   SortBy,
   SortField,
@@ -16,20 +22,41 @@ import {
 } from "./ExpensesSort";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
 
-import {
-  ImportExpensesButton,
-  DeleteExpensesButton,
-} from "./AccountExpensesButtons";
-import { Section } from "./ui/Common";
-
-import { BudgetItemView } from "./BudgetView";
-import { AccountView } from "./AccountsView";
+import { ErrorCard, Section } from "./ui/Common";
 
 export type ExpensesQuery =
   | { variant: "account"; account: AccountView }
-  | { variant: "item-month"; budgetItem: BudgetItemView; month: string };
+  | {
+      variant: "month";
+      month: string;
+      categorySelector: BudgetItemView | BudgetCategoryView | "all" | null;
+    };
 
-function toServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
+function getServerQueryCategorySelector(
+  selector: BudgetItemView | BudgetCategoryView | "all" | null,
+): QueryExpensesCategorySelector {
+  if (selector === null) {
+    return { variant: "Uncategorized" } as QueryExpensesCategorySelector;
+  }
+  if (selector === "all") {
+    return { variant: "All" } as QueryExpensesCategorySelector;
+  }
+  if (selector instanceof BudgetItemView) {
+    return {
+      variant: "BudgetItem",
+      params: { id: selector.id },
+    } as QueryExpensesCategorySelector;
+  }
+  if (selector instanceof BudgetCategoryView) {
+    return {
+      variant: "BudgetCategory",
+      params: { id: selector.id },
+    } as QueryExpensesCategorySelector;
+  }
+  throw new Error("malformed expenses query!");
+}
+
+function getServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
   switch (query.variant) {
     case "account":
       return {
@@ -38,20 +65,15 @@ function toServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
           id: query.account.id,
         },
       } as QueryExpensesRequest;
-    case "item-month":
+    case "month": {
       return {
         variant: "ByMonth",
         params: {
-          year: 2025,
           month: query.month,
-          category: {
-            variant: "BudgetItem",
-            params: {
-              id: query.budgetItem.id,
-            },
-          } as QueryExpensesCategorySelector,
+          category: getServerQueryCategorySelector(query.categorySelector),
         },
       } as QueryExpensesRequest;
+    }
     default:
       throw new Error("malformed expenses query!");
   }
@@ -61,7 +83,7 @@ function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
   switch (query.variant) {
     case "account":
       return { autoadvance: true } as ExpensesTableSettings;
-    case "item-month":
+    case "month":
       return { autoadvance: false } as ExpensesTableSettings;
     default:
       throw new Error("malformed expenses query!");
@@ -81,13 +103,16 @@ export function ExpensesList({
     order: SortOrder.Desc,
   } as SortBy);
 
+  const [error, setError] = useState<string | null>(null);
+
   const fetchExpenses = () => {
+    setError(null);
     fetch(`/api/expenses/query`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify(toServerQueryParams(query)),
+      body: JSON.stringify(getServerQueryParams(query)),
     })
       .then((response) => response.json())
       .then((result) => {
@@ -96,8 +121,12 @@ export function ExpensesList({
         const sortedExpenses =
           expensesContainer.expenses.toSorted(sortComparator);
         setExpenses(sortedExpenses);
+        setError(null);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        setError(`${error.name}: ${error.message}`);
+      });
   };
 
   useEffect(() => {
@@ -120,6 +149,7 @@ export function ExpensesList({
 
   return (
     <>
+      <ErrorCard message={error} />
       <ImportDeleteExpenseButtons query={query} onSuccess={fetchExpenses} />
       <ExpensesTable
         expenses={expenses}

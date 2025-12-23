@@ -6,6 +6,6 @@ export type ExpenseFields = { account_id: number, transaction_date: string, tran
 
 export type Expenses = { expenses: Array<Expense>, };
 
-export type QueryExpensesCategorySelector = { "variant": "Uncategorized" } | { "variant": "BudgetItem", "params": { id: number, } } | { "variant": "BudgetCategory", "params": { id: number, } };
+export type QueryExpensesCategorySelector = { "variant": "All" } | { "variant": "Uncategorized" } | { "variant": "BudgetItem", "params": { id: number, } } | { "variant": "BudgetCategory", "params": { id: number, } };
 
-export type QueryExpensesRequest = { "variant": "ByAccount", "params": { id: number, } } | { "variant": "ByYear", "params": { year: number, category: QueryExpensesCategorySelector, } } | { "variant": "ByMonth", "params": { year: number, month: string, category: QueryExpensesCategorySelector, } };
+export type QueryExpensesRequest = { "variant": "ByAccount", "params": { id: number, } } | { "variant": "ByYear", "params": { year: string, category: QueryExpensesCategorySelector, } } | { "variant": "ByMonth", "params": { month: string, category: QueryExpensesCategorySelector, } };

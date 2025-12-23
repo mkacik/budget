@@ -97,6 +97,10 @@ export class BudgetCategoryView {
   get amountPerMonth() {
     return this.amountPerYear / 12;
   }
+
+  get displayName() {
+    return this.category.name;
+  }
 }
 
 export class BudgetView {

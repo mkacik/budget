@@ -2,7 +2,7 @@ use regex::Regex;
 use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
 use rocket::serde::json::Json;
-use rocket::{get, post, State};
+use rocket::{post, State};
 use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
 use ts_rs::TS;
@@ -165,6 +165,7 @@ pub async fn update_expense(
 #[serde(tag = "variant", content = "params")]
 #[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
 pub enum QueryExpensesCategorySelector {
+    All,
     Uncategorized,
     BudgetItem { id: ID },
     BudgetCategory { id: ID },
@@ -181,12 +182,11 @@ pub enum QueryExpensesRequest {
 
     // used on Analyze tab
     ByYear {
-        year: i32,
+        year: String, // expected format YYYY
         category: QueryExpensesCategorySelector,
     },
     ByMonth {
-        year: i32,
-        month: String,
+        month: String, // expected format YYYY-mm
         category: QueryExpensesCategorySelector,
     },
 }
@@ -196,11 +196,7 @@ pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesReques
     let request = json.into_inner();
     let result = match request {
         QueryExpensesRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
-        QueryExpensesRequest::ByMonth {
-            year,
-            month,
-            category,
-        } => {
+        QueryExpensesRequest::ByMonth { month, category } => {
             let re = Regex::new(r"^20\d\d-[01]\d$").unwrap();
             if !re.is_match(&month) {
                 return ApiResponse::BadRequest {
@@ -209,13 +205,17 @@ pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesReques
             }
 
             match category {
-                QueryExpensesCategorySelector::BudgetItem { id } => {
-                    Expense::fetch_by_budget_item_id_and_month(&db, id, month).await
+                QueryExpensesCategorySelector::BudgetCategory { id } => {
+                    Expense::fetch_by_budget_category_id_and_partial_date(&db, id, month).await
                 }
-                _ => {
-                    return ApiResponse::BadRequest {
-                        message: ("This type of query is not yet supported".to_string()),
-                    };
+                QueryExpensesCategorySelector::BudgetItem { id } => {
+                    Expense::fetch_by_budget_item_id_and_partial_date(&db, id, month).await
+                }
+                QueryExpensesCategorySelector::Uncategorized => {
+                    Expense::fetch_uncategorized_by_partial_date(&db, month).await
+                }
+                QueryExpensesCategorySelector::All => {
+                    Expense::fetch_all_by_partial_date(&db, month).await
                 }
             }
         }

@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect } from "react";
-
 import { SpendingDataPoint } from "./types/SpendingData";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
@@ -62,8 +61,15 @@ function MonthlySpendingTable({
   const months = getMonths(2025);
 
   const headerRow = months.map((month, idx) => {
+    const onClick = () => {
+      updateExpensesQuery({
+        variant: "month",
+        month: month,
+        categorySelector: "all",
+      } as ExpensesQuery);
+    };
     return (
-      <th className="r-align nowrap" key={idx}>
+      <th className="r-align nowrap td-button" key={idx} onClick={onClick}>
         {month}
       </th>
     );
@@ -75,7 +81,22 @@ function MonthlySpendingTable({
 
     for (const month of months) {
       const spend = data.getCategorySpend(category.id, month);
-      cols.push(<SpendingTableCell key={month} obj={category} spend={spend} />);
+      const onClick = () => {
+        updateExpensesQuery({
+          variant: "month",
+          month: month,
+          categorySelector: category,
+        } as ExpensesQuery);
+      };
+      const cell = (
+        <SpendingTableCell
+          key={month}
+          obj={category}
+          spend={spend}
+          onClick={onClick}
+        />
+      );
+      cols.push(cell);
     }
 
     rows.push(
@@ -96,9 +117,9 @@ function MonthlySpendingTable({
         const spend = data.getItemSpend(item.id, month);
         const onClick = () => {
           updateExpensesQuery({
-            variant: "item-month",
-            budgetItem: item,
+            variant: "month",
             month: month,
+            categorySelector: item,
           } as ExpensesQuery);
         };
         const cell = (
@@ -123,8 +144,20 @@ function MonthlySpendingTable({
   ];
   for (const month of months) {
     const spend = data.getUncategorizedSpend(month);
+    const onClick = () => {
+      updateExpensesQuery({
+        variant: "month",
+        month: month,
+        categorySelector: null,
+      } as ExpensesQuery);
+    };
     colsUncategorized.push(
-      <SpendingTableCell key={month} obj={null} spend={spend} />,
+      <SpendingTableCell
+        key={month}
+        obj={null}
+        spend={spend}
+        onClick={onClick}
+      />,
     );
   }
   rows.push(
@@ -154,6 +187,32 @@ function MonthlySpendingTable({
   );
 }
 
+function getExpensesSectionHeaderTitle(query: ExpensesQuery): React.ReactNode {
+  switch (query.variant) {
+    case "month": {
+      const categorySelector = query.categorySelector;
+      if (categorySelector === null) {
+        return (
+          <>
+            [{query.month}] <i>uncategorized</i>
+          </>
+        );
+      } else if (categorySelector === "all") {
+        return (
+          <>
+            [{query.month}] <i>all (non-ignored)</i>
+          </>
+        );
+      } else if ("displayName" in categorySelector) {
+        return `[${query.month}] ${categorySelector.displayName}`;
+      }
+      throw new Error("malformed expenses query!");
+    }
+    default:
+      throw new Error("malformed expenses query!");
+  }
+}
+
 function ExpensesSection({
   query,
   onExpenseCategoryChange,
@@ -161,15 +220,13 @@ function ExpensesSection({
   query: ExpensesQuery | null;
   onExpenseCategoryChange: () => void;
 }) {
-  if (query === null || query.variant !== "item-month") {
+  if (query === null || query.variant !== "month") {
     return null;
   }
 
   return (
     <Section>
-      <SectionHeader>
-        [{query.month}] {query.budgetItem.displayName}
-      </SectionHeader>
+      <SectionHeader>{getExpensesSectionHeaderTitle(query)}</SectionHeader>
       <ExpensesList
         query={query}
         onExpenseCategoryChange={onExpenseCategoryChange}
@@ -182,11 +239,11 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [spendingData, setSpendingData] = useState<MonthlySpendingData | null>(
     null,
   );
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [expensesQuery, setExpensesQuery] = useState<ExpensesQuery | null>(
     null,
   );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSpendingData = () => {
     setError(null);

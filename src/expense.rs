@@ -115,10 +115,10 @@ impl Expense {
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_by_budget_item_id_and_month(
+    pub async fn fetch_by_budget_item_id_and_partial_date(
         db: &Database,
         budget_item_id: ID,
-        month: String,
+        date: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
@@ -128,7 +128,94 @@ impl Expense {
             ORDER BY transaction_date DESC, transaction_time DESC",
         )
         .bind(budget_item_id)
-        .bind(format!("{}-%", month))
+        .bind(format!("{}-%", date))
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
+    pub async fn fetch_by_budget_category_id_and_partial_date(
+        db: &Database,
+        budget_category_id: ID,
+        date: String,
+    ) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT
+              expenses.id,
+              expenses.account_id,
+              expenses.transaction_date,
+              expenses.transaction_time,
+              expenses.description,
+              expenses.amount,
+              expenses.raw_csv,
+              expenses.budget_item_id
+            FROM expenses
+            JOIN budget_items
+            ON (expenses.budget_item_id = budget_items.id)
+            WHERE
+              budget_items.category_id = ?1
+              AND expenses.transaction_date LIKE ?2
+            ORDER BY
+              expenses.transaction_date DESC,
+              expenses.transaction_time DESC",
+        )
+        .bind(budget_category_id)
+        .bind(format!("{}-%", date))
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
+    pub async fn fetch_uncategorized_by_partial_date(
+        db: &Database,
+        date: String,
+    ) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT * FROM expenses WHERE
+              budget_item_id IS NULL
+              AND transaction_date LIKE ?1
+            ORDER BY transaction_date DESC, transaction_time DESC",
+        )
+        .bind(format!("{}-%", date))
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
+    pub async fn fetch_all_by_partial_date(
+        db: &Database,
+        date: String,
+    ) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT
+              expenses.id,
+              expenses.account_id,
+              expenses.transaction_date,
+              expenses.transaction_time,
+              expenses.description,
+              expenses.amount,
+              expenses.raw_csv,
+              expenses.budget_item_id
+            FROM expenses
+            JOIN budget_items
+              ON (expenses.budget_item_id = budget_items.id)
+            JOIN budget_categories
+              ON (budget_items.category_id = budget_categories.id)
+            WHERE
+              budget_categories.ignored = 0
+              AND expenses.transaction_date LIKE ?1
+            ORDER BY
+              expenses.transaction_date DESC,
+              expenses.transaction_time DESC",
+        )
+        .bind(format!("{}-%", date))
         .fetch_all(&mut *conn)
         .await?;
 
