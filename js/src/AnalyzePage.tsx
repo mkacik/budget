@@ -50,22 +50,28 @@ function SpendingTableCell({
 }
 
 function MonthlySpendingTable({
+  year,
   data,
   budget,
   updateExpensesQuery,
 }: {
-  data: MonthlySpendingData;
+  year: number;
+  data: MonthlySpendingData | null;
   budget: BudgetView;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
-  const months = getMonths(2025);
+  if (data === null) {
+    return null;
+  }
+
+  const months = getMonths(year);
 
   const headerRow = months.map((month, idx) => {
     const onClick = () => {
       updateExpensesQuery({
         variant: "period",
         period: month,
-        categorySelector: "all",
+        categorySelector: "all-not-ignored",
       } as ExpensesQuery);
     };
     return (
@@ -148,7 +154,7 @@ function MonthlySpendingTable({
       updateExpensesQuery({
         variant: "period",
         period: month,
-        categorySelector: null,
+        categorySelector: "uncategorized",
       } as ExpensesQuery);
     };
     colsUncategorized.push(
@@ -160,6 +166,7 @@ function MonthlySpendingTable({
       />,
     );
   }
+
   rows.push(
     <tr key={"__uncategorized"} className="bold highlight">
       {colsUncategorized}
@@ -187,52 +194,33 @@ function MonthlySpendingTable({
   );
 }
 
-function getExpensesSectionHeaderTitle(query: ExpensesQuery): React.ReactNode {
-  switch (query.variant) {
-    case "period": {
-      const categorySelector = query.categorySelector;
-      if (categorySelector === null) {
-        return (
-          <>
-            [{query.period}] <i>uncategorized</i>
-          </>
-        );
-      } else if (categorySelector === "all") {
-        return (
-          <>
-            [{query.period}] <i>all (non-ignored)</i>
-          </>
-        );
-      } else if ("displayName" in categorySelector) {
-        return `[${query.period}] ${categorySelector.displayName}`;
-      }
-      throw new Error("malformed expenses query!");
-    }
-    default:
-      throw new Error("malformed expenses query!");
-  }
-}
-
-function ExpensesSection({
-  query,
-  onExpenseCategoryChange,
-}: {
-  query: ExpensesQuery | null;
-  onExpenseCategoryChange: () => void;
-}) {
-  if (query === null || query.variant !== "period") {
-    return null;
+function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
+  if (query === null) {
+    return (
+      <span className="soft">
+        Click on any table cell to select relevant expenses
+      </span>
+    );
   }
 
-  return (
-    <Section>
-      <SectionHeader>{getExpensesSectionHeaderTitle(query)}</SectionHeader>
-      <ExpensesList
-        query={query}
-        onExpenseCategoryChange={onExpenseCategoryChange}
-      />
-    </Section>
-  );
+  if (query.variant !== "period") {
+    throw new Error("Only period query accepted in this context!");
+  }
+
+  const titleParts: Array<React.ReactNode> = [`[${query.period}]`, " "];
+
+  const categorySelector = query.categorySelector;
+  if (categorySelector === "uncategorized") {
+    titleParts.push(<i key={categorySelector}>uncategorized</i>);
+  } else if (categorySelector === "all-not-ignored") {
+    titleParts.push(
+      <i key={categorySelector}>all (excluding ignored categories)</i>,
+    );
+  } else if ("displayName" in categorySelector) {
+    titleParts.push(categorySelector.displayName);
+  }
+
+  return <SectionHeader>{titleParts}</SectionHeader>;
 }
 
 export function AnalyzePage({ budget }: { budget: BudgetView }) {
@@ -269,26 +257,27 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
     }
   }, []);
 
-  const spendingTable =
-    spendingData !== null ? (
-      <MonthlySpendingTable
-        data={spendingData}
-        budget={budget}
-        updateExpensesQuery={(query) => setExpensesQuery(query)}
-      />
-    ) : null;
-
   return (
     <>
       <Section>
         <SectionHeader>Analyze spending</SectionHeader>
         <ErrorCard message={error} />
-        {spendingTable}
+        <MonthlySpendingTable
+          year={2025}
+          data={spendingData}
+          budget={budget}
+          updateExpensesQuery={(query) => setExpensesQuery(query)}
+        />
       </Section>
-      <ExpensesSection
-        query={expensesQuery}
-        onExpenseCategoryChange={fetchSpendingData}
-      />
+      <Section>
+        <ExpensesSectionHeader query={expensesQuery} />
+        {expensesQuery && (
+          <ExpensesList
+            query={expensesQuery}
+            onExpenseCategoryChange={fetchSpendingData}
+          />
+        )}
+      </Section>
       <LoadingBanner isLoading={loading} />
     </>
   );

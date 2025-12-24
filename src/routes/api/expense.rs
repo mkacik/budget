@@ -164,7 +164,7 @@ pub async fn update_expense(
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(tag = "variant", content = "params")]
 #[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
-pub enum QueryExpensesCategorySelector {
+pub enum ExpensesQueryRequestCategorySelector {
     All,
     Uncategorized,
     BudgetItem { id: ID },
@@ -174,7 +174,7 @@ pub enum QueryExpensesCategorySelector {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(tag = "variant", content = "params")]
 #[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
-pub enum QueryExpensesRequest {
+pub enum ExpensesQueryRequest {
     // used on Expenses tab
     ByAccount {
         id: ID,
@@ -183,7 +183,7 @@ pub enum QueryExpensesRequest {
     // used on Analyze tab
     ByPeriod {
         period: String, // expected format YYYY or YYYY-mm
-        category: QueryExpensesCategorySelector,
+        category: ExpensesQueryRequestCategorySelector,
     },
 }
 
@@ -198,11 +198,11 @@ fn is_valid_period(period: &str) -> bool {
 }
 
 #[post("/expenses/query", format = "json", data = "<json>")]
-pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesRequest>) -> ApiResponse {
+pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQueryRequest>) -> ApiResponse {
     let request = json.into_inner();
     let result = match request {
-        QueryExpensesRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
-        QueryExpensesRequest::ByPeriod { period, category } => {
+        ExpensesQueryRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
+        ExpensesQueryRequest::ByPeriod { period, category } => {
             if !is_valid_period(&period) {
                 return ApiResponse::BadRequest {
                     message: format!(
@@ -213,16 +213,16 @@ pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesReques
             }
 
             match category {
-                QueryExpensesCategorySelector::BudgetCategory { id } => {
+                ExpensesQueryRequestCategorySelector::BudgetCategory { id } => {
                     Expense::fetch_by_budget_category_id_and_period(&db, id, period).await
                 }
-                QueryExpensesCategorySelector::BudgetItem { id } => {
+                ExpensesQueryRequestCategorySelector::BudgetItem { id } => {
                     Expense::fetch_by_budget_item_id_and_period(&db, id, period).await
                 }
-                QueryExpensesCategorySelector::Uncategorized => {
+                ExpensesQueryRequestCategorySelector::Uncategorized => {
                     Expense::fetch_uncategorized_by_period(&db, period).await
                 }
-                QueryExpensesCategorySelector::All => {
+                ExpensesQueryRequestCategorySelector::All => {
                     Expense::fetch_all_non_ignored_by_period(&db, period).await
                 }
             }

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import {
   Expense,
   Expenses,
-  QueryExpensesRequest,
-  QueryExpensesCategorySelector,
+  ExpensesQueryRequest,
+  ExpensesQueryRequestCategorySelector,
 } from "./types/Expense";
 
 import {
@@ -24,36 +24,44 @@ import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
 
 import { ErrorCard, Section } from "./ui/Common";
 
-type CategorySelector = BudgetItemView | BudgetCategoryView | "all" | null;
+export type ExpensesQueryCategorySelector =
+  | BudgetItemView
+  | BudgetCategoryView
+  | "all-not-ignored"
+  | "uncategorized";
 export type ExpensesQuery =
   | { variant: "account"; account: AccountView }
-  | { variant: "period"; period: string; categorySelector: CategorySelector };
+  | {
+      variant: "period";
+      period: string;
+      categorySelector: ExpensesQueryCategorySelector;
+    };
 
-function getServerQueryCategorySelector(
-  selector: CategorySelector,
-): QueryExpensesCategorySelector {
-  if (selector === null) {
-    return { variant: "Uncategorized" } as QueryExpensesCategorySelector;
+function getExpensesQueryRequestCategorySelector(
+  selector: ExpensesQueryCategorySelector,
+): ExpensesQueryRequestCategorySelector {
+  if (selector === "uncategorized") {
+    return { variant: "Uncategorized" } as ExpensesQueryRequestCategorySelector;
   }
-  if (selector === "all") {
-    return { variant: "All" } as QueryExpensesCategorySelector;
+  if (selector === "all-not-ignored") {
+    return { variant: "All" } as ExpensesQueryRequestCategorySelector;
   }
   if (selector instanceof BudgetItemView) {
     return {
       variant: "BudgetItem",
       params: { id: selector.id },
-    } as QueryExpensesCategorySelector;
+    } as ExpensesQueryRequestCategorySelector;
   }
   if (selector instanceof BudgetCategoryView) {
     return {
       variant: "BudgetCategory",
       params: { id: selector.id },
-    } as QueryExpensesCategorySelector;
+    } as ExpensesQueryRequestCategorySelector;
   }
   throw new Error("malformed expenses query!");
 }
 
-function getServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
+function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
   switch (query.variant) {
     case "account":
       return {
@@ -61,15 +69,17 @@ function getServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
         params: {
           id: query.account.id,
         },
-      } as QueryExpensesRequest;
+      } as ExpensesQueryRequest;
     case "period": {
       return {
         variant: "ByPeriod",
         params: {
           period: query.period,
-          category: getServerQueryCategorySelector(query.categorySelector),
+          category: getExpensesQueryRequestCategorySelector(
+            query.categorySelector,
+          ),
         },
-      } as QueryExpensesRequest;
+      } as ExpensesQueryRequest;
     }
     default:
       throw new Error("malformed expenses query!");
@@ -109,7 +119,7 @@ export function ExpensesList({
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify(getServerQueryParams(query)),
+      body: JSON.stringify(getExpensesQueryRequest(query)),
     })
       .then((response) => response.json())
       .then((result) => {
