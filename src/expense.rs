@@ -75,6 +75,7 @@ impl Expense {
         Ok(id)
     }
 
+    // TODO: rename to delete newer than
     pub async fn delete_by_account_id_and_date(
         db: &Database,
         account_id: ID,
@@ -115,10 +116,10 @@ impl Expense {
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_by_budget_item_id_and_partial_date(
+    pub async fn fetch_by_budget_item_id_and_period(
         db: &Database,
         budget_item_id: ID,
-        date: String,
+        period: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
@@ -128,17 +129,17 @@ impl Expense {
             ORDER BY transaction_date DESC, transaction_time DESC",
         )
         .bind(budget_item_id)
-        .bind(format!("{}-%", date))
+        .bind(format!("{}-%", period))
         .fetch_all(&mut *conn)
         .await?;
 
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_by_budget_category_id_and_partial_date(
+    pub async fn fetch_by_budget_category_id_and_period(
         db: &Database,
         budget_category_id: ID,
-        date: String,
+        period: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
 
@@ -163,16 +164,16 @@ impl Expense {
               expenses.transaction_time DESC",
         )
         .bind(budget_category_id)
-        .bind(format!("{}-%", date))
+        .bind(format!("{}-%", period))
         .fetch_all(&mut *conn)
         .await?;
 
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_uncategorized_by_partial_date(
+    pub async fn fetch_uncategorized_by_period(
         db: &Database,
-        date: String,
+        period: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
@@ -181,16 +182,16 @@ impl Expense {
               AND transaction_date LIKE ?1
             ORDER BY transaction_date DESC, transaction_time DESC",
         )
-        .bind(format!("{}-%", date))
+        .bind(format!("{}-%", period))
         .fetch_all(&mut *conn)
         .await?;
 
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_all_by_partial_date(
+    pub async fn fetch_all_non_ignored_by_period(
         db: &Database,
-        date: String,
+        period: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
@@ -215,7 +216,7 @@ impl Expense {
               expenses.transaction_date DESC,
               expenses.transaction_time DESC",
         )
-        .bind(format!("{}-%", date))
+        .bind(format!("{}-%", period))
         .fetch_all(&mut *conn)
         .await?;
 

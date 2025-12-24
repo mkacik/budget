@@ -63,8 +63,8 @@ function MonthlySpendingTable({
   const headerRow = months.map((month, idx) => {
     const onClick = () => {
       updateExpensesQuery({
-        variant: "month",
-        month: month,
+        variant: "period",
+        period: month,
         categorySelector: "all",
       } as ExpensesQuery);
     };
@@ -83,8 +83,8 @@ function MonthlySpendingTable({
       const spend = data.getCategorySpend(category.id, month);
       const onClick = () => {
         updateExpensesQuery({
-          variant: "month",
-          month: month,
+          variant: "period",
+          period: month,
           categorySelector: category,
         } as ExpensesQuery);
       };
@@ -117,8 +117,8 @@ function MonthlySpendingTable({
         const spend = data.getItemSpend(item.id, month);
         const onClick = () => {
           updateExpensesQuery({
-            variant: "month",
-            month: month,
+            variant: "period",
+            period: month,
             categorySelector: item,
           } as ExpensesQuery);
         };
@@ -146,8 +146,8 @@ function MonthlySpendingTable({
     const spend = data.getUncategorizedSpend(month);
     const onClick = () => {
       updateExpensesQuery({
-        variant: "month",
-        month: month,
+        variant: "period",
+        period: month,
         categorySelector: null,
       } as ExpensesQuery);
     };
@@ -189,22 +189,22 @@ function MonthlySpendingTable({
 
 function getExpensesSectionHeaderTitle(query: ExpensesQuery): React.ReactNode {
   switch (query.variant) {
-    case "month": {
+    case "period": {
       const categorySelector = query.categorySelector;
       if (categorySelector === null) {
         return (
           <>
-            [{query.month}] <i>uncategorized</i>
+            [{query.period}] <i>uncategorized</i>
           </>
         );
       } else if (categorySelector === "all") {
         return (
           <>
-            [{query.month}] <i>all (non-ignored)</i>
+            [{query.period}] <i>all (non-ignored)</i>
           </>
         );
       } else if ("displayName" in categorySelector) {
-        return `[${query.month}] ${categorySelector.displayName}`;
+        return `[${query.period}] ${categorySelector.displayName}`;
       }
       throw new Error("malformed expenses query!");
     }
@@ -220,7 +220,7 @@ function ExpensesSection({
   query: ExpensesQuery | null;
   onExpenseCategoryChange: () => void;
 }) {
-  if (query === null || query.variant !== "month") {
+  if (query === null || query.variant !== "period") {
     return null;
   }
 

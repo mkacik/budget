@@ -181,14 +181,20 @@ pub enum QueryExpensesRequest {
     },
 
     // used on Analyze tab
-    ByYear {
-        year: String, // expected format YYYY
+    ByPeriod {
+        period: String, // expected format YYYY or YYYY-mm
         category: QueryExpensesCategorySelector,
     },
-    ByMonth {
-        month: String, // expected format YYYY-mm
-        category: QueryExpensesCategorySelector,
-    },
+}
+
+fn is_valid_period(period: &str) -> bool {
+    if period.len() > 7 {
+        return false;
+    }
+
+    let re = Regex::new(r"^20\d\d(-(0\d|1[012]))?$").unwrap();
+
+    re.is_match(period)
 }
 
 #[post("/expenses/query", format = "json", data = "<json>")]
@@ -196,33 +202,30 @@ pub async fn query_expenses(db: &State<Database>, json: Json<QueryExpensesReques
     let request = json.into_inner();
     let result = match request {
         QueryExpensesRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
-        QueryExpensesRequest::ByMonth { month, category } => {
-            let re = Regex::new(r"^20\d\d-[01]\d$").unwrap();
-            if !re.is_match(&month) {
+        QueryExpensesRequest::ByPeriod { period, category } => {
+            if !is_valid_period(&period) {
                 return ApiResponse::BadRequest {
-                    message: format!("Incorrect date '{}', expected 'yyyy-MM' format", month),
+                    message: format!(
+                        "Incorrect period '{}', expected 'YYYY' or 'YYYY-mm'",
+                        period
+                    ),
                 };
             }
 
             match category {
                 QueryExpensesCategorySelector::BudgetCategory { id } => {
-                    Expense::fetch_by_budget_category_id_and_partial_date(&db, id, month).await
+                    Expense::fetch_by_budget_category_id_and_period(&db, id, period).await
                 }
                 QueryExpensesCategorySelector::BudgetItem { id } => {
-                    Expense::fetch_by_budget_item_id_and_partial_date(&db, id, month).await
+                    Expense::fetch_by_budget_item_id_and_period(&db, id, period).await
                 }
                 QueryExpensesCategorySelector::Uncategorized => {
-                    Expense::fetch_uncategorized_by_partial_date(&db, month).await
+                    Expense::fetch_uncategorized_by_period(&db, period).await
                 }
                 QueryExpensesCategorySelector::All => {
-                    Expense::fetch_all_by_partial_date(&db, month).await
+                    Expense::fetch_all_non_ignored_by_period(&db, period).await
                 }
             }
-        }
-        _ => {
-            return ApiResponse::BadRequest {
-                message: ("This type of query is not yet supported".to_string()),
-            };
         }
     };
 

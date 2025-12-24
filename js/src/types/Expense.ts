@@ -8,4 +8,4 @@ export type Expenses = { expenses: Array<Expense>, };
 
 export type QueryExpensesCategorySelector = { "variant": "All" } | { "variant": "Uncategorized" } | { "variant": "BudgetItem", "params": { id: number, } } | { "variant": "BudgetCategory", "params": { id: number, } };
 
-export type QueryExpensesRequest = { "variant": "ByAccount", "params": { id: number, } } | { "variant": "ByYear", "params": { year: string, category: QueryExpensesCategorySelector, } } | { "variant": "ByMonth", "params": { month: string, category: QueryExpensesCategorySelector, } };
+export type QueryExpensesRequest = { "variant": "ByAccount", "params": { id: number, } } | { "variant": "ByPeriod", "params": { period: string, category: QueryExpensesCategorySelector, } };

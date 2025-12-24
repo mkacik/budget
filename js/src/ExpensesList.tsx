@@ -24,16 +24,13 @@ import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
 
 import { ErrorCard, Section } from "./ui/Common";
 
+type CategorySelector = BudgetItemView | BudgetCategoryView | "all" | null;
 export type ExpensesQuery =
   | { variant: "account"; account: AccountView }
-  | {
-      variant: "month";
-      month: string;
-      categorySelector: BudgetItemView | BudgetCategoryView | "all" | null;
-    };
+  | { variant: "period"; period: string; categorySelector: CategorySelector };
 
 function getServerQueryCategorySelector(
-  selector: BudgetItemView | BudgetCategoryView | "all" | null,
+  selector: CategorySelector,
 ): QueryExpensesCategorySelector {
   if (selector === null) {
     return { variant: "Uncategorized" } as QueryExpensesCategorySelector;
@@ -65,11 +62,11 @@ function getServerQueryParams(query: ExpensesQuery): QueryExpensesRequest {
           id: query.account.id,
         },
       } as QueryExpensesRequest;
-    case "month": {
+    case "period": {
       return {
-        variant: "ByMonth",
+        variant: "ByPeriod",
         params: {
-          month: query.month,
+          period: query.period,
           category: getServerQueryCategorySelector(query.categorySelector),
         },
       } as QueryExpensesRequest;
@@ -83,7 +80,7 @@ function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
   switch (query.variant) {
     case "account":
       return { autoadvance: true } as ExpensesTableSettings;
-    case "month":
+    case "period":
       return { autoadvance: false } as ExpensesTableSettings;
     default:
       throw new Error("malformed expenses query!");
