@@ -11,6 +11,7 @@ import {
   InlineGlyph,
   InlineGlyphButton,
   ModalCard,
+  Pill,
   Section,
   SectionHeader,
 } from "./ui/Common";
@@ -18,27 +19,35 @@ import {
 function BudgetItemRow({
   item,
   editItem,
-  skipAmounts,
+  skipAmountColumns,
 }: {
   item: BudgetItemView;
   editItem: () => void;
-  skipAmounts?: boolean;
+  skipAmountColumns?: boolean;
 }) {
-  const amounts = skipAmounts ? null : (
+  const amounts = item.isCategorizationOnly ? (
+    <>
+      <td className="r-align soft">—</td>
+      <td className="r-align soft">—</td>
+    </>
+  ) : (
     <>
       <td className="number r-align">{(item.amountPerYear / 12).toFixed(2)}</td>
       <td className="number r-align">{item.amountPerYear.toFixed(2)}</td>
     </>
   );
 
+  const showAmountColumns = !skipAmountColumns;
   return (
     <tr>
       <td className="v-center">
         <InlineGlyph glyph="chevron_right" />
         {item.name}
+        {item.isBudgetOnly && <Pill>hidden in categorization</Pill>}
+        {item.isCategorizationOnly && <Pill>categorization only</Pill>}
         <InlineGlyphButton glyph="edit" onClick={editItem} />
       </td>
-      {amounts}
+      {showAmountColumns && amounts}
     </tr>
   );
 }
@@ -46,13 +55,13 @@ function BudgetItemRow({
 function BudgetCategoryRow({
   category,
   editCategory,
-  skipAmounts,
+  skipAmountColumns,
 }: {
   category: BudgetCategoryView;
   editCategory: () => void;
-  skipAmounts?: boolean;
+  skipAmountColumns?: boolean;
 }) {
-  const amounts = skipAmounts ? null : (
+  const amounts = skipAmountColumns ? null : (
     <>
       <td className="number r-align">
         {(category.amountPerYear / 12).toFixed(2)}
@@ -190,7 +199,7 @@ export function BudgetPage({
         key={category.name}
         editCategory={() => editCategory(category)}
         category={category}
-        skipAmounts={true}
+        skipAmountColumns={true}
       />,
     );
 
@@ -200,7 +209,7 @@ export function BudgetPage({
           key={item.name}
           item={item}
           editItem={() => editItem(item)}
-          skipAmounts={true}
+          skipAmountColumns={true}
         />,
       );
     }

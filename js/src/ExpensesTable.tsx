@@ -18,6 +18,9 @@ function getKeyMap(budget: BudgetView): KeyMap {
 
   const items = [budget.items, budget.ignoredItems].flat();
   for (const [idx, item] of items.entries()) {
+    if (item.isBudgetOnly) {
+      continue;
+    }
     if (idx < CHARS.length) {
       keyMap.set(CHARS[idx], item);
     } else {
@@ -80,9 +83,10 @@ function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
 
   return (
     <>
-      {budget.items.map((item) => (
-        <BudgetItemOption key={item.id} item={item} />
-      ))}
+      {budget.items.map(
+        (item) =>
+          !item.isBudgetOnly && <BudgetItemOption key={item.id} item={item} />,
+      )}
       {spacer}
       {budget.ignoredItems.map((item) => (
         <BudgetItemOption key={item.id} item={item} />

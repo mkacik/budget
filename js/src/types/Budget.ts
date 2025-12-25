@@ -8,6 +8,6 @@ export type BudgetCategory = { id: number, name: string, ignored: boolean, };
 
 export type BudgetCategoryFields = { name: string, ignored: boolean, };
 
-export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount | null, };
+export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount | null, budget_only: boolean, };
 
-export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount | null, };
+export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount | null, budget_only: boolean, };

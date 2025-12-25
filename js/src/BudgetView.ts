@@ -59,6 +59,14 @@ export class BudgetItemView {
   get amountPerMonth() {
     return this.amountPerYear / 12;
   }
+
+  get isBudgetOnly() {
+    return this.item.budget_only;
+  }
+
+  get isCategorizationOnly() {
+    return this.item.amount === null && !this.category.ignored;
+  }
 }
 
 export class BudgetCategoryView {

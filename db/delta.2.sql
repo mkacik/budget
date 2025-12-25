@@ -1,0 +1,1 @@
+ALTER TABLE budget_items ADD COLUMN budget_only BOOLEAN NOT NULL DEFAULT 0;

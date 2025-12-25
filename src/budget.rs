@@ -30,6 +30,7 @@ pub struct BudgetItemFields {
     pub category_id: ID,
     pub name: String,
     pub amount: Option<BudgetAmount>,
+    pub budget_only: bool,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -109,11 +110,12 @@ impl BudgetItem {
     pub async fn create(db: &Database, fields: BudgetItemFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO budget_items (category_id, name, amount)
-            VALUES (?1, ?2, ?3) RETURNING id",
+            "INSERT INTO budget_items (category_id, name, amount, budget_only)
+            VALUES (?1, ?2, ?3, ?4) RETURNING id",
             fields.category_id,
             fields.name,
             fields.amount,
+            fields.budget_only
         )
         .fetch_one(&mut *conn)
         .await?
@@ -135,7 +137,8 @@ impl BudgetItem {
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, BudgetItem>(
-            "SELECT id, category_id, name, amount FROM budget_items ORDER BY category_id, name",
+            "SELECT id, category_id, name, amount, budget_only
+             FROM budget_items ORDER BY category_id, name",
         )
         .fetch_all(&mut *conn)
         .await?;
@@ -146,7 +149,8 @@ impl BudgetItem {
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<BudgetItem> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, BudgetItem>(
-            "SELECT id, category_id, name, amount FROM budget_items WHERE id = ?1",
+            "SELECT id, category_id, name, amount, budget_only
+             FROM budget_items WHERE id = ?1",
         )
         .bind(id)
         .fetch_one(&mut *conn)
@@ -162,12 +166,14 @@ impl BudgetItem {
             "UPDATE budget_items SET
                 category_id = ?2,
                 name = ?3,
-                amount = ?4
+                amount = ?4,
+                budget_only = ?5
             WHERE id = ?1",
             self.id,
             self.fields.category_id,
             self.fields.name,
-            self.fields.amount
+            self.fields.amount,
+            self.fields.budget_only
         )
         .execute(&mut *conn)
         .await?;
