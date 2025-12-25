@@ -5,6 +5,10 @@ import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
+import {
+  BudgetPageSettings,
+  BudgetPageSettingsForm,
+} from "./BudgetPageSettings";
 import { BudgetChart } from "./Charts";
 import {
   GlyphButton,
@@ -131,6 +135,11 @@ export function BudgetTableFooter({
   );
 }
 
+const DEFAULT_SETTINGS = {
+  showSettings: false,
+  showCategorizationOnlyItems: true,
+} as BudgetPageSettings;
+
 enum ModalMode {
   CATEGORY,
   ITEM,
@@ -145,6 +154,9 @@ export function BudgetPage({
   budget: BudgetView;
   refreshBudget: () => void;
 }) {
+  const [settings, setSettings] =
+    useState<BudgetPageSettings>(DEFAULT_SETTINGS);
+
   // Note: need this enum, because null value of edited object could represent either new item
   // or new category;
   const [modalMode, setModalMode] = useState<ModalMode>(ModalMode.HIDDEN);
@@ -166,6 +178,10 @@ export function BudgetPage({
     setModalMode(ModalMode.CHART);
   };
 
+  const toggleSettings = () => {
+    setSettings({ ...settings, showSettings: !settings.showSettings });
+  };
+
   const onEditSuccess = () => {
     refreshBudget();
     setModalMode(ModalMode.HIDDEN);
@@ -182,6 +198,9 @@ export function BudgetPage({
     );
 
     for (const item of category.items) {
+      if (!settings.showCategorizationOnlyItems && item.isCategorizationOnly) {
+        continue;
+      }
       budgetRows.push(
         <BudgetItemRow
           key={item.name}
@@ -264,7 +283,15 @@ export function BudgetPage({
         <SectionHeader>
           Budget
           <InlineGlyphButton glyph="pie_chart" onClick={showChart} />
+          <InlineGlyphButton glyph="settings" onClick={toggleSettings} />
         </SectionHeader>
+
+        {settings.showSettings && (
+          <BudgetPageSettingsForm
+            settings={settings}
+            updateSettings={setSettings}
+          />
+        )}
 
         <BudgetTable amountPerYear={budget.amountPerYear}>
           {budgetRows}

@@ -81,6 +81,8 @@ export function ItemCard({ children }: { children: React.ReactNode }) {
 
 export type Glyph =
   | "add"
+  | "arrow_downward"
+  | "arrow_upward"
   | "check_circle"
   | "chevron_right"
   | "delete"
@@ -88,8 +90,7 @@ export type Glyph =
   | "error"
   | "info"
   | "pie_chart"
-  | "arrow_upward"
-  | "arrow_downward";
+  | "settings";
 
 export function GlyphButton({
   glyph,
