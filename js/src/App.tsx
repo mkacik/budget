@@ -6,34 +6,62 @@ import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
 import { StatementSchemas } from "./types/StatementSchema";
 
+import { AccountsPage } from "./AccountsPage";
+import { AccountsView } from "./AccountsView";
+import { AnalyzePage } from "./AnalyzePage";
+import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { BudgetViewContext } from "./BudgetViewContext";
-
-import { AccountsView } from "./AccountsView";
-
-import { AccountsPage } from "./AccountsPage";
-import { BudgetPage } from "./BudgetPage";
 import { ExpensesPage } from "./ExpensesPage";
-import { AnalyzePage } from "./AnalyzePage";
+import {
+  AppSettingsProvider,
+  AppSettingsVersioned,
+} from "./AppSettingsProvider";
+
+function HeaderItem({
+  onClick,
+  children,
+}: {
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className="header-item" onClick={onClick}>
+      {children}
+    </span>
+  );
+}
 
 enum Tab {
   Budget,
   Accounts,
   Expenses,
-  Schemas,
   Analyze,
 }
 
-function render_if(condition: boolean, element: React.ReactNode) {
-  return condition ? element : null;
+interface AppSettings extends AppSettingsVersioned {
+  tab: Tab;
 }
 
+const SETTINGS_STORAGE_KEY = "BUDGETAPP.settings";
+const DEFAULT_SETTINGS = {
+  version: 1,
+  tab: Tab.Expenses,
+} as AppSettings;
+
 function App() {
+  const settingsProvider = new AppSettingsProvider<AppSettings>(
+    SETTINGS_STORAGE_KEY,
+    DEFAULT_SETTINGS,
+  );
+  const [settings, setSettings] = useState<AppSettings>(
+    settingsProvider.getSettings(),
+  );
+  const [tab, setTab] = useState<Tab>(settings.tab);
+
   const [budget, setBudget] = useState<BudgetView | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
   const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
-
-  const [tab, setTab] = useState<Tab>(Tab.Expenses);
 
   const fetchBudget = () => {
     fetch("/api/budget")
@@ -48,7 +76,7 @@ function App() {
     if (budget === null) {
       fetchBudget();
     }
-  }, [budget, setBudget]);
+  }, []);
 
   const fetchAccounts = () => {
     fetch("/api/accounts")
@@ -62,7 +90,7 @@ function App() {
     if (accounts === null) {
       fetchAccounts();
     }
-  }, [accounts, setAccounts]);
+  }, []);
 
   const fetchSchemas = () => {
     fetch("/api/schemas")
@@ -76,7 +104,17 @@ function App() {
     if (schemas === null) {
       fetchSchemas();
     }
-  }, [schemas, setSchemas]);
+  }, []);
+
+  const updateSettings = (settings: AppSettings) => {
+    settingsProvider.saveSettings(settings);
+    setSettings(settings);
+  };
+
+  const updateTab = (tab: Tab) => () => {
+    updateSettings({ ...settings, tab: tab });
+    setTab(tab);
+  };
 
   if (budget === null || accounts === null || schemas === null) {
     return null;
@@ -84,46 +122,35 @@ function App() {
 
   const accountsView = new AccountsView(accounts, schemas);
 
-  const budgetPage = <BudgetPage budget={budget} refreshBudget={fetchBudget} />;
-  const expensesPage = <ExpensesPage accounts={accountsView} />;
-  const accountsPage = (
-    <AccountsPage
-      accounts={accounts.accounts}
-      refreshAccounts={fetchAccounts}
-      schemas={schemas.schemas}
-      refreshSchemas={fetchSchemas}
-    />
-  );
-  const analyzePage = <AnalyzePage budget={budget} />;
-
   return (
     <>
       <div className="header">
-        <span className="header-item" onClick={() => setTab(Tab.Budget)}>
-          Budget
-        </span>
-        <span className="header-item" onClick={() => setTab(Tab.Expenses)}>
-          Expenses
-        </span>
-        <span className="header-item" onClick={() => setTab(Tab.Accounts)}>
-          Accounts
-        </span>
-        <span className="header-item" onClick={() => setTab(Tab.Analyze)}>
-          Analyze
-        </span>
+        <HeaderItem onClick={updateTab(Tab.Budget)}>Budget</HeaderItem>
+        <HeaderItem onClick={updateTab(Tab.Expenses)}>Expenses</HeaderItem>
+        <HeaderItem onClick={updateTab(Tab.Accounts)}>Accounts</HeaderItem>
+        <HeaderItem onClick={updateTab(Tab.Analyze)}>Analyze</HeaderItem>
         <span className="header-filler" />
-        <span className="header-item">
+        <HeaderItem>
           <form action="logout" method="post">
             <input type="submit" value="Logout" />
           </form>
-        </span>
+        </HeaderItem>
       </div>
       <div className="main">
         <BudgetViewContext.Provider value={budget}>
-          {render_if(tab == Tab.Budget, budgetPage)}
-          {render_if(tab == Tab.Expenses, expensesPage)}
-          {render_if(tab == Tab.Accounts, accountsPage)}
-          {render_if(tab == Tab.Analyze, analyzePage)}
+          {tab == Tab.Budget && (
+            <BudgetPage budget={budget} refreshBudget={fetchBudget} />
+          )}
+          {tab == Tab.Expenses && <ExpensesPage accounts={accountsView} />}
+          {tab == Tab.Accounts && (
+            <AccountsPage
+              accounts={accounts.accounts}
+              refreshAccounts={fetchAccounts}
+              schemas={schemas.schemas}
+              refreshSchemas={fetchSchemas}
+            />
+          )}
+          {tab == Tab.Analyze && <AnalyzePage budget={budget} />}
         </BudgetViewContext.Provider>
       </div>
     </>
