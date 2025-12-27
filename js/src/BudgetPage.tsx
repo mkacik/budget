@@ -9,7 +9,6 @@ import {
   BudgetPageSettings,
   BudgetPageSettingsForm,
 } from "./BudgetPageSettings";
-import { BudgetChart } from "./Charts";
 import {
   GlyphButton,
   InlineGlyph,
@@ -143,7 +142,6 @@ const DEFAULT_SETTINGS = {
 enum ModalMode {
   CATEGORY,
   ITEM,
-  CHART,
   HIDDEN,
 }
 
@@ -172,10 +170,6 @@ export function BudgetPage({
   const editItem = (item: BudgetItemView | null) => {
     setEditedItem(item);
     setModalMode(ModalMode.ITEM);
-  };
-
-  const showChart = () => {
-    setModalMode(ModalMode.CHART);
   };
 
   const toggleSettings = () => {
@@ -263,11 +257,6 @@ export function BudgetPage({
       );
       break;
     }
-    case ModalMode.CHART: {
-      modalTitle = "Budget";
-      modalContent = <BudgetChart categories={budget.categories} />;
-      break;
-    }
     default:
       break;
   }
@@ -282,7 +271,6 @@ export function BudgetPage({
       <Section>
         <SectionHeader>
           Budget
-          <InlineGlyphButton glyph="pie_chart" onClick={showChart} />
           <InlineGlyphButton glyph="settings" onClick={toggleSettings} />
         </SectionHeader>
 
