@@ -176,6 +176,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetCategoryFields {
             name: String::from("Car"),
             ignored: false,
+            year: 2025,
         },
     )
     .await?;
@@ -185,6 +186,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetCategoryFields {
             name: String::from("Shopping"),
             ignored: false,
+            year: 2025,
         },
     )
     .await?;
@@ -194,6 +196,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
         BudgetCategoryFields {
             name: String::from("Ignored"),
             ignored: true,
+            year: 2025,
         },
     )
     .await?;
@@ -204,6 +207,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: car_id,
             name: String::from("Fuel"),
             amount: Some(BudgetAmount::Weekly { amount: 50. }),
+            budget_only: false,
         },
     )
     .await?;
@@ -214,6 +218,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: car_id,
             name: String::from("Loan"),
             amount: Some(BudgetAmount::Monthly { amount: 300. }),
+            budget_only: false,
         },
     )
     .await?;
@@ -224,6 +229,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: car_id,
             name: String::from("Insurance"),
             amount: Some(BudgetAmount::Yearly { amount: 1000. }),
+            budget_only: false,
         },
     )
     .await?;
@@ -237,6 +243,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
                 x: 5,
                 amount: 5000.,
             }),
+            budget_only: false,
         },
     )
     .await?;
@@ -247,6 +254,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: shopping_id,
             name: String::from("Groceries"),
             amount: Some(BudgetAmount::Weekly { amount: 100. }),
+            budget_only: false,
         },
     )
     .await?;
@@ -257,6 +265,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: shopping_id,
             name: String::from("Clothing"),
             amount: Some(BudgetAmount::Monthly { amount: 200. }),
+            budget_only: false,
         },
     )
     .await?;
@@ -267,6 +276,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: ignored_id,
             name: String::from("X-Account Transfers"),
             amount: None,
+            budget_only: false,
         },
     )
     .await?;
@@ -277,6 +287,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             category_id: ignored_id,
             name: String::from("Amazon"),
             amount: None,
+            budget_only: false,
         },
     )
     .await?;
@@ -285,13 +296,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
 }
 
 async fn print_budget(db: &Database) -> anyhow::Result<()> {
-    let categories = BudgetCategory::fetch_all(&db).await?;
-    let items = BudgetItem::fetch_all(&db).await?;
-
-    let budget = Budget {
-        categories: categories,
-        items: items,
-    };
+    let budget = Budget::fetch(&db, 2025).await?;
 
     println!("{:?}", budget);
 

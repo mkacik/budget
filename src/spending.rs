@@ -15,25 +15,32 @@ pub struct SpendingDataPoint {
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = "SpendingData.ts")]
 pub struct SpendingData {
+    pub year: i32,
     pub data: Vec<SpendingDataPoint>,
 }
 
-pub async fn get_spending_data(db: &Database) -> anyhow::Result<SpendingData> {
-    let mut conn = db.acquire_db_conn().await?;
-    let results = sqlx::query_as::<_, SpendingDataPoint>(
-        "SELECT
-        budget_item_id,
-        SUBSTR(transaction_date, 1, 7) AS `month`,
-        sum(amount) as `amount`
-      FROM expenses
-      WHERE
-        SUBSTR(transaction_date, 1, 4) = '2025'
-      GROUP BY
-        budget_item_id,
-        SUBSTR(transaction_date, 1, 7)",
-    )
-    .fetch_all(&mut *conn)
-    .await?;
+impl SpendingData {
+    pub async fn fetch(db: &Database, year: i32) -> anyhow::Result<SpendingData> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, SpendingDataPoint>(
+            "SELECT
+          budget_item_id,
+          SUBSTR(transaction_date, 1, 7) AS `month`,
+          sum(amount) as `amount`
+        FROM expenses
+        WHERE
+          SUBSTR(transaction_date, 1, 4) = ?1
+        GROUP BY
+          budget_item_id,
+          SUBSTR(transaction_date, 1, 7)",
+        )
+        .bind(year.to_string())
+        .fetch_all(&mut *conn)
+        .await?;
 
-    Ok(SpendingData { data: results })
+        Ok(SpendingData {
+            year: year,
+            data: results,
+        })
+    }
 }

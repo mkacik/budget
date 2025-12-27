@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { AccountView, AccountsView } from "./AccountsView";
+import { BudgetView } from "./BudgetView";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
 
 import { Section, SectionHeader } from "./ui/Common";
@@ -33,7 +34,13 @@ function AccountSelector({
   );
 }
 
-export function ExpensesPage({ accounts }: { accounts: AccountsView }) {
+export function ExpensesPage({
+  budget,
+  accounts,
+}: {
+  budget: BudgetView;
+  accounts: AccountsView;
+}) {
   const [selectedAccount, setSelectedAccount] = useState<AccountView>(
     accounts.accounts[0] || null,
   );
@@ -49,6 +56,7 @@ export function ExpensesPage({ accounts }: { accounts: AccountsView }) {
   const expensesQuery = {
     variant: "account",
     account: selectedAccount,
+    year: budget.year,
   } as ExpensesQuery;
 
   return (
@@ -66,7 +74,7 @@ export function ExpensesPage({ accounts }: { accounts: AccountsView }) {
       </Section>
 
       <Section>
-        <ExpensesList query={expensesQuery} />
+        <ExpensesList budget={budget} query={expensesQuery} />
       </Section>
     </>
   );

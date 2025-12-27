@@ -13,7 +13,7 @@ import {
   DeleteExpensesButton,
 } from "./AccountExpensesButtons";
 import { AccountView } from "./AccountsView";
-import { BudgetItemView, BudgetCategoryView } from "./BudgetView";
+import { BudgetView, BudgetItemView, BudgetCategoryView } from "./BudgetView";
 import {
   getSortComparator,
   SortBy,
@@ -30,7 +30,7 @@ export type ExpensesQueryCategorySelector =
   | "all-not-ignored"
   | "uncategorized";
 export type ExpensesQuery =
-  | { variant: "account"; account: AccountView }
+  | { variant: "account"; account: AccountView; year: number }
   | {
       variant: "period";
       period: string;
@@ -68,6 +68,7 @@ function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
         variant: "ByAccount",
         params: {
           id: query.account.id,
+          year: query.year,
         },
       } as ExpensesQueryRequest;
     case "period": {
@@ -98,9 +99,11 @@ function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
 }
 
 export function ExpensesList({
+  budget,
   query,
   onExpenseCategoryChange,
 }: {
+  budget: BudgetView;
   query: ExpensesQuery;
   onExpenseCategoryChange?: () => void;
 }) {
@@ -109,7 +112,6 @@ export function ExpensesList({
     field: SortField.DateTime,
     order: SortOrder.Desc,
   } as SortBy);
-
   const [error, setError] = useState<string | null>(null);
 
   const fetchExpenses = () => {
@@ -137,8 +139,9 @@ export function ExpensesList({
   };
 
   useEffect(() => {
+    setExpenses([]);
     fetchExpenses();
-  }, [query]);
+  }, [query, budget]);
 
   const handleExpenseCategoryChange = () => {
     fetchExpenses();
@@ -159,6 +162,7 @@ export function ExpensesList({
       <ErrorCard message={error} />
       <ImportDeleteExpenseButtons query={query} onSuccess={fetchExpenses} />
       <ExpensesTable
+        budget={budget}
         expenses={expenses}
         onExpenseCategoryChange={handleExpenseCategoryChange}
         updateSortBy={updateSortBy}

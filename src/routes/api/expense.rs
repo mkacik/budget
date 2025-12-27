@@ -178,6 +178,7 @@ pub enum ExpensesQueryRequest {
     // used on Expenses tab
     ByAccount {
         id: ID,
+        year: i32,
     },
 
     // used on Analyze tab
@@ -201,7 +202,9 @@ fn is_valid_period(period: &str) -> bool {
 pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQueryRequest>) -> ApiResponse {
     let request = json.into_inner();
     let result = match request {
-        ExpensesQueryRequest::ByAccount { id } => Expense::fetch_by_account_id(&db, id).await,
+        ExpensesQueryRequest::ByAccount { id, year } => {
+            Expense::fetch_by_account_id_and_year(&db, id, year).await
+        }
         ExpensesQueryRequest::ByPeriod { period, category } => {
             if !is_valid_period(&period) {
                 return ApiResponse::BadRequest {

@@ -195,16 +195,16 @@ function SpendingTableRow({
 }
 
 export function MonthlySpendingTable({
-  year,
   data,
   budget,
   updateExpensesQuery,
 }: {
-  year: number;
   data: MonthlySpendingData;
   budget: BudgetView;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
+  const year = budget.year;
+
   const rows: Array<React.ReactNode> = [];
   for (const category of budget.categories) {
     rows.push(

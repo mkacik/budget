@@ -84,6 +84,7 @@ export type Glyph =
   | "arrow_downward"
   | "arrow_upward"
   | "check_circle"
+  | "chevron_left"
   | "chevron_right"
   | "delete"
   | "edit"

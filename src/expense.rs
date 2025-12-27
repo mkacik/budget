@@ -106,10 +106,31 @@ impl Expense {
     pub async fn fetch_by_account_id(db: &Database, account_id: ID) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
-            "SELECT * FROM expenses WHERE account_id = ?1
+            "SELECT * FROM expenses
+            WHERE account_id = ?1
             ORDER BY transaction_date DESC, transaction_time DESC",
         )
         .bind(account_id)
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(Expenses { expenses: results })
+    }
+
+    pub async fn fetch_by_account_id_and_year(
+        db: &Database,
+        account_id: ID,
+        year: i32,
+    ) -> anyhow::Result<Expenses> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, Expense>(
+            "SELECT * FROM expenses
+            WHERE account_id = ?1
+            AND transaction_date like ?2
+            ORDER BY transaction_date DESC, transaction_time DESC",
+        )
+        .bind(account_id)
+        .bind(format!("{}-%", year))
         .fetch_all(&mut *conn)
         .await?;
 
@@ -145,14 +166,7 @@ impl Expense {
 
         let results = sqlx::query_as::<_, Expense>(
             "SELECT
-              expenses.id,
-              expenses.account_id,
-              expenses.transaction_date,
-              expenses.transaction_time,
-              expenses.description,
-              expenses.amount,
-              expenses.raw_csv,
-              expenses.budget_item_id
+              expenses.*
             FROM expenses
             JOIN budget_items
             ON (expenses.budget_item_id = budget_items.id)
@@ -196,14 +210,7 @@ impl Expense {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
             "SELECT
-              expenses.id,
-              expenses.account_id,
-              expenses.transaction_date,
-              expenses.transaction_time,
-              expenses.description,
-              expenses.amount,
-              expenses.raw_csv,
-              expenses.budget_item_id
+              expenses.*
             FROM expenses
             JOIN budget_items
               ON (expenses.budget_item_id = budget_items.id)

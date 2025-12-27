@@ -167,6 +167,10 @@ export class BudgetView {
     this.budget = budget;
   }
 
+  get year() {
+    return this.budget.year;
+  }
+
   get amountPerYear() {
     return this.categories.reduce(
       (acc, current) => acc + current.amountPerYear,

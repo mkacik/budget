@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 
 import { Expense } from "./types/Expense";
 
-import { useBudgetViewContext } from "./BudgetViewContext";
 import { BudgetView, BudgetItemView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
@@ -206,18 +205,18 @@ export type ExpensesTableSettings = {
 };
 
 export function ExpensesTable({
+  budget,
   expenses,
   onExpenseCategoryChange,
   updateSortBy,
   settings,
 }: {
+  budget: BudgetView;
   expenses: Array<Expense>;
   onExpenseCategoryChange: () => void;
   updateSortBy: (SortBy) => void;
   settings: ExpensesTableSettings;
 }) {
-  const budget = useBudgetViewContext();
-
   // following stores a map of references to rendered expense, for the purpose of scrolling
   // the expense into view when it becomes active. Pattern comes from this guide:
   // https://react.dev/learn/manipulating-the-dom-with-refs#example-scrolling-to-an-element

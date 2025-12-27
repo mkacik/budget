@@ -3,11 +3,11 @@ use rocket::{get, State};
 use crate::budget::Budget;
 use crate::database::Database;
 use crate::routes::common::{serialize_result, ApiResponse};
-use crate::spending::get_spending_data;
+use crate::spending::SpendingData;
 
-#[get("/budget")]
-pub async fn get_budget(db: &State<Database>) -> ApiResponse {
-    let result = Budget::fetch(&db).await;
+#[get("/budget/<year>")]
+pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
+    let result = Budget::fetch(&db, year).await;
 
     match serialize_result(result) {
         Ok(value) => ApiResponse::SuccessWithData { data: value },
@@ -15,9 +15,9 @@ pub async fn get_budget(db: &State<Database>) -> ApiResponse {
     }
 }
 
-#[get("/spending")]
-pub async fn get_spending(db: &State<Database>) -> ApiResponse {
-    let result = get_spending_data(&db).await;
+#[get("/spending/<year>")]
+pub async fn get_spending(db: &State<Database>, year: i32) -> ApiResponse {
+    let result = SpendingData::fetch(&db, year).await;
 
     match serialize_result(result) {
         Ok(value) => ApiResponse::SuccessWithData { data: value },

@@ -12,6 +12,8 @@ type DollarAmount = f64;
 pub struct BudgetCategoryFields {
     pub name: String,
     pub ignored: bool,
+    // do not allow mutations!
+    pub year: i32,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -57,7 +59,8 @@ impl BudgetCategory {
         let mut conn = db.acquire_db_conn().await?;
 
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO budget_categories (name, ignored) VALUES (?1, ?2) RETURNING id",
+            "INSERT INTO budget_categories (year, name, ignored) VALUES (?1, ?2, ?3) RETURNING id",
+            fields.year,
             fields.name,
             fields.ignored,
         )
@@ -78,13 +81,15 @@ impl BudgetCategory {
         Ok(())
     }
 
-    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetCategory>> {
+    pub async fn fetch_by_year(db: &Database, year: i32) -> anyhow::Result<Vec<BudgetCategory>> {
         let mut conn = db.acquire_db_conn().await?;
 
-        let results =
-            sqlx::query_as::<_, BudgetCategory>("SELECT * FROM budget_categories ORDER BY name")
-                .fetch_all(&mut *conn)
-                .await?;
+        let results = sqlx::query_as::<_, BudgetCategory>(
+            "SELECT * FROM budget_categories WHERE year = ?1 ORDER BY name",
+        )
+        .bind(year)
+        .fetch_all(&mut *conn)
+        .await?;
 
         Ok(results)
     }
@@ -92,6 +97,7 @@ impl BudgetCategory {
     pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
+        // no year here, can be set only on creation to not break existing categorization
         sqlx::query!(
             "UPDATE budget_categories SET name = ?2, ignored = ?3
             WHERE id = ?1",
@@ -134,12 +140,16 @@ impl BudgetItem {
         Ok(())
     }
 
-    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetItem>> {
+    pub async fn fetch_by_year(db: &Database, year: i32) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, BudgetItem>(
-            "SELECT id, category_id, name, amount, budget_only
-             FROM budget_items ORDER BY category_id, name",
+            "SELECT budget_items.*
+            FROM budget_items
+            JOIN budget_categories ON (budget_items.category_id = budget_categories.id)
+            WHERE budget_categories.year = ?1
+            ORDER BY category_id, name",
         )
+        .bind(year)
         .fetch_all(&mut *conn)
         .await?;
 
@@ -203,16 +213,18 @@ impl BudgetItem {
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = "Budget.ts")]
 pub struct Budget {
+    pub year: i32,
     pub categories: Vec<BudgetCategory>,
     pub items: Vec<BudgetItem>,
 }
 
 impl Budget {
-    pub async fn fetch(db: &Database) -> anyhow::Result<Budget> {
-        let categories = BudgetCategory::fetch_all(&db).await?;
-        let items = BudgetItem::fetch_all(&db).await?;
+    pub async fn fetch(db: &Database, year: i32) -> anyhow::Result<Budget> {
+        let categories = BudgetCategory::fetch_by_year(&db, year).await?;
+        let items = BudgetItem::fetch_by_year(&db, year).await?;
 
         Ok(Budget {
+            year: year,
             categories: categories,
             items: items,
         })

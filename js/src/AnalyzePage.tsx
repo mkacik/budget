@@ -50,7 +50,7 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const fetchSpendingData = () => {
     setError(null);
     setLoading(true);
-    fetch("/api/spending")
+    fetch(`/api/spending/${budget.year}`)
       .then((response) => response.json())
       .then((result) => {
         const dataPoints = result.data as Array<SpendingDataPoint>;
@@ -78,7 +78,6 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
         <ErrorCard message={error} />
         {spendingData && (
           <MonthlySpendingTable
-            year={2025}
             data={spendingData}
             budget={budget}
             updateExpensesQuery={(query) => setExpensesQuery(query)}
@@ -90,6 +89,7 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
         {expensesQuery && (
           <ExpensesList
             query={expensesQuery}
+            budget={budget}
             onExpenseCategoryChange={fetchSpendingData}
           />
         )}

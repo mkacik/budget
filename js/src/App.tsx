@@ -11,12 +11,12 @@ import { AccountsView } from "./AccountsView";
 import { AnalyzePage } from "./AnalyzePage";
 import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
-import { BudgetViewContext } from "./BudgetViewContext";
 import { ExpensesPage } from "./ExpensesPage";
 import {
   AppSettingsProvider,
   AppSettingsVersioned,
 } from "./AppSettingsProvider";
+import { InlineGlyphButton } from "./ui/Common";
 
 function HeaderItem({
   onClick,
@@ -41,30 +41,48 @@ enum Tab {
 
 interface AppSettings extends AppSettingsVersioned {
   tab: Tab;
+  year: number;
 }
 
 const SETTINGS_STORAGE_KEY = "BUDGETAPP.settings";
-const DEFAULT_SETTINGS = {
-  version: 1,
-  tab: Tab.Expenses,
-} as AppSettings;
 
 function App() {
+  // *** Bootstrap settings
+
+  const defaultSettings = {
+    version: 2,
+    tab: Tab.Budget,
+    year: new Date().getFullYear(),
+  } as AppSettings;
+
   const settingsProvider = new AppSettingsProvider<AppSettings>(
     SETTINGS_STORAGE_KEY,
-    DEFAULT_SETTINGS,
+    defaultSettings,
   );
+
   const [settings, setSettings] = useState<AppSettings>(
     settingsProvider.getSettings(),
   );
-  const [tab, setTab] = useState<Tab>(settings.tab);
+
+  const updateSettings = (settings: AppSettings) => {
+    settingsProvider.saveSettings(settings);
+    setSettings(settings);
+  };
+
+  const tab = settings.tab;
+  const year = settings.year;
+
+  const setTab = (tab: Tab) => updateSettings({ ...settings, tab: tab });
+  const setYear = (year: number) => updateSettings({ ...settings, year: year });
+
+  // *** Fetch data
 
   const [budget, setBudget] = useState<BudgetView | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
   const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
 
   const fetchBudget = () => {
-    fetch("/api/budget")
+    fetch(`/api/budget/${year}`)
       .then((response) => response.json())
       .then((result) => {
         const budget = new BudgetView(result as Budget);
@@ -73,10 +91,8 @@ function App() {
   };
 
   useEffect(() => {
-    if (budget === null) {
-      fetchBudget();
-    }
-  }, []);
+    fetchBudget();
+  }, [year]);
 
   const fetchAccounts = () => {
     fetch("/api/accounts")
@@ -106,16 +122,6 @@ function App() {
     }
   }, []);
 
-  const updateSettings = (settings: AppSettings) => {
-    settingsProvider.saveSettings(settings);
-    setSettings(settings);
-  };
-
-  const updateTab = (tab: Tab) => () => {
-    updateSettings({ ...settings, tab: tab });
-    setTab(tab);
-  };
-
   if (budget === null || accounts === null || schemas === null) {
     return null;
   }
@@ -125,33 +131,57 @@ function App() {
   return (
     <>
       <div className="header">
-        <HeaderItem onClick={updateTab(Tab.Budget)}>Budget</HeaderItem>
-        <HeaderItem onClick={updateTab(Tab.Expenses)}>Expenses</HeaderItem>
-        <HeaderItem onClick={updateTab(Tab.Accounts)}>Accounts</HeaderItem>
-        <HeaderItem onClick={updateTab(Tab.Analyze)}>Analyze</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Budget)}>Budget</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Expenses)}>Expenses</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Analyze)}>Analyze</HeaderItem>
+
+        <span className="flexrow">
+          <InlineGlyphButton
+            glyph="chevron_left"
+            onClick={() => setYear(year - 1)}
+          />
+          {year}
+          <InlineGlyphButton
+            glyph="chevron_right"
+            onClick={() => setYear(year + 1)}
+          />
+        </span>
+
         <span className="header-filler" />
+
         <HeaderItem>
           <form action="logout" method="post">
             <input type="submit" value="Logout" />
           </form>
         </HeaderItem>
       </div>
+
       <div className="main">
-        <BudgetViewContext.Provider value={budget}>
-          {tab == Tab.Budget && (
-            <BudgetPage budget={budget} refreshBudget={fetchBudget} />
-          )}
-          {tab == Tab.Expenses && <ExpensesPage accounts={accountsView} />}
-          {tab == Tab.Accounts && (
-            <AccountsPage
-              accounts={accounts.accounts}
-              refreshAccounts={fetchAccounts}
-              schemas={schemas.schemas}
-              refreshSchemas={fetchSchemas}
-            />
-          )}
-          {tab == Tab.Analyze && <AnalyzePage budget={budget} />}
-        </BudgetViewContext.Provider>
+        {tab == Tab.Budget && (
+          <BudgetPage budget={budget} refreshBudget={fetchBudget} />
+        )}
+        {tab == Tab.Expenses && (
+          // keep key here and in analyze; without it the expenses/query from previously selected
+          // year will linger until they are refreshed, causing mismatch with budget that was
+          // already updated;
+          <ExpensesPage
+            key={`expenses.${budget.year}`}
+            budget={budget}
+            accounts={accountsView}
+          />
+        )}
+        {tab == Tab.Accounts && (
+          <AccountsPage
+            accounts={accounts.accounts}
+            refreshAccounts={fetchAccounts}
+            schemas={schemas.schemas}
+            refreshSchemas={fetchSchemas}
+          />
+        )}
+        {tab == Tab.Analyze && (
+          <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
+        )}
       </div>
     </>
   );
