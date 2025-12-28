@@ -61,6 +61,14 @@ export class AccountsView {
     this.accounts = Array.from(accountsMap.values()).toSorted(cmp);
   }
 
+  firstOrNull(): AccountView | null {
+    return this.accounts[0] || null;
+  }
+
+  hasAccount(accountID: number): boolean {
+    return this.accountsByID.get(accountID) !== undefined;
+  }
+
   getAccount(accountID: number): AccountView {
     const account = this.accountsByID.get(accountID);
     if (account === null || account === undefined) {

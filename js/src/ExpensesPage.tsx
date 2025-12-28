@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AccountView, AccountsView } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
-
+import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
 import { Section, SectionHeader } from "./ui/Common";
 
 function AccountSelector({
@@ -34,6 +34,10 @@ function AccountSelector({
   );
 }
 
+interface ExpensesPageSettings extends VersionedSettings {
+  account_id: number | null;
+}
+
 export function ExpensesPage({
   budget,
   accounts,
@@ -41,13 +45,47 @@ export function ExpensesPage({
   budget: BudgetView;
   accounts: AccountsView;
 }) {
-  const [selectedAccount, setSelectedAccount] = useState<AccountView>(
-    accounts.accounts[0] || null,
+  // *** Bootstrap settings
+
+  const defaultSettings = {
+    version: 1,
+    account_id: accounts.firstOrNull()?.id || null,
+  } as ExpensesPageSettings;
+
+  const settingsProvider = new SettingsProvider<ExpensesPageSettings>(
+    "expenses_page_settings",
+    defaultSettings,
   );
 
-  const updateSelectedAccount = (account: AccountView) => {
-    setSelectedAccount(account);
+  const [settings, setSettings] = useState<ExpensesPageSettings>(
+    settingsProvider.getSettings(),
+  );
+
+  const updateSettings = (settings: ExpensesPageSettings) => {
+    settingsProvider.saveSettings(settings);
+    setSettings(settings);
   };
+
+  // computed based on settings, can involve setState
+  let selectedAccount: AccountView | null = null;
+
+  const setSelectedAccount = (account: AccountView) => {
+    updateSettings({ ...settings, account_id: account.id });
+  };
+
+  const savedAccountID = settings.account_id;
+  const savedAccountEmptyOrInvalid =
+    savedAccountID === null || !accounts.hasAccount(savedAccountID);
+  if (savedAccountEmptyOrInvalid) {
+    selectedAccount = accounts.firstOrNull();
+    // only save when new account is not null, to avoid re-render loop when accounts
+    // list is empty
+    if (selectedAccount !== null) {
+      setSelectedAccount(selectedAccount);
+    }
+  } else {
+    selectedAccount = accounts.getAccount(savedAccountID);
+  }
 
   if (selectedAccount === null) {
     return <>{"Add accounts to enable imports and start categorizing"}</>;
@@ -68,7 +106,7 @@ export function ExpensesPage({
           <AccountSelector
             accounts={accounts}
             selected={selectedAccount}
-            updateSelected={updateSelectedAccount}
+            updateSelected={setSelectedAccount}
           />
         </div>
       </Section>

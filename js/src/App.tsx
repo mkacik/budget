@@ -12,10 +12,7 @@ import { AnalyzePage } from "./AnalyzePage";
 import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
-import {
-  AppSettingsProvider,
-  AppSettingsVersioned,
-} from "./AppSettingsProvider";
+import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
 import { InlineGlyphButton } from "./ui/Common";
 
 function HeaderItem({
@@ -39,12 +36,10 @@ enum Tab {
   Analyze,
 }
 
-interface AppSettings extends AppSettingsVersioned {
+interface AppSettings extends VersionedSettings {
   tab: Tab;
   year: number;
 }
-
-const SETTINGS_STORAGE_KEY = "BUDGETAPP.settings";
 
 function App() {
   // *** Bootstrap settings
@@ -55,8 +50,8 @@ function App() {
     year: new Date().getFullYear(),
   } as AppSettings;
 
-  const settingsProvider = new AppSettingsProvider<AppSettings>(
-    SETTINGS_STORAGE_KEY,
+  const settingsProvider = new SettingsProvider<AppSettings>(
+    "settings",
     defaultSettings,
   );
 

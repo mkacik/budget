@@ -1,14 +1,16 @@
-export interface AppSettingsVersioned {
+const STORAGE_KEY_PREFIX = "BUDGETAPP.";
+
+export interface VersionedSettings {
   version: number;
 }
 
-export class AppSettingsProvider<T extends AppSettingsVersioned> {
+export class SettingsProvider<T extends VersionedSettings> {
   private readonly storageKey: string;
   private readonly currentVersion: number;
   private readonly defaultSettings: T;
 
   constructor(storageKey: string, defaultSettings: T) {
-    this.storageKey = storageKey;
+    this.storageKey = STORAGE_KEY_PREFIX + storageKey;
     this.defaultSettings = defaultSettings;
     this.currentVersion = defaultSettings.version;
   }
