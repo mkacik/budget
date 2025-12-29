@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 
+import { BudgetCloneForm } from "./BudgetCloneForm";
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
 import {
@@ -142,15 +143,18 @@ const DEFAULT_SETTINGS = {
 enum ModalMode {
   CATEGORY,
   ITEM,
+  CLONE,
   HIDDEN,
 }
 
 export function BudgetPage({
   budget,
   refreshBudget,
+  setYear,
 }: {
   budget: BudgetView;
   refreshBudget: () => void;
+  setYear: (number) => void; // after cloning
 }) {
   const [settings, setSettings] =
     useState<BudgetPageSettings>(DEFAULT_SETTINGS);
@@ -257,22 +261,53 @@ export function BudgetPage({
       );
       break;
     }
+    case ModalMode.CLONE: {
+      modalTitle = `Clone ${budget.year} to an empty year`;
+      modalContent = (
+        <BudgetCloneForm
+          fromYear={budget.year}
+          onSuccess={(year) => {
+            setModalMode(ModalMode.HIDDEN);
+            setYear(year);
+          }}
+        />
+      );
+    }
     default:
       break;
   }
 
-  const maybeAddNewItemButton =
-    budget.categories.length > 0 ? (
-      <GlyphButton glyph="add" text="add item" onClick={() => editItem(null)} />
-    ) : null;
+  const hasAnyCategories = budget.categories.length > 0;
 
   return (
     <>
       <Section>
-        <SectionHeader>
-          Budget
-          <InlineGlyphButton glyph="settings" onClick={toggleSettings} />
-        </SectionHeader>
+        <SectionHeader>Budget {budget.year}</SectionHeader>
+
+        <Section>
+          <div className="flexrow">
+            <GlyphButton
+              glyph="add"
+              text="add category"
+              onClick={() => editCategory(null)}
+            />
+            {hasAnyCategories && (
+              <>
+                <GlyphButton
+                  glyph="add"
+                  text="add item"
+                  onClick={() => editItem(null)}
+                />
+                <GlyphButton
+                  glyph="file_copy"
+                  text="clone to empty year"
+                  onClick={() => setModalMode(ModalMode.CLONE)}
+                />
+              </>
+            )}
+            <GlyphButton glyph="settings" onClick={toggleSettings} />
+          </div>
+        </Section>
 
         {settings.showSettings && (
           <BudgetPageSettingsForm
@@ -284,15 +319,6 @@ export function BudgetPage({
         <BudgetTable amountPerYear={budget.amountPerYear}>
           {budgetRows}
         </BudgetTable>
-      </Section>
-
-      <Section>
-        <GlyphButton
-          glyph="add"
-          text="add category"
-          onClick={() => editCategory(null)}
-        />
-        {maybeAddNewItemButton}
       </Section>
 
       <Section>

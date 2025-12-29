@@ -200,7 +200,7 @@ export function ImportExpensesButton({
     <>
       <small>
         <InlineGlyphButton
-          glyph="add"
+          glyph="upload"
           text="import expenses"
           onClick={() => setModalVisible(true)}
         />

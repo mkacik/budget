@@ -21,6 +21,7 @@
   --color-card-success-border: #79d279;
   --color-card-success-background: #ecf9ec;
 
+  --gap-small: 0.2rem;
   --gap-medium: 0.5rem;
   --gap-large: 1.5rem;
 
@@ -427,6 +428,7 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--gap-small);
 
   &:hover {
     background-color: var(--color-hover);

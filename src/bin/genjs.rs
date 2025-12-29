@@ -6,6 +6,7 @@ use ts_rs::{ExportError, TS};
 use budget::account::{AccountFields, Accounts};
 use budget::budget::{Budget, BudgetCategoryFields, BudgetItemFields};
 use budget::expense::Expenses;
+use budget::routes::api::budget::BudgetCloneRequest;
 use budget::routes::api::expense::ExpensesQueryRequest;
 use budget::schema_test::{TestSchemaRequest, TestSchemaResponse};
 use budget::spending::SpendingData;
@@ -29,6 +30,8 @@ fn export() -> Result<(), ExportError> {
 
     TestSchemaRequest::export_all()?;
     TestSchemaResponse::export_all()?;
+
+    BudgetCloneRequest::export_all()?;
 
     ExpensesQueryRequest::export_all()?;
 

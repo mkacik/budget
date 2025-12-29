@@ -154,7 +154,11 @@ function App() {
 
       <div className="main">
         {tab == Tab.Budget && (
-          <BudgetPage budget={budget} refreshBudget={fetchBudget} />
+          <BudgetPage
+            budget={budget}
+            refreshBudget={fetchBudget}
+            setYear={setYear}
+          />
         )}
         {tab == Tab.Expenses && (
           // keep key here and in analyze; without it the expenses/query from previously selected

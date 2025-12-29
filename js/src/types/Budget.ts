@@ -8,6 +8,8 @@ export type BudgetCategory = { id: number, name: string, ignored: boolean, year:
 
 export type BudgetCategoryFields = { name: string, ignored: boolean, year: number, };
 
+export type BudgetCloneRequest = { from_year: number, to_year: number, };
+
 export type BudgetItem = { id: number, category_id: number, name: string, amount: BudgetAmount | null, budget_only: boolean, };
 
 export type BudgetItemFields = { category_id: number, name: string, amount: BudgetAmount | null, budget_only: boolean, };

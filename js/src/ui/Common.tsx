@@ -89,9 +89,11 @@ export type Glyph =
   | "delete"
   | "edit"
   | "error"
+  | "file_copy"
   | "info"
   | "pie_chart"
-  | "settings";
+  | "settings"
+  | "upload";
 
 export function GlyphButton({
   glyph,
