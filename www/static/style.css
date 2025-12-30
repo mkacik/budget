@@ -8,6 +8,7 @@
   --color-card-background: #ffffff;
   --color-card-border: #cdcdcd;
   --color-table-border: #d0d0d0;
+  --color-glyph: #555555;
 
   --color-text-error: #af2323;
   --color-card-error-border: #d27676;
@@ -90,6 +91,15 @@ pre {
       background-color: var(--color-hover-dark);
       cursor: pointer;
     }
+  }
+
+  .header-spacer {
+    color: var(--color-glyph);
+  }
+
+  .header-year {
+    font-weight: bolder;
+    font-size: var(--font-header-large);
   }
 
   .header-filler {

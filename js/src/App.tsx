@@ -126,22 +126,25 @@ function App() {
   return (
     <>
       <div className="header">
-        <HeaderItem onClick={() => setTab(Tab.Budget)}>Budget</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Expenses)}>Expenses</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Analyze)}>Analyze</HeaderItem>
-
         <span className="flexrow">
           <InlineGlyphButton
             glyph="chevron_left"
             onClick={() => setYear(year - 1)}
           />
-          {year}
+          <span className="header-year">{year}</span>
           <InlineGlyphButton
             glyph="chevron_right"
             onClick={() => setYear(year + 1)}
           />
         </span>
+
+        <HeaderItem onClick={() => setTab(Tab.Budget)}>Budget</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Expenses)}>Expenses</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Analyze)}>Analyze</HeaderItem>
+
+        <span className="header-spacer flexrow">︱</span>
+
+        <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
 
         <span className="header-filler" />
 

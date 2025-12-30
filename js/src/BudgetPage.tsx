@@ -282,7 +282,7 @@ export function BudgetPage({
   return (
     <>
       <Section>
-        <SectionHeader>Budget {budget.year}</SectionHeader>
+        <SectionHeader>Budget</SectionHeader>
 
         <Section>
           <div className="flexrow">
