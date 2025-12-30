@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 import { Expense } from "./types/Expense";
 
+import { AccountsView, useAccountsViewContext } from "./AccountsView";
 import { BudgetView, BudgetItemView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
@@ -144,11 +145,13 @@ function ExpenseRow({
   active,
   onSuccess,
   budget,
+  accounts,
 }: {
   expense: Expense;
   active: boolean;
   onSuccess: () => void;
   budget: BudgetView;
+  accounts: AccountsView | null;
 }) {
   const budgetItemID = expense.budget_item_id;
   const budgetItemName =
@@ -170,18 +173,6 @@ function ExpenseRow({
     });
   };
 
-  const budgetItemCell = active ? (
-    <td className="category">
-      <BudgetItemSelect
-        selectedBudgetItemID={budgetItemID}
-        updateBudgetItemID={updateBudgetItemID}
-        budget={budget}
-      />
-    </td>
-  ) : (
-    <td>{budgetItemName}</td>
-  );
-
   const dateTime =
     expense.transaction_time === null
       ? expense.transaction_date
@@ -192,8 +183,23 @@ function ExpenseRow({
       <td className="nowrap" title={dateTime}>
         {expense.transaction_date}
       </td>
-      {budgetItemCell}
+
+      {active ? (
+        <td className="category">
+          <BudgetItemSelect
+            selectedBudgetItemID={budgetItemID}
+            updateBudgetItemID={updateBudgetItemID}
+            budget={budget}
+          />
+        </td>
+      ) : (
+        <td>{budgetItemName}</td>
+      )}
+
       <td className="number r-align">{expense.amount.toFixed(2)}</td>
+
+      {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
+
       <td>{expense.description}</td>
     </>
   );
@@ -202,6 +208,7 @@ function ExpenseRow({
 export type ExpensesTableSettings = {
   // if set to true, advance to next row on category change
   autoadvance: boolean;
+  showAccount: boolean;
 };
 
 export function ExpensesTable({
@@ -300,12 +307,16 @@ export function ExpensesTable({
     };
   };
 
+  const showAccount = settings.showAccount;
+  const accountsView = useAccountsViewContext();
+
   return (
     <table className="expenses-table">
       <colgroup>
         <Col widthPct={7} />
-        <Col widthPct={20} />
+        <Col widthPct={showAccount ? 15 : 20} />
         <Col widthPct={7} />
+        {showAccount && <Col widthPct={10} />}
         <Col />
       </colgroup>
 
@@ -321,6 +332,7 @@ export function ExpensesTable({
             sortByField={sortByField(SortField.Amount)}
             alignRight
           />
+          {showAccount && <HeaderCell title="Account" sortByField={null} />}
           <HeaderCell
             title="Details"
             sortByField={sortByField(SortField.Description)}
@@ -357,6 +369,7 @@ export function ExpensesTable({
                 }
                 onExpenseCategoryChange();
               }}
+              accounts={showAccount ? accountsView : null}
             />
           </tr>
         ))}

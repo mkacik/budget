@@ -1,3 +1,5 @@
+import { createContext, useContext } from "react";
+
 import { Account, Accounts } from "./types/Account";
 import { StatementSchema, StatementSchemas } from "./types/StatementSchema";
 
@@ -79,3 +81,13 @@ export class AccountsView {
     return account;
   }
 }
+
+export const AccountsViewContext = createContext<AccountsView | null>(null);
+
+export const useAccountsViewContext = (): AccountsView => {
+  const accountsView = useContext(AccountsViewContext);
+  if (accountsView === null) {
+    throw new Error("AccountsViewContext requested but not provided");
+  }
+  return accountsView;
+};

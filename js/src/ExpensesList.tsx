@@ -90,9 +90,9 @@ function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
 function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
   switch (query.variant) {
     case "account":
-      return { autoadvance: true } as ExpensesTableSettings;
+      return { autoadvance: true, showAccount: false } as ExpensesTableSettings;
     case "period":
-      return { autoadvance: false } as ExpensesTableSettings;
+      return { autoadvance: false, showAccount: true } as ExpensesTableSettings;
     default:
       throw new Error("malformed expenses query!");
   }

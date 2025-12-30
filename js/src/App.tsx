@@ -7,7 +7,7 @@ import { Budget } from "./types/Budget";
 import { StatementSchemas } from "./types/StatementSchema";
 
 import { AccountsPage } from "./AccountsPage";
-import { AccountsView } from "./AccountsView";
+import { AccountsView, AccountsViewContext } from "./AccountsView";
 import { AnalyzePage } from "./AnalyzePage";
 import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
@@ -156,34 +156,36 @@ function App() {
       </div>
 
       <div className="main">
-        {tab == Tab.Budget && (
-          <BudgetPage
-            budget={budget}
-            refreshBudget={fetchBudget}
-            setYear={setYear}
-          />
-        )}
-        {tab == Tab.Expenses && (
-          // keep key here and in analyze; without it the expenses/query from previously selected
-          // year will linger until they are refreshed, causing mismatch with budget that was
-          // already updated;
-          <ExpensesPage
-            key={`expenses.${budget.year}`}
-            budget={budget}
-            accounts={accountsView}
-          />
-        )}
-        {tab == Tab.Accounts && (
-          <AccountsPage
-            accounts={accounts.accounts}
-            refreshAccounts={fetchAccounts}
-            schemas={schemas.schemas}
-            refreshSchemas={fetchSchemas}
-          />
-        )}
-        {tab == Tab.Analyze && (
-          <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
-        )}
+        <AccountsViewContext value={accountsView}>
+          {tab == Tab.Budget && (
+            <BudgetPage
+              budget={budget}
+              refreshBudget={fetchBudget}
+              setYear={setYear}
+            />
+          )}
+          {tab == Tab.Expenses && (
+            // keep key here and in analyze; without it the expenses/query from previously selected
+            // year will linger until they are refreshed, causing mismatch with budget that was
+            // already updated;
+            <ExpensesPage
+              key={`expenses.${budget.year}`}
+              budget={budget}
+              accounts={accountsView}
+            />
+          )}
+          {tab == Tab.Accounts && (
+            <AccountsPage
+              accounts={accounts.accounts}
+              refreshAccounts={fetchAccounts}
+              schemas={schemas.schemas}
+              refreshSchemas={fetchSchemas}
+            />
+          )}
+          {tab == Tab.Analyze && (
+            <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
+          )}
+        </AccountsViewContext>
       </div>
     </>
   );
