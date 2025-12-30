@@ -1,6 +1,8 @@
 import { expect, test } from "@jest/globals";
 
-import { Expense } from "../types/Expense";
+import { Account } from "../types/Account";
+import { AccountView } from "../AccountsView";
+import { ExpenseView } from "../ExpenseView";
 import {
   getSortComparator,
   SortBy,
@@ -15,6 +17,16 @@ function sortBy(field: SortField, order: SortOrder): SortBy {
   } as SortBy;
 }
 
+function newAccount(id: number, name: string): AccountView {
+  const account = {
+    id: id,
+    name: name,
+    class: "Bank",
+  } as Account;
+
+  return new AccountView(account, null);
+}
+
 test("sort by amount", () => {
   const newExpense = (id: number, amount: number) => {
     return {
@@ -25,7 +37,8 @@ test("sort by amount", () => {
       description: "Some expense",
       amount: amount,
       budget_item_id: null,
-    } as Expense;
+      account: newAccount(1, "bank foo"),
+    } as ExpenseView;
   };
 
   const expenses = [
@@ -57,7 +70,8 @@ test("sort by description", () => {
       description: description,
       amount: 6.99,
       budget_item_id: null,
-    } as Expense;
+      account: newAccount(1, "bank foo"),
+    } as ExpenseView;
   };
 
   const expenses = [
@@ -80,6 +94,40 @@ test("sort by description", () => {
   expect(expenses.map((e) => e.id)).toEqual([1, 2, 3, 4]);
 });
 
+test("sort by account name", () => {
+  const newExpense = (id: number, account_id: number, account_name: string) => {
+    return {
+      id: id,
+      account_id: account_id,
+      transaction_date: "2025-12-16",
+      transaction_time: null,
+      description: "foo",
+      amount: 6.99,
+      budget_item_id: null,
+      account: newAccount(account_id, account_name),
+    } as ExpenseView;
+  };
+
+  const expenses = [
+    newExpense(1, 1, "C"),
+    newExpense(2, 2, "c"),
+    newExpense(3, 3, "B"),
+    newExpense(4, 4, "A"),
+  ];
+
+  const comparatorAsc = getSortComparator(
+    sortBy(SortField.Account, SortOrder.Asc),
+  );
+  expenses.sort(comparatorAsc);
+  expect(expenses.map((e) => e.id)).toEqual([4, 3, 1, 2]);
+
+  const comparatorDesc = getSortComparator(
+    sortBy(SortField.Account, SortOrder.Desc),
+  );
+  expenses.sort(comparatorDesc);
+  expect(expenses.map((e) => e.id)).toEqual([1, 2, 3, 4]);
+});
+
 test("sort by date/time", () => {
   const newExpense = (id: number, date: string, time: string | null) => {
     return {
@@ -90,7 +138,8 @@ test("sort by date/time", () => {
       description: "Some expense",
       amount: 19.99,
       budget_item_id: null,
-    } as Expense;
+      account: newAccount(1, "bank foo"),
+    } as ExpenseView;
   };
 
   const expenses = [

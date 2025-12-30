@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 import {
   Expense,
-  Expenses,
+  Expenses as ExpensesQueryResponse,
   ExpensesQueryRequest,
   ExpensesQueryRequestCategorySelector,
 } from "./types/Expense";
@@ -12,7 +12,11 @@ import {
   ImportExpensesButton,
   DeleteExpensesButton,
 } from "./AccountExpensesButtons";
-import { AccountView } from "./AccountsView";
+import {
+  AccountView,
+  AccountsView,
+  useAccountsViewContext,
+} from "./AccountsView";
 import { BudgetView, BudgetItemView, BudgetCategoryView } from "./BudgetView";
 import {
   getSortComparator,
@@ -20,7 +24,9 @@ import {
   SortField,
   SortOrder,
 } from "./ExpensesSort";
+import { ExpenseView } from "./ExpenseView";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
+import { JSON_HEADERS } from "./Common";
 
 import { ErrorCard, Section } from "./ui/Common";
 
@@ -98,6 +104,23 @@ function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
   }
 }
 
+function parseExpensesQueryResponse(
+  response: ExpensesQueryResponse,
+  accounts: AccountsView,
+  sortBy: SortBy,
+): Array<ExpenseView> {
+  const expenses = response.expenses.map((expense) => {
+    const account = accounts.getAccount(expense.account_id);
+    return {
+      ...expense,
+      account: account,
+    } as ExpenseView;
+  });
+  const sortComparator = getSortComparator(sortBy);
+  expenses.sort(sortComparator);
+  return expenses;
+}
+
 export function ExpensesList({
   budget,
   query,
@@ -107,28 +130,29 @@ export function ExpensesList({
   query: ExpensesQuery;
   onExpenseCategoryChange?: () => void;
 }) {
-  const [expenses, setExpenses] = useState<Array<Expense>>([]);
+  const [expenses, setExpenses] = useState<Array<ExpenseView>>([]);
   const [sortBy, setSortBy] = useState<SortBy>({
     field: SortField.DateTime,
     order: SortOrder.Desc,
   } as SortBy);
   const [error, setError] = useState<string | null>(null);
 
+  const accounts = useAccountsViewContext();
+
   const fetchExpenses = () => {
     setError(null);
     fetch(`/api/expenses/query`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
+      headers: JSON_HEADERS,
       body: JSON.stringify(getExpensesQueryRequest(query)),
     })
       .then((response) => response.json())
       .then((result) => {
-        const expensesContainer = result as Expenses;
-        const sortComparator = getSortComparator(sortBy);
-        const sortedExpenses =
-          expensesContainer.expenses.toSorted(sortComparator);
+        const sortedExpenses = parseExpensesQueryResponse(
+          result as ExpensesQueryResponse,
+          accounts,
+          sortBy,
+        );
         setExpenses(sortedExpenses);
         setError(null);
       })

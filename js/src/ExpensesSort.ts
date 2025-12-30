@@ -1,9 +1,10 @@
-import { Expense } from "./types/Expense";
+import { ExpenseView } from "./ExpenseView";
 
 export enum SortField {
   DateTime,
   Description,
   Amount,
+  Account,
   // Category,
 }
 
@@ -20,29 +21,25 @@ export type SortBy = {
 export function getSortComparator(sortBy: SortBy) {
   const sortOrderMultiplier = sortBy.order === SortOrder.Asc ? 1 : -1;
 
-  const compare = (...args: [string, string] | [number, number]) => {
-    const [fieldA, fieldB] = args;
-    if (fieldA === fieldB) {
-      return 0;
-    }
-    return (fieldA > fieldB ? 1 : -1) * sortOrderMultiplier;
-  };
-
-  const simpleComparator =
-    (fieldAccessor: (e: Expense) => string | number) =>
-    (a: Expense, b: Expense) => {
+  const stringComparator = (fieldAccessor: (e: ExpenseView) => string) => {
+    const collator = new Intl.Collator("en", { sensitivity: "base" });
+    return (a: ExpenseView, b: ExpenseView) => {
       const fieldA = fieldAccessor(a);
       const fieldB = fieldAccessor(b);
-
-      if (fieldA === fieldB) {
-        return 0;
-      }
-      return (fieldA > fieldB ? 1 : -1) * sortOrderMultiplier;
+      return collator.compare(fieldA, fieldB) * sortOrderMultiplier;
     };
+  };
 
   switch (sortBy.field) {
-    case SortField.DateTime:
-      return (a: Expense, b: Expense) => {
+    case SortField.DateTime: {
+      const compare = (a: string, b: string) => {
+        if (a === b) {
+          return 0;
+        }
+        return (a > b ? 1 : -1) * sortOrderMultiplier;
+      };
+
+      return (a: ExpenseView, b: ExpenseView) => {
         const dateA = a.transaction_date;
         const dateB = b.transaction_date;
         if (dateA === dateB) {
@@ -52,16 +49,16 @@ export function getSortComparator(sortBy: SortBy) {
         }
         return compare(dateA, dateB);
       };
+    }
     case SortField.Description: {
-      const collator = new Intl.Collator("en", { sensitivity: "base" });
-      return (a: Expense, b: Expense) => {
-        return (
-          collator.compare(a.description, b.description) * sortOrderMultiplier
-        );
-      };
+      return stringComparator((e: ExpenseView) => e.description);
+    }
+    case SortField.Account: {
+      return stringComparator((e: ExpenseView) => e.account.name);
     }
     case SortField.Amount:
-      return simpleComparator((e: Expense) => e.amount);
+      return (a: ExpenseView, b: ExpenseView) =>
+        (a.amount - b.amount) * sortOrderMultiplier;
     default:
       throw new Error("SortBy not supported");
   }

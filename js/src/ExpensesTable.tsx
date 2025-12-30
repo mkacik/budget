@@ -332,7 +332,12 @@ export function ExpensesTable({
             sortByField={sortByField(SortField.Amount)}
             alignRight
           />
-          {showAccount && <HeaderCell title="Account" sortByField={null} />}
+          {showAccount && (
+            <HeaderCell
+              title="Account"
+              sortByField={sortByField(SortField.Account)}
+            />
+          )}
           <HeaderCell
             title="Details"
             sortByField={sortByField(SortField.Description)}
