@@ -26,7 +26,7 @@ import {
 } from "./ExpensesSort";
 import { ExpenseView } from "./ExpenseView";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
-import { JSON_HEADERS } from "./Common";
+import { JSON_HEADERS, DEFAULT_ERROR } from "./Common";
 
 import { ErrorCard, Section } from "./ui/Common";
 
@@ -121,6 +121,11 @@ function parseExpensesQueryResponse(
   return expenses;
 }
 
+const DEFAULT_SORT_BY = {
+  field: SortField.DateTime,
+  order: SortOrder.Desc,
+} as SortBy;
+
 export function ExpensesList({
   budget,
   query,
@@ -131,42 +136,48 @@ export function ExpensesList({
   onExpenseCategoryChange?: () => void;
 }) {
   const [expenses, setExpenses] = useState<Array<ExpenseView>>([]);
-  const [sortBy, setSortBy] = useState<SortBy>({
-    field: SortField.DateTime,
-    order: SortOrder.Desc,
-  } as SortBy);
+  const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
   const [error, setError] = useState<string | null>(null);
 
   const accounts = useAccountsViewContext();
 
-  const fetchExpenses = () => {
-    setError(null);
-
-    fetch(`/api/expenses/query`, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify(getExpensesQueryRequest(query)),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        const sortedExpenses = parseExpensesQueryResponse(
-          result as ExpensesQueryResponse,
-          accounts,
-          sortBy,
-        );
-        setExpenses(sortedExpenses);
-        setError(null);
-      })
-      .catch((error) => {
-        console.log(error);
-        setError(`${error.name}: ${error.message}`);
+  const fetchExpenses = async () => {
+    try {
+      const response = await fetch("/api/expenses/query", {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify(getExpensesQueryRequest(query)),
       });
+
+      // to get error message need to get to json in both success and error case
+      // catch block will handle unexpected not-json responses
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error ?? DEFAULT_ERROR);
+        return;
+      }
+
+      const sortedExpenses = parseExpensesQueryResponse(
+        json as ExpensesQueryResponse,
+        accounts,
+        sortBy,
+      );
+      setExpenses(sortedExpenses);
+      setError(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        return;
+      }
+
+      console.error(error);
+      setError(DEFAULT_ERROR);
+    }
   };
 
   useEffect(() => {
-    setExpenses([]);
     fetchExpenses();
-  }, [query, budget]);
+  }, [query]);
 
   const handleExpenseCategoryChange = () => {
     fetchExpenses();

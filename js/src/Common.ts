@@ -2,6 +2,8 @@ export const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
+export const DEFAULT_ERROR = "Something went wrong.";
+
 export class FormHelper {
   static EMPTY: string = "";
   formData: FormData;

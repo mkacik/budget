@@ -6,6 +6,7 @@ import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { MonthlySpendingTable } from "./MonthlySpendingTable";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
+import { DEFAULT_ERROR } from "./Common";
 import { ErrorCard, Section, SectionHeader, LoadingBanner } from "./ui/Common";
 
 function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
@@ -47,22 +48,38 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSpendingData = () => {
-    setError(null);
+  const fetchSpendingData = async () => {
     setLoading(true);
-    fetch(`/api/spending/${budget.year}`)
-      .then((response) => response.json())
-      .then((result) => {
-        const dataPoints = result.data as Array<SpendingDataPoint>;
-        const data = new MonthlySpendingData(dataPoints, budget);
-        setSpendingData(data);
+
+    try {
+      const response = await fetch(`/api/spending/${budget.year}`);
+
+      // to get error message need to get to json in both success and error case
+      // catch block will handle unexpected not-json responses
+      const json = await response.json();
+      if (!response.ok) {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setLoading(false);
-        setError("Something went wrong! Please refresh the page");
-      });
+        setError(json.error ?? DEFAULT_ERROR);
+        return;
+      }
+
+      const dataPoints = json.data as Array<SpendingDataPoint>;
+      const data = new MonthlySpendingData(dataPoints, budget);
+      setSpendingData(data);
+
+      setLoading(false);
+      setError(null);
+    } catch (error) {
+      setLoading(false);
+
+      if (error instanceof Error) {
+        setError(error.message);
+        return;
+      }
+
+      console.error(error);
+      setError(DEFAULT_ERROR);
+    }
   };
 
   useEffect(() => {
