@@ -37,7 +37,7 @@ pub struct Expense {
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = "Expense.ts", rename = "ExpensesQueryResponse")]
 pub struct Expenses {
     pub expenses: Vec<Expense>,
 }

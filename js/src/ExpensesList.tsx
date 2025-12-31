@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 
 import {
   Expense,
-  Expenses as ExpensesQueryResponse,
   ExpensesQueryRequest,
   ExpensesQueryRequestCategorySelector,
+  ExpensesQueryResponse,
 } from "./types/Expense";
 
 import {
@@ -141,6 +141,7 @@ export function ExpensesList({
 
   const fetchExpenses = () => {
     setError(null);
+
     fetch(`/api/expenses/query`, {
       method: "POST",
       headers: JSON_HEADERS,

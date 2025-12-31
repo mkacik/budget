@@ -9,6 +9,7 @@ pub enum ApiResponse {
     Success,
     SuccessWithData { data: String },
     BadRequest { message: String },
+    ServerErrorWithMessage { message: String },
     ServerError,
 }
 
@@ -34,6 +35,15 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
                     .ok()
             }
 
+            ApiResponse::ServerErrorWithMessage { message } => {
+                let error = error_from_str(&message);
+
+                Response::build_from(error.respond_to(req)?)
+                    .status(Status::InternalServerError)
+                    .header(ContentType::new("application", "problem+json"))
+                    .ok()
+            }
+
             ApiResponse::BadRequest { message } => {
                 let error = error_from_str(&message);
 
@@ -42,6 +52,17 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
                     .header(ContentType::new("application", "problem+json"))
                     .ok()
             }
+        }
+    }
+}
+
+impl ApiResponse {
+    pub fn from_serializable_result<T: Serialize + TS>(result: anyhow::Result<T>) -> ApiResponse {
+        match serialize_result(result) {
+            Ok(serialized) => ApiResponse::SuccessWithData { data: serialized },
+            Err(error) => ApiResponse::ServerErrorWithMessage {
+                message: format!("{}", error),
+            },
         }
     }
 }

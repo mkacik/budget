@@ -13,7 +13,7 @@ use crate::database::{Database, ID};
 use crate::expense::{Expense, ExpenseCategory};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
-use crate::routes::common::{serialize_result, ApiResponse};
+use crate::routes::common::ApiResponse;
 use crate::statement_schema::StatementSchema;
 
 #[derive(FromForm)]
@@ -232,8 +232,5 @@ pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQueryReques
         }
     };
 
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
+    ApiResponse::from_serializable_result(result)
 }
