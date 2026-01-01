@@ -8,6 +8,10 @@ function sumUp<T>(map: Map<T, number>): number {
   return Array.from(map.values()).reduce((acc, val) => acc + val, 0);
 }
 
+function round(n: number) {
+  return Math.round(100 * n) / 100;
+}
+
 export class MonthlySpendingData {
   categories: Map<Month, Map<ID, number>>;
   items: Map<Month, Map<ID, number>>;
@@ -42,10 +46,10 @@ export class MonthlySpendingData {
   }
 
   private validate(): void {
-    const categoryTotal = sumUp(this.categoryTotals);
-    const itemTotal = sumUp(this.itemTotals);
-    const uncategorizedTotal = sumUp(this.uncategorized);
-    const monthTotal = sumUp(this.monthTotals);
+    const categoryTotal = round(sumUp(this.categoryTotals));
+    const itemTotal = round(sumUp(this.itemTotals));
+    const monthTotal = round(sumUp(this.monthTotals));
+    const uncategorizedTotal = round(sumUp(this.uncategorized));
 
     if (
       categoryTotal !== itemTotal ||
@@ -62,7 +66,7 @@ export class MonthlySpendingData {
   private addDataPoint(dataPoint: SpendingDataPoint) {
     const budgetItemID = dataPoint.budget_item_id;
     // trim all but 2 decimal places, otherwise math on floating point numbers gets fucky
-    const roundedAmount = Math.round(100 * dataPoint.amount) / 100;
+    const roundedAmount = round(100 * dataPoint.amount);
 
     if (budgetItemID === null) {
       this.addUncategorizedSpend(dataPoint.month, roundedAmount);
