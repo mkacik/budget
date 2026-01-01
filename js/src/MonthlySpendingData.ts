@@ -66,7 +66,7 @@ export class MonthlySpendingData {
   private addDataPoint(dataPoint: SpendingDataPoint) {
     const budgetItemID = dataPoint.budget_item_id;
     // trim all but 2 decimal places, otherwise math on floating point numbers gets fucky
-    const roundedAmount = round(100 * dataPoint.amount);
+    const roundedAmount = round(dataPoint.amount);
 
     if (budgetItemID === null) {
       this.addUncategorizedSpend(dataPoint.month, roundedAmount);
