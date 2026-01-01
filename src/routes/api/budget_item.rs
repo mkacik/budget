@@ -38,6 +38,20 @@ pub async fn update_budget_item(
         };
     }
 
+    if budget_item.fields.budget_only {
+        let update_blocked = match Expense::any_has_budget_item_id(db, budget_item_id).await {
+            Ok(value) => value,
+            Err(_) => return ApiResponse::ServerError,
+        };
+        if update_blocked {
+            return ApiResponse::BadRequest {
+                message: String::from(
+                    "Can't make item budget-only, it already has expenses attached",
+                ),
+            };
+        }
+    }
+
     match budget_item.update(&db).await {
         Ok(_) => ApiResponse::Success,
         Err(_) => ApiResponse::ServerError,
