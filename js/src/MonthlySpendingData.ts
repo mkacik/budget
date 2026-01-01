@@ -61,10 +61,13 @@ export class MonthlySpendingData {
 
   private addDataPoint(dataPoint: SpendingDataPoint) {
     const budgetItemID = dataPoint.budget_item_id;
-    if (budgetItemID === null) {
-      this.addUncategorizedSpend(dataPoint.month, dataPoint.amount);
+    // trim all but 2 decimal places, otherwise math on floating point numbers gets fucky
+    const roundedAmount = Math.round(100 * dataPoint.amount) / 100;
 
-      this.addMonthTotal(dataPoint.month, dataPoint.amount);
+    if (budgetItemID === null) {
+      this.addUncategorizedSpend(dataPoint.month, roundedAmount);
+
+      this.addMonthTotal(dataPoint.month, roundedAmount);
 
       return;
     }
@@ -76,13 +79,13 @@ export class MonthlySpendingData {
     }
 
     // add itemized
-    this.addItemSpend(budgetItemID, dataPoint.month, dataPoint.amount);
-    this.addCategorySpend(category.id, dataPoint.month, dataPoint.amount);
+    this.addItemSpend(budgetItemID, dataPoint.month, roundedAmount);
+    this.addCategorySpend(category.id, dataPoint.month, roundedAmount);
 
     // add totals
-    this.addItemTotal(budgetItemID, dataPoint.amount);
-    this.addCategoryTotal(category.id, dataPoint.amount);
-    this.addMonthTotal(dataPoint.month, dataPoint.amount);
+    this.addItemTotal(budgetItemID, roundedAmount);
+    this.addCategoryTotal(category.id, roundedAmount);
+    this.addMonthTotal(dataPoint.month, roundedAmount);
   }
 
   // *** add itemized
