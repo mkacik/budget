@@ -25,19 +25,19 @@ function SpendingTableColgroup() {
 }
 
 function SpendingTableCell({
-  obj,
   spend,
+  limit,
   onClick,
 }: {
-  obj: BudgetItemView | BudgetCategoryView | null;
   spend: number;
+  limit: number | null;
   onClick?: () => void;
 }) {
   const classNames = ["number", "r-align"];
 
   if (spend <= 0) {
     classNames.push("soft");
-  } else if (obj !== null && spend > obj.amountPerMonth) {
+  } else if (limit !== null && spend > limit) {
     classNames.push("red");
   }
 
@@ -106,8 +106,8 @@ function SpendingTableFooterRow({
     const cell = (
       <SpendingTableCell
         key={month}
-        obj={null}
         spend={data.getMonthTotal(month)}
+        limit={null}
         onClick={onClick}
       />
     );
@@ -120,8 +120,8 @@ function SpendingTableFooterRow({
       {cells}
       <SpendingTableCell
         key="__total"
-        obj={null}
         spend={data.getTotalSpend()}
+        limit={null}
       />
     </tr>
   );
@@ -162,8 +162,8 @@ function SpendingTableUncategorizedRow({
     const cell = (
       <SpendingTableCell
         key={month}
-        obj={null}
         spend={spend}
+        limit={0}
         onClick={onClick}
       />
     );
@@ -173,8 +173,8 @@ function SpendingTableUncategorizedRow({
   const totalCell = (
     <SpendingTableCell
       key="__total"
-      obj={null}
       spend={data.getUncategorizedTotal()}
+      limit={0}
       onClick={headerCellOnClick}
     />
   );
@@ -230,21 +230,22 @@ function SpendingTableRow({
     const cell = (
       <SpendingTableCell
         key={month}
-        obj={obj}
         spend={spend}
+        limit={obj.amountPerMonth}
         onClick={onClick}
       />
     );
     cells.push(cell);
   }
 
+  const totalSpend = isCategory
+    ? data.getCategoryTotal(obj.id)
+    : data.getItemTotal(obj.id);
   const totalCell = (
     <SpendingTableCell
       key="__total"
-      obj={null}
-      spend={
-        isCategory ? data.getCategoryTotal(obj.id) : data.getItemTotal(obj.id)
-      }
+      spend={totalSpend}
+      limit={obj.amountPerYear}
       onClick={headerCellOnClick}
     />
   );
