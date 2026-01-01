@@ -189,7 +189,7 @@ export function BudgetPage({
   for (const category of budget.categories) {
     budgetRows.push(
       <BudgetCategoryRow
-        key={category.name}
+        key={category.id}
         editCategory={() => editCategory(category)}
         category={category}
       />,
@@ -201,7 +201,7 @@ export function BudgetPage({
       }
       budgetRows.push(
         <BudgetItemRow
-          key={item.name}
+          key={`${category.id}-${item.id}`}
           item={item}
           editItem={() => editItem(item)}
         />,
