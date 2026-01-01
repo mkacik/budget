@@ -272,6 +272,7 @@ export function BudgetPage({
           }}
         />
       );
+      break;
     }
     default:
       break;

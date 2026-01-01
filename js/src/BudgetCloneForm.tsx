@@ -3,10 +3,8 @@ import { useState } from "react";
 
 import { BudgetCloneRequest } from "./types/Budget";
 import { FormHelper, JSON_HEADERS } from "./Common";
-import { GlyphButton, ErrorCard } from "./ui/Common";
+import { ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
-
-// export type BudgetCloneRequest = { from_year: number, to_year: number, };
 
 export function BudgetCloneForm({
   fromYear,
