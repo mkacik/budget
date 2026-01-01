@@ -4,3 +4,5 @@
 /test-data
 /www/bundle.js
 **/*.swp
+.idea/
+js/yarn.lock

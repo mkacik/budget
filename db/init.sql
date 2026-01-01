@@ -1,8 +1,7 @@
 CREATE TABLE statement_schemas (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
-  record_mapping TEXT NOT NULL,
-  notes TEXT
+  record_mapping TEXT NOT NULL
 );
 
 CREATE TABLE accounts (
