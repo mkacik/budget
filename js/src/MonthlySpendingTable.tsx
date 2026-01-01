@@ -13,13 +13,12 @@ function getMonths(year: number): Array<string> {
 }
 
 function SpendingTableColgroup() {
-  // each monthly cell should take 7%, header cell with category names
-  // will take remaining 16%
+  // 13 -> 12 months + total
   return (
     <colgroup>
       <Col />
-      {Array(12).map((month) => (
-        <Col key={month} widthPct={7} />
+      {Array(13).map((month) => (
+        <Col key={month} widthPct={6} />
       ))}
     </colgroup>
   );
@@ -34,11 +33,11 @@ function SpendingTableCell({
   spend: number;
   onClick?: () => void;
 }) {
-  const amountPerMonth = obj === null ? 0 : obj.amountPerMonth;
   const classNames = ["number", "r-align"];
+
   if (spend <= 0) {
     classNames.push("soft");
-  } else if (spend > amountPerMonth) {
+  } else if (obj !== null && spend > obj.amountPerMonth) {
     classNames.push("red");
   }
 
@@ -81,6 +80,49 @@ function SpendingTableHeaderRow({
     <tr>
       <th>Name</th>
       {cells}
+      <th className="r-align">TOTAL</th>
+    </tr>
+  );
+}
+
+function SpendingTableFooterRow({
+  year,
+  data,
+  updateExpensesQuery,
+}: {
+  year: number;
+  data: MonthlySpendingData;
+  updateExpensesQuery: (ExpensesQuery) => void;
+}) {
+  const cells: Array<React.ReactNode> = [];
+  for (const month of getMonths(year)) {
+    const onClick = () => {
+      updateExpensesQuery({
+        variant: "period",
+        period: month,
+        categorySelector: "all-not-ignored",
+      } as ExpensesQuery);
+    };
+    const cell = (
+      <SpendingTableCell
+        key={month}
+        obj={null}
+        spend={data.getMonthTotal(month)}
+        onClick={onClick}
+      />
+    );
+    cells.push(cell);
+  }
+
+  return (
+    <tr>
+      <th>TOTAL</th>
+      {cells}
+      <SpendingTableCell
+        key="__total"
+        obj={null}
+        spend={data.getTotalSpend()}
+      />
     </tr>
   );
 }
@@ -128,10 +170,20 @@ function SpendingTableUncategorizedRow({
     cells.push(cell);
   }
 
+  const totalCell = (
+    <SpendingTableCell
+      key="__total"
+      obj={null}
+      spend={data.getUncategorizedTotal()}
+      onClick={headerCellOnClick}
+    />
+  );
+
   return (
     <tr className="bold highlight">
       {headerCell}
       {cells}
+      {totalCell}
     </tr>
   );
 }
@@ -186,10 +238,22 @@ function SpendingTableRow({
     cells.push(cell);
   }
 
+  const totalCell = (
+    <SpendingTableCell
+      key="__total"
+      obj={null}
+      spend={
+        isCategory ? data.getCategoryTotal(obj.id) : data.getItemTotal(obj.id)
+      }
+      onClick={headerCellOnClick}
+    />
+  );
+
   return (
     <tr className={isCategory ? "bold highlight" : ""}>
       {headerCell}
       {cells}
+      {totalCell}
     </tr>
   );
 }
@@ -249,6 +313,14 @@ export function MonthlySpendingTable({
           updateExpensesQuery={updateExpensesQuery}
         />
       </tbody>
+
+      <tfoot>
+        <SpendingTableFooterRow
+          year={year}
+          data={data}
+          updateExpensesQuery={updateExpensesQuery}
+        />
+      </tfoot>
     </table>
   );
 }

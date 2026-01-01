@@ -265,6 +265,7 @@ table {
 
   thead,
   tfoot {
+    font-weight: bold;
     background-color: var(--color-table-header);
   }
 
