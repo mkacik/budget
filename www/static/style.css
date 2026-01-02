@@ -10,6 +10,9 @@
   --color-table-border: #d0d0d0;
   --color-glyph: #555555;
 
+  --color-tooltip: #2d3436;
+  --color-text-tooltip: var(--color-table-row);
+
   --color-text-error: #af2323;
   --color-card-error-border: #d27676;
   --color-card-error-background: #fbe7e7;
@@ -34,6 +37,7 @@
 
   --font-family: Ubuntu, Roboto, Helvetica, sans-serif;
 
+  --font-content-small:0.9rem;
   --font-content-medium: 1rem;
   --font-content-large: 1.1rem;
   --font-header-medium: 1.2rem;
@@ -498,4 +502,43 @@ table {
   select {
     width: 100%;
   }
+}
+
+.tooltip-cell {
+  position: relative;
+}
+
+.tooltip-cell:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%; /* Sits exactly on the top border of the cell */
+  left: 50%;
+  transform: translate(-50%, -5px); /* Centers and adds a small gap */
+
+  background-color: var(--color-tooltip);
+  color: var(--color-text-tooltip);
+  padding: 5px 10px;
+  border-radius: var(--border-radius);
+  font-size: var(--font-content-small);
+  font-weight: normal;
+  white-space: nowrap;
+
+  z-index: 100;
+  pointer-events: none; /* Prevents the tooltip from flickering if mouse moves over it */
+}
+
+.tooltip-cell:hover::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* https://css-tricks.com/snippets/css/css-triangle/ */
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-tooltip);
+
+  z-index: 100;
+  pointer-events: none;
 }

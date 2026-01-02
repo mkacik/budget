@@ -35,18 +35,32 @@ function SpendingTableCell({
 }) {
   const classNames = ["number", "r-align"];
 
+  if (onClick !== undefined) {
+    classNames.push("td-button");
+  }
+
   if (spend <= 0) {
     classNames.push("soft");
   } else if (limit !== null && spend > limit) {
     classNames.push("red");
   }
 
-  if (onClick !== undefined) {
-    classNames.push("td-button");
+  if (limit === null) {
+    return (
+      <td className={classNames.join(" ")} onClick={onClick}>
+        {spend.toFixed(2)}
+      </td>
+    );
   }
 
+  classNames.push("tooltip-cell");
+  const tooltip = `budgeted: ${limit.toFixed(2)}`;
   return (
-    <td className={classNames.join(" ")} onClick={onClick}>
+    <td
+      className={classNames.join(" ")}
+      onClick={onClick}
+      data-tooltip={tooltip}
+    >
       {spend.toFixed(2)}
     </td>
   );
