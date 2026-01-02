@@ -298,6 +298,10 @@ table {
   td {
     padding: var(--padding-medium);
     vertical-align: top;
+
+    .material-symbols-outlined {
+      color: var(--color-glyph);
+    }
   }
 
   .number {
@@ -456,7 +460,7 @@ table {
   }
 
   .material-symbols-outlined {
-    color: #555555;
+    color: var(--color-glyph);
   }
 }
 

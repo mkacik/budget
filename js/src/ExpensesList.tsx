@@ -200,6 +200,7 @@ export function ExpensesList({
         budget={budget}
         expenses={expenses}
         onExpenseCategoryChange={handleExpenseCategoryChange}
+        onExpenseNotesChange={fetchExpenses}
         updateSortBy={updateSortBy}
         settings={getExpensesTableSettings(query)}
       />

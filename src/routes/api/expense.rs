@@ -10,7 +10,7 @@ use ts_rs::TS;
 use crate::account::Account;
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
-use crate::expense::{Expense, ExpenseCategory};
+use crate::expense::{Expense, ExpenseCategory, ExpenseNotes};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::ApiResponse;
@@ -126,8 +126,8 @@ pub async fn delete_expenses(
     }
 }
 
-#[post("/expenses/<expense_id>", format = "json", data = "<json>")]
-pub async fn update_expense(
+#[post("/expenses/<expense_id>/category", format = "json", data = "<json>")]
+pub async fn update_expense_category(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
     expense_id: ID,
@@ -135,6 +135,15 @@ pub async fn update_expense(
 ) -> ApiResponse {
     let request = json.into_inner();
     log_entry.set_content(&request);
+
+    let mut expense = match Expense::fetch_by_id(&db, expense_id).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: format!("Expense with id {} could not be found.", expense_id),
+            }
+        }
+    };
 
     let budget_item_id = request.budget_item_id;
     // If new value of budget item is not None, validate that the id exists in db
@@ -146,6 +155,22 @@ pub async fn update_expense(
         }
     }
 
+    match expense.set_budget_item_id(&db, budget_item_id).await {
+        Ok(_) => ApiResponse::Success,
+        Err(_) => ApiResponse::ServerError,
+    }
+}
+
+#[post("/expenses/<expense_id>/notes", format = "json", data = "<json>")]
+pub async fn update_expense_notes(
+    db: &State<Database>,
+    log_entry: &WriteLogEntry,
+    expense_id: ID,
+    json: Json<ExpenseNotes>,
+) -> ApiResponse {
+    let request = json.into_inner();
+    log_entry.set_content(&request);
+
     let mut expense = match Expense::fetch_by_id(&db, expense_id).await {
         Ok(value) => value,
         Err(_) => {
@@ -155,7 +180,7 @@ pub async fn update_expense(
         }
     };
 
-    match expense.set_budget_item(&db, budget_item_id).await {
+    match expense.set_notes(&db, request.notes).await {
         Ok(_) => ApiResponse::Success,
         Err(_) => ApiResponse::ServerError,
     }

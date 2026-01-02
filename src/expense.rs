@@ -22,6 +22,12 @@ pub struct ExpenseCategory {
     pub budget_item_id: Option<ID>,
 }
 
+#[derive(Debug, FromRow, Deserialize, Serialize, TS)]
+#[ts(export_to = "Expense.ts")]
+pub struct ExpenseNotes {
+    pub notes: Option<String>,
+}
+
 #[derive(Debug, FromRow, Serialize, TS)]
 #[ts(export_to = "Expense.ts")]
 pub struct Expense {
@@ -34,6 +40,10 @@ pub struct Expense {
     #[sqlx(flatten)]
     #[ts(flatten)]
     pub category: ExpenseCategory,
+    #[serde(flatten)]
+    #[sqlx(flatten)]
+    #[ts(flatten)]
+    pub notes: ExpenseNotes,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -264,7 +274,7 @@ impl Expense {
         Ok(Some(latest_transactions))
     }
 
-    pub async fn set_budget_item(
+    pub async fn set_budget_item_id(
         &mut self,
         db: &Database,
         budget_item_id: Option<ID>,
@@ -280,6 +290,22 @@ impl Expense {
         .await?;
 
         self.category.budget_item_id = budget_item_id;
+
+        Ok(())
+    }
+
+    pub async fn set_notes(&mut self, db: &Database, notes: Option<String>) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE expenses SET notes = ?1 WHERE id = ?2",
+            notes,
+            self.id
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        self.notes.notes = notes;
 
         Ok(())
     }

@@ -4,152 +4,63 @@ import { useState, useEffect, useRef } from "react";
 import { Expense } from "./types/Expense";
 
 import { AccountsView, useAccountsViewContext } from "./AccountsView";
-import { BudgetView, BudgetItemView } from "./BudgetView";
+import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
-import { Col, InlineGlyphButton } from "./ui/Common";
+import { BudgetItemSelect } from "./BudgetItemSelect";
+import { JSON_HEADERS } from "./Common";
+import { Col, SmallInlineGlyph, InlineGlyphButton } from "./ui/Common";
 
-const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
-
-type KeyMap = Map<string, BudgetItemView | null>;
-
-function getKeyMap(budget: BudgetView): KeyMap {
-  const keyMap: KeyMap = new Map();
-
-  const items = [budget.items, budget.ignoredItems].flat();
-  for (const [idx, item] of items.entries()) {
-    if (item.isBudgetOnly) {
-      continue;
-    }
-    if (idx < CHARS.length) {
-      keyMap.set(CHARS[idx], item);
-    } else {
-      break;
-    }
-  }
-  keyMap.set("Backspace", null);
-
-  return keyMap;
-}
-
-function KeyMapLegend({
-  setCategory,
-  keyMap,
+function ExpenseNotesGlyph({
+  description,
+  notes,
+  setNotes,
+  isActiveRow,
 }: {
-  setCategory: (id: number | null) => void;
-  keyMap: KeyMap;
+  description: string;
+  notes: string | null;
+  setNotes: (notes: string | null) => void;
+  isActiveRow: boolean;
 }) {
-  const rows: Array<React.ReactNode> = [];
-  for (const [key, item] of keyMap.entries()) {
-    const row = (
-      <tr key={key} onClick={() => setCategory(item?.id || null)}>
-        <td>
-          <b>{key}</b>
-        </td>
-        <td>{item?.displayName ?? <i>delete categorization</i>}</td>
-      </tr>
-    );
-    rows.push(row);
+  if (isActiveRow === false) {
+    if (notes === null) {
+      return null;
+    }
+
+    return <SmallInlineGlyph glyph="notes" />;
   }
 
-  return (
-    <div className="legend-container">
-      <div className="card legend">
-        <table className="legend-table">
-          <thead>
-            <tr>
-              <td>Key</td>
-              <td>Category</td>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+  const onClickEditButton = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+    const promptMessage = `Add note for: ${description}`;
+    let newNotes = prompt(promptMessage, notes || undefined);
 
-function BudgetItemOption({ item }: { item: BudgetItemView }) {
-  return <option value={item.id}>{item.displayName}</option>;
-}
+    // pressing cancel returns null
+    if (newNotes === null) {
+      return;
+    }
 
-function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
-  const spacer =
-    budget.ignoredItems.length > 0 ? (
-      <option value="" disabled>
-        — ignored items below —
-      </option>
-    ) : null;
-
-  return (
-    <>
-      {budget.items.map(
-        (item) =>
-          !item.isBudgetOnly && <BudgetItemOption key={item.id} item={item} />,
-      )}
-      {spacer}
-      {budget.ignoredItems.map((item) => (
-        <BudgetItemOption key={item.id} item={item} />
-      ))}
-    </>
-  );
-}
-
-function BudgetItemSelect({
-  selectedBudgetItemID,
-  updateBudgetItemID,
-  budget,
-}: {
-  selectedBudgetItemID: number | null;
-  updateBudgetItemID: (newBudgetItemID: number | null) => void;
-  budget: BudgetView;
-}) {
-  const UNSET_ID = 0;
-  const keyMap = getKeyMap(budget);
-
-  useEffect(() => {
-    const handleInput = (e) => {
-      if (keyMap.has(e.key)) {
-        const itemID = keyMap.get(e.key)?.id ?? null;
-        updateBudgetItemID(itemID);
-      }
-    };
-    document.addEventListener("keydown", handleInput);
-
-    return () => document.removeEventListener("keydown", handleInput);
-  });
-
-  const onSelectChange = (e: React.SyntheticEvent): void => {
-    const elem = e.target as HTMLSelectElement;
-    const id = Number(elem.value);
-    const newBudgetItemID = id === UNSET_ID ? null : id;
-    updateBudgetItemID(newBudgetItemID);
+    const sanitized = newNotes === "" ? null : newNotes;
+    if (sanitized !== notes) {
+      setNotes(sanitized);
+    }
   };
 
-  return (
-    <>
-      <KeyMapLegend setCategory={updateBudgetItemID} keyMap={keyMap} />
-      <select
-        value={selectedBudgetItemID ?? UNSET_ID}
-        onChange={onSelectChange}
-      >
-        <option value={UNSET_ID}>-</option>
-        <BudgetItemSelectOptions budget={budget} />
-      </select>
-    </>
-  );
+  return <SmallInlineGlyph glyph="edit_note" onClick={onClickEditButton} />;
 }
 
 function ExpenseRow({
   expense,
   active,
-  onSuccess,
+  onExpenseCategoryChange,
+  onExpenseNotesChange,
   budget,
   accounts,
 }: {
   expense: Expense;
   active: boolean;
-  onSuccess: () => void;
+  onExpenseCategoryChange: () => void;
+  onExpenseNotesChange: () => void;
   budget: BudgetView;
   accounts: AccountsView | null;
 }) {
@@ -158,15 +69,27 @@ function ExpenseRow({
     budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
 
   const updateBudgetItemID = (newBudgetItemID: number | null) => {
-    fetch(`/api/expenses/${expense.id}`, {
+    fetch(`/api/expenses/${expense.id}/category`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
+      headers: JSON_HEADERS,
       body: JSON.stringify({ budget_item_id: newBudgetItemID }),
     }).then((response) => {
       if (response.ok) {
-        onSuccess();
+        onExpenseCategoryChange();
+      } else {
+        console.log(response);
+      }
+    });
+  };
+
+  const updateNotes = (newNotes: string | null) => {
+    fetch(`/api/expenses/${expense.id}/notes`, {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ notes: newNotes }),
+    }).then((response) => {
+      if (response.ok) {
+        onExpenseNotesChange();
       } else {
         console.log(response);
       }
@@ -177,6 +100,10 @@ function ExpenseRow({
     expense.transaction_time === null
       ? expense.transaction_date
       : expense.transaction_date + " " + expense.transaction_time;
+
+  const fullDescription = expense.notes
+    ? `[${expense.notes}] ${expense.description}`
+    : expense.description;
 
   return (
     <>
@@ -200,7 +127,15 @@ function ExpenseRow({
 
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 
-      <td>{expense.description}</td>
+      <td className="flexrow">
+        <ExpenseNotesGlyph
+          description={expense.description}
+          notes={expense.notes}
+          setNotes={updateNotes}
+          isActiveRow={active}
+        />
+        {fullDescription}
+      </td>
     </>
   );
 }
@@ -215,12 +150,14 @@ export function ExpensesTable({
   budget,
   expenses,
   onExpenseCategoryChange,
+  onExpenseNotesChange,
   updateSortBy,
   settings,
 }: {
   budget: BudgetView;
   expenses: Array<Expense>;
   onExpenseCategoryChange: () => void;
+  onExpenseNotesChange: () => void;
   updateSortBy: (SortBy) => void;
   settings: ExpensesTableSettings;
 }) {
@@ -368,12 +305,13 @@ export function ExpensesTable({
               expense={expense}
               active={idx === activeRow}
               budget={budget}
-              onSuccess={() => {
+              onExpenseCategoryChange={() => {
                 if (settings.autoadvance) {
                   nextRow();
                 }
                 onExpenseCategoryChange();
               }}
+              onExpenseNotesChange={() => onExpenseCategoryChange()}
               accounts={showAccount ? accountsView : null}
             />
           </tr>

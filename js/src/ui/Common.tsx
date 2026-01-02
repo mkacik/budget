@@ -83,14 +83,17 @@ export type Glyph =
   | "add"
   | "arrow_downward"
   | "arrow_upward"
+  | "check"
   | "check_circle"
   | "chevron_left"
   | "chevron_right"
   | "delete"
   | "edit"
+  | "edit_note"
   | "error"
   | "file_copy"
   | "info"
+  | "notes"
   | "pie_chart"
   | "settings"
   | "upload";
@@ -135,9 +138,19 @@ export function InlineGlyph({ glyph }: { glyph: Glyph }) {
   return <span className="material-symbols-outlined">{glyph}</span>;
 }
 
-export function SmallInlineGlyph({ glyph }: { glyph: Glyph }) {
+export function SmallInlineGlyph({
+  glyph,
+  onClick,
+}: {
+  glyph: Glyph;
+  onClick?: (e: React.SyntheticEvent) => void;
+}) {
   return (
-    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+    <span
+      onClick={onClick}
+      className="material-symbols-outlined"
+      style={{ fontSize: "20px" }}
+    >
       {glyph}
     </span>
   );
