@@ -293,6 +293,8 @@ table {
   thead.sticky-header {
     position: sticky;
     top: 0;
+    /* prevent 1px gap between header and top of page in firefox */
+    transform: translateY(-1px);
   }
 
   td {
