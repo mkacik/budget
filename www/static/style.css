@@ -286,6 +286,11 @@ table {
     padding: var(--padding-medium);
   }
 
+  thead.sticky-header {
+    position: sticky;
+    top: 0;
+  }
+
   td {
     padding: var(--padding-medium);
     vertical-align: top;

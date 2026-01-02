@@ -320,7 +320,7 @@ export function ExpensesTable({
         <Col />
       </colgroup>
 
-      <thead>
+      <thead className={"sticky-header"}>
         <tr>
           <HeaderCell
             title="Date"
