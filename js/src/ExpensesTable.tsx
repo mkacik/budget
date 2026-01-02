@@ -397,11 +397,11 @@ function HeaderCell({
       <>
         <InlineGlyphButton
           glyph="arrow_downward"
-          onClick={() => sortByField(SortOrder.Asc)}
+          onClick={() => sortByField(SortOrder.Desc)}
         />
         <InlineGlyphButton
           glyph="arrow_upward"
-          onClick={() => sortByField(SortOrder.Desc)}
+          onClick={() => sortByField(SortOrder.Asc)}
         />
       </>
     );
