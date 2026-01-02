@@ -8,10 +8,6 @@ function sumUp<T>(map: Map<T, number>): number {
   return Array.from(map.values()).reduce((acc, val) => acc + val, 0);
 }
 
-function round(n: number) {
-  return Math.round(100 * n) / 100;
-}
-
 export class MonthlySpendingData {
   categories: Map<Month, Map<ID, number>>;
   items: Map<Month, Map<ID, number>>;
@@ -46,32 +42,32 @@ export class MonthlySpendingData {
   }
 
   private validate(): void {
-    const categoryTotal = round(sumUp(this.categoryTotals));
-    const itemTotal = round(sumUp(this.itemTotals));
-    const monthTotal = round(sumUp(this.monthTotals));
-    const uncategorizedTotal = round(sumUp(this.uncategorized));
+    const categoryTotal = sumUp(this.categoryTotals);
+    const itemTotal = sumUp(this.itemTotals);
+    const monthTotal = sumUp(this.monthTotals);
+    const uncategorizedTotal = sumUp(this.uncategorized);
 
-    if (
-      categoryTotal !== itemTotal ||
-      categoryTotal + uncategorizedTotal !== monthTotal
-    ) {
-      const msg = `categoryTotal: ${categoryTotal},
-         itemTotal: ${itemTotal},
-         uncategorizedTotal: ${uncategorizedTotal},
-         monthTotal: ${monthTotal}`;
+    const round = (n: number) => Math.round(100 * n);
+
+    if (round(categoryTotal) !== round(itemTotal)) {
+      const msg = `categoryTotal: ${categoryTotal} != itemTotal: ${itemTotal}`;
+      throw new Error("Spending does not add up: " + msg);
+    }
+
+    if (round(categoryTotal + uncategorizedTotal) !== round(monthTotal)) {
+      const msg = `categoryTotal: ${categoryTotal} + uncategorizedTotal: ${uncategorizedTotal} != monthTotal: ${monthTotal}`;
       throw new Error("Spending does not sum up: " + msg);
     }
   }
 
   private addDataPoint(dataPoint: SpendingDataPoint) {
     const budgetItemID = dataPoint.budget_item_id;
-    // trim all but 2 decimal places, otherwise math on floating point numbers gets fucky
-    const roundedAmount = round(dataPoint.amount);
+    const amount = dataPoint.amount;
 
     if (budgetItemID === null) {
-      this.addUncategorizedSpend(dataPoint.month, roundedAmount);
+      this.addUncategorizedSpend(dataPoint.month, amount);
 
-      this.addMonthTotal(dataPoint.month, roundedAmount);
+      this.addMonthTotal(dataPoint.month, amount);
 
       return;
     }
@@ -83,13 +79,13 @@ export class MonthlySpendingData {
     }
 
     // add itemized
-    this.addItemSpend(budgetItemID, dataPoint.month, roundedAmount);
-    this.addCategorySpend(category.id, dataPoint.month, roundedAmount);
+    this.addItemSpend(budgetItemID, dataPoint.month, amount);
+    this.addCategorySpend(category.id, dataPoint.month, amount);
 
     // add totals
-    this.addItemTotal(budgetItemID, roundedAmount);
-    this.addCategoryTotal(category.id, roundedAmount);
-    this.addMonthTotal(dataPoint.month, roundedAmount);
+    this.addItemTotal(budgetItemID, amount);
+    this.addCategoryTotal(category.id, amount);
+    this.addMonthTotal(dataPoint.month, amount);
   }
 
   // *** add itemized
