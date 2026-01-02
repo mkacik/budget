@@ -299,7 +299,7 @@ export function MonthlySpendingTable({
     <table>
       <SpendingTableColgroup />
 
-      <thead>
+      <thead className={"sticky-header"}>
         <SpendingTableHeaderRow
           year={year}
           updateExpensesQuery={updateExpensesQuery}
