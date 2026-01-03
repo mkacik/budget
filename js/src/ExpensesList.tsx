@@ -179,18 +179,18 @@ export function ExpensesList({
     fetchExpenses();
   }, [query]);
 
-  const handleExpenseCategoryChange = () => {
-    fetchExpenses();
-    if (onExpenseCategoryChange) {
-      onExpenseCategoryChange();
-    }
-  };
-
   const updateSortBy = (newSortBy: SortBy) => {
     const sortComparator = getSortComparator(newSortBy);
     const sortedExpenses = expenses.toSorted(sortComparator);
     setSortBy(newSortBy);
     setExpenses(sortedExpenses);
+  };
+
+  const handleExpenseCategoryChange = () => {
+    fetchExpenses();
+    if (onExpenseCategoryChange) {
+      onExpenseCategoryChange();
+    }
   };
 
   return (
@@ -207,6 +207,7 @@ export function ExpensesList({
         expenses={expenses}
         onExpenseCategoryChange={handleExpenseCategoryChange}
         onExpenseNotesChange={fetchExpenses}
+        onExpenseDelete={handleExpenseCategoryChange}
         updateSortBy={updateSortBy}
         settings={getExpensesTableSettings(query)}
       />

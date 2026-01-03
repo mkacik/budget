@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
 
-import { Expense } from "./types/Expense";
+import { ExpenseView } from "./ExpenseView";
 
 import { AccountsView, useAccountsViewContext } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
@@ -33,7 +33,7 @@ function ExpenseNotesGlyph({
   const onClickEditButton = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     const promptMessage = `Add note for: ${description}`;
-    let newNotes = prompt(promptMessage, notes || undefined);
+    const newNotes = prompt(promptMessage, notes || undefined);
 
     // pressing cancel returns null
     if (newNotes === null) {
@@ -54,13 +54,15 @@ function ExpenseRow({
   active,
   onExpenseCategoryChange,
   onExpenseNotesChange,
+  onExpenseDelete,
   budget,
   accounts,
 }: {
-  expense: Expense;
+  expense: ExpenseView;
   active: boolean;
   onExpenseCategoryChange: () => void;
   onExpenseNotesChange: () => void;
+  onExpenseDelete: () => void;
   budget: BudgetView;
   accounts: AccountsView | null;
 }) {
@@ -96,6 +98,27 @@ function ExpenseRow({
     });
   };
 
+  const deleteExpense = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+
+    const ack = confirm(
+      `Do you really want to delete expense: ${expense.description}?`,
+    );
+    if (ack === false) {
+      return;
+    }
+
+    fetch(`/api/expenses/${expense.id}`, { method: "DELETE" }).then(
+      (response) => {
+        if (response.ok) {
+          onExpenseDelete();
+        } else {
+          console.log(response);
+        }
+      },
+    );
+  };
+
   const dateTime =
     expense.transaction_time === null
       ? expense.transaction_date
@@ -104,6 +127,8 @@ function ExpenseRow({
   const fullDescription = expense.notes
     ? `[${expense.notes}] ${expense.description}`
     : expense.description;
+
+  const showDeleteButton = active && expense.account.account_type === "Cash";
 
   return (
     <>
@@ -134,6 +159,9 @@ function ExpenseRow({
           setNotes={updateNotes}
           isActiveRow={active}
         />
+        {showDeleteButton && (
+          <SmallInlineGlyph glyph="delete" onClick={deleteExpense} />
+        )}
         {fullDescription}
       </td>
     </>
@@ -151,13 +179,15 @@ export function ExpensesTable({
   expenses,
   onExpenseCategoryChange,
   onExpenseNotesChange,
+  onExpenseDelete,
   updateSortBy,
   settings,
 }: {
   budget: BudgetView;
-  expenses: Array<Expense>;
+  expenses: Array<ExpenseView>;
   onExpenseCategoryChange: () => void;
   onExpenseNotesChange: () => void;
+  onExpenseDelete: () => void;
   updateSortBy: (SortBy) => void;
   settings: ExpensesTableSettings;
 }) {
@@ -311,7 +341,8 @@ export function ExpensesTable({
                 }
                 onExpenseCategoryChange();
               }}
-              onExpenseNotesChange={() => onExpenseCategoryChange()}
+              onExpenseNotesChange={onExpenseNotesChange}
+              onExpenseDelete={onExpenseDelete}
               accounts={showAccount ? accountsView : null}
             />
           </tr>

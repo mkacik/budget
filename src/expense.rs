@@ -103,6 +103,15 @@ impl Expense {
         Ok(())
     }
 
+    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!("DELETE FROM expenses WHERE id = ?1", id)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<Expense> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Expense>("SELECT * FROM expenses WHERE id = ?1")

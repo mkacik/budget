@@ -2,7 +2,7 @@ use regex::Regex;
 use rocket::form::{Form, FromForm};
 use rocket::fs::TempFile;
 use rocket::serde::json::Json;
-use rocket::{post, State};
+use rocket::{delete, post, State};
 use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
 use ts_rs::TS;
@@ -180,6 +180,45 @@ pub async fn create_expense(
     request.raw_csv = Some(raw_csv);
 
     match Expense::create(&db, request).await {
+        Ok(_) => ApiResponse::Success,
+        Err(error) => ApiResponse::ServerErrorWithMessage {
+            message: format!("{}", error),
+        },
+    }
+}
+
+#[delete("/expenses/<id>")]
+pub async fn delete_expense(
+    db: &State<Database>,
+    _log_entry: &WriteLogEntry,
+    id: ID,
+) -> ApiResponse {
+    let expense = match Expense::fetch_by_id(&db, id).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: format!("Expense with id {} could not be found.", id),
+            };
+        }
+    };
+
+    let account_id = expense.fields.account_id;
+    let account = match Account::fetch_by_id(&db, account_id).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: format!("Account with id {} could not be found.", account_id),
+            };
+        }
+    };
+
+    if account.fields.account_type != AccountType::Cash {
+        return ApiResponse::BadRequest {
+            message: format!("Manually deleting expenses only allowed for Cash accounts."),
+        };
+    }
+
+    match Expense::delete_by_id(&db, id).await {
         Ok(_) => ApiResponse::Success,
         Err(error) => ApiResponse::ServerErrorWithMessage {
             message: format!("{}", error),
