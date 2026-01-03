@@ -223,12 +223,8 @@ function ImportDeleteExpenseButtons({
   return (
     <Section>
       <div className="flexrow">
-        <ImportExpensesButton
-          account={account.account}
-          schema={account.statementSchema}
-          onSuccess={onSuccess}
-        />
-        <DeleteExpensesButton account={account.account} onSuccess={onSuccess} />
+        <ImportExpensesButton account={account} onSuccess={onSuccess} />
+        <DeleteExpensesButton account={account} onSuccess={onSuccess} />
       </div>
     </Section>
   );

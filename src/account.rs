@@ -6,7 +6,7 @@ use crate::database::{Database, ID};
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export_to = "Account.ts")]
-pub enum AccountClass {
+pub enum AccountType {
     Bank,
     CreditCard,
     Shop,
@@ -16,7 +16,7 @@ pub enum AccountClass {
 #[ts(export_to = "Account.ts")]
 pub struct AccountFields {
     pub name: String,
-    pub class: AccountClass,
+    pub account_type: AccountType,
     pub statement_schema_id: Option<ID>,
 }
 
@@ -40,10 +40,10 @@ impl Account {
     pub async fn create(db: &Database, fields: AccountFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO accounts (name, class, statement_schema_id)
+            "INSERT INTO accounts (name, account_type, statement_schema_id)
             VALUES (?1, ?2, ?3) RETURNING id",
             fields.name,
-            fields.class,
+            fields.account_type,
             fields.statement_schema_id,
         )
         .fetch_one(&mut *conn)
@@ -66,7 +66,7 @@ impl Account {
     pub async fn fetch_all(db: &Database) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_schema_id FROM accounts ORDER BY name",
+            "SELECT id, name, account_type, statement_schema_id FROM accounts ORDER BY name",
         )
         .fetch_all(&mut *conn)
         .await?;
@@ -77,7 +77,7 @@ impl Account {
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<Account> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_schema_id FROM accounts WHERE id = ?1",
+            "SELECT id, name, account_type, statement_schema_id FROM accounts WHERE id = ?1",
         )
         .bind(id)
         .fetch_one(&mut *conn)
@@ -89,7 +89,7 @@ impl Account {
     pub async fn fetch_by_schema_id(db: &Database, id: ID) -> anyhow::Result<Accounts> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Account>(
-            "SELECT id, name, class, statement_schema_id FROM accounts
+            "SELECT id, name, account_type, statement_schema_id FROM accounts
             WHERE statement_schema_id = ?1",
         )
         .bind(id)
@@ -105,12 +105,12 @@ impl Account {
         sqlx::query!(
             "UPDATE accounts SET
                 name = ?2,
-                class = ?3,
+                account_type = ?3,
                 statement_schema_id = ?4
             WHERE id = ?1",
             self.id,
             self.fields.name,
-            self.fields.class,
+            self.fields.account_type,
             self.fields.statement_schema_id
         )
         .execute(&mut *conn)

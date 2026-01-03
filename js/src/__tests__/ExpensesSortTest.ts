@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 
-import { Account } from "../types/Account";
 import { AccountView } from "../AccountsView";
 import { ExpenseView } from "../ExpenseView";
 import {
@@ -18,13 +17,12 @@ function sortBy(field: SortField, order: SortOrder): SortBy {
 }
 
 function newAccount(id: number, name: string): AccountView {
-  const account = {
+  return {
     id: id,
     name: name,
-    class: "Bank",
-  } as Account;
-
-  return new AccountView(account, null);
+    account_type: "Bank",
+    statementSchema: null,
+  } as AccountView;
 }
 
 test("sort by amount", () => {

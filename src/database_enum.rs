@@ -5,7 +5,7 @@ implementing sqlx::FromRow for every database-stored struct that could hold the 
 TODO: This is still lot of code repetition, and looks like I could autogenerate this via macro, or
 somehow add generically for everything that implements Deserialize trait. */
 
-use crate::account::AccountClass;
+use crate::account::AccountType;
 use crate::budget::BudgetAmount;
 use crate::record_mapping::RecordMapping;
 
@@ -16,11 +16,11 @@ use sqlx::{Decode, Encode, Sqlite, Type};
 
 type BoxDynError = Box<dyn std::error::Error + 'static + Send + Sync>;
 
-impl<'r> Decode<'r, Sqlite> for AccountClass {
-    fn decode(value: <Sqlite as SqlxDatabase>::ValueRef<'r>) -> Result<AccountClass, BoxDynError> {
+impl<'r> Decode<'r, Sqlite> for AccountType {
+    fn decode(value: <Sqlite as SqlxDatabase>::ValueRef<'r>) -> Result<AccountType, BoxDynError> {
         let json_string = <&str as Decode<Sqlite>>::decode(value)?;
 
-        let value: AccountClass = match serde_json::from_str(json_string) {
+        let value: AccountType = match serde_json::from_str(json_string) {
             Ok(value) => value,
             Err(e) => {
                 let err: BoxDynError = format!("{:?}", e).into();
@@ -32,13 +32,13 @@ impl<'r> Decode<'r, Sqlite> for AccountClass {
     }
 }
 
-impl Type<Sqlite> for AccountClass {
+impl Type<Sqlite> for AccountType {
     fn type_info() -> <Sqlite as SqlxDatabase>::TypeInfo {
         <&str as Type<Sqlite>>::type_info()
     }
 }
 
-impl<'q> Encode<'q, Sqlite> for AccountClass {
+impl<'q> Encode<'q, Sqlite> for AccountType {
     fn encode_by_ref(&self, buf: &mut Vec<SqliteArgumentValue<'q>>) -> Result<IsNull, BoxDynError> {
         let string = match serde_json::to_string(&self) {
             Ok(value) => value,

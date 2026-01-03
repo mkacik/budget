@@ -3,26 +3,8 @@ import { createContext, useContext } from "react";
 import { Account, Accounts } from "./types/Account";
 import { StatementSchema, StatementSchemas } from "./types/StatementSchema";
 
-export class AccountView {
-  account: Account;
+export interface AccountView extends Account {
   statementSchema: StatementSchema | null;
-
-  constructor(account: Account, statementSchema: StatementSchema | null) {
-    this.account = account;
-    this.statementSchema = statementSchema;
-  }
-
-  get id() {
-    return this.account.id;
-  }
-
-  get name() {
-    return this.account.name;
-  }
-
-  get accountClass() {
-    return this.account.class;
-  }
 }
 
 export class AccountsView {
@@ -50,7 +32,10 @@ export class AccountsView {
         schema = maybeSchema;
       }
 
-      const accountView = new AccountView(account, schema);
+      const accountView = {
+        ...account,
+        statementSchema: schema,
+      } as AccountView;
       accountsMap.set(accountView.id, accountView);
     }
 

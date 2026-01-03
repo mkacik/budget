@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use budget::account::{Account, AccountClass, AccountFields};
+use budget::account::{Account, AccountFields, AccountType};
 use budget::budget::{
     Budget, BudgetAmount, BudgetCategory, BudgetCategoryFields, BudgetItem, BudgetItemFields,
 };
@@ -112,7 +112,7 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         db,
         AccountFields {
             name: String::from("big bank"),
-            class: AccountClass::Bank,
+            account_type: AccountType::Bank,
             statement_schema_id: None,
         },
     )
@@ -126,7 +126,7 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         db,
         AccountFields {
             name: String::from("some shop"),
-            class: AccountClass::Shop,
+            account_type: AccountType::Shop,
             statement_schema_id: Some(StatementSchema::fetch_by_id(&db, 2).await?.id),
         },
     )
@@ -137,7 +137,7 @@ async fn add_accounts(db: &Database) -> anyhow::Result<()> {
         db,
         AccountFields {
             name: String::from("credit card"),
-            class: AccountClass::CreditCard,
+            account_type: AccountType::CreditCard,
             statement_schema_id: None,
         },
     )

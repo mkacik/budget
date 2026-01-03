@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-import { Account, AccountFields, AccountClass } from "./types/Account";
+import { Account, AccountFields, AccountType } from "./types/Account";
 import { StatementSchema } from "./types/StatementSchema";
 
 import {
@@ -16,11 +16,7 @@ import {
 import { Form, FormButtons } from "./ui/Form";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
-const ACCOUNT_CLASS_OPTIONS: Array<AccountClass> = [
-  "Bank",
-  "CreditCard",
-  "Shop",
-];
+const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = ["Bank", "CreditCard", "Shop"];
 
 function createAccountRequest(fields: AccountFields) {
   return fetch("/api/accounts", {
@@ -71,7 +67,7 @@ function AccountForm({
     try {
       const accountFields: AccountFields = {
         name: formHelper.getString("name"),
-        class: formHelper.getString("class") as AccountClass,
+        account_type: formHelper.getString("accountType") as AccountType,
         statement_schema_id: formHelper.getNumberOrNull("importConfig"),
       } as AccountFields;
       // if nothing threw by this point, mark any validation errors as cleared
@@ -107,9 +103,9 @@ function AccountForm({
   };
 
   const accountName = account?.name;
-  const accountClass = account?.class ?? ACCOUNT_CLASS_OPTIONS[0];
+  const accountType = account?.account_type ?? ACCOUNT_TYPE_OPTIONS[0];
   const importConfig = account?.statement_schema_id ?? FormHelper.EMPTY;
-  const accountClassOptions = ACCOUNT_CLASS_OPTIONS.map((value, idx) => (
+  const accountTypeOptions = ACCOUNT_TYPE_OPTIONS.map((value, idx) => (
     <option key={idx} value={value}>
       {value}
     </option>
@@ -151,9 +147,9 @@ function AccountForm({
         <label htmlFor="name">Account Name</label>
         <input type="text" name="name" defaultValue={accountName} />
 
-        <label htmlFor="class">Account Type</label>
-        <select name="class" defaultValue={accountClass}>
-          {accountClassOptions}
+        <label htmlFor="accountType">Account Type</label>
+        <select name="accountType" defaultValue={accountType}>
+          {accountTypeOptions}
         </select>
 
         <label htmlFor="importConfig">Import Schema</label>
@@ -204,7 +200,7 @@ export function AccountsCard({
     return (
       <ItemCard key={account.id}>
         <span>{account.name}</span>
-        <Pill>{account.class}</Pill>
+        <Pill>{account.account_type}</Pill>
         <InlineGlyphButton
           glyph="edit"
           onClick={() => showEditModal(account)}

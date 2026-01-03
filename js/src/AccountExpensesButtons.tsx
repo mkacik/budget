@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 
-import { Account } from "./types/Account";
+import { AccountView } from "./AccountsView";
 import { StatementSchema } from "./types/StatementSchema";
 
 import {
@@ -17,13 +17,27 @@ import {
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 import { JSON_HEADERS } from "./Common";
 
+function SchemaNotes({ schema }: { schema: StatementSchema }) {
+  if (schema.notes === null || schema.notes === "") {
+    return (
+      <small>
+        Using <b>{schema.name}</b> schema.
+      </small>
+    );
+  }
+
+  return (
+    <small>
+      Notes for <b>{schema.name}</b> schema:<div>{schema.notes}</div>
+    </small>
+  );
+}
+
 function ImportExpensesForm({
   account,
-  schema,
   onSuccess,
 }: {
-  account: Account;
-  schema: StatementSchema;
+  account: AccountView;
   onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -69,21 +83,17 @@ function ImportExpensesForm({
     });
   };
 
-  const notes =
-    schema.notes === null || schema.notes === "" ? (
-      <>
-        Using <b>{schema.name}</b> schema.
-      </>
-    ) : (
-      <>
-        Notes for <b>{schema.name}</b> schema:<div>{schema.notes}</div>
-      </>
+  const schema = account.statementSchema;
+  if (schema === null) {
+    return (
+      <ErrorCard message="Account does not have import schema attached, add one in Accounts tab." />
     );
+  }
 
   return (
     <Section>
       <ErrorCard message={errorMessage} />
-      <small>{notes}</small>
+      <SchemaNotes schema={schema} />
       <Form onSubmit={onSubmit}>
         <label htmlFor="file">Choose statement to upload (.csv,.txt)</label>
         <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
@@ -100,7 +110,7 @@ function DeleteExpensesForm({
   account,
   onSuccess,
 }: {
-  account: Account;
+  account: AccountView;
   onSuccess: () => void;
 }) {
   const [date, setDate] = useState<Date | null>(null);
@@ -169,11 +179,9 @@ function DeleteExpensesForm({
 
 export function ImportExpensesButton({
   account,
-  schema,
   onSuccess,
 }: {
-  account: Account;
-  schema: StatementSchema | null;
+  account: AccountView;
   onSuccess: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -182,19 +190,6 @@ export function ImportExpensesButton({
     onSuccess();
     setModalVisible(false);
   };
-
-  const cardContent =
-    schema !== null ? (
-      <ImportExpensesForm
-        account={account}
-        schema={schema}
-        onSuccess={onImportSuccess}
-      />
-    ) : (
-      <ErrorCard
-        message={`Account does not have import schema attached, add one in Accounts tab.`}
-      />
-    );
 
   return (
     <>
@@ -210,7 +205,7 @@ export function ImportExpensesButton({
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
-        {cardContent}
+        <ImportExpensesForm account={account} onSuccess={onImportSuccess} />
       </ModalCard>
     </>
   );
@@ -220,7 +215,7 @@ export function DeleteExpensesButton({
   account,
   onSuccess,
 }: {
-  account: Account;
+  account: AccountView;
   onSuccess: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
