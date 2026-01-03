@@ -16,7 +16,12 @@ import {
 import { Form, FormButtons } from "./ui/Form";
 import { FormHelper, JSON_HEADERS } from "./Common";
 
-const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = ["Bank", "CreditCard", "Shop"];
+const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = [
+  "Bank",
+  "Cash",
+  "CreditCard",
+  "Shop",
+];
 
 function createAccountRequest(fields: AccountFields) {
   return fetch("/api/accounts", {

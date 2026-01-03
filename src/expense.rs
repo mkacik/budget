@@ -4,7 +4,7 @@ use ts_rs::TS;
 
 use crate::database::{Database, ID};
 
-#[derive(Debug, FromRow, Serialize, TS, PartialEq)]
+#[derive(Debug, FromRow, Deserialize, Serialize, TS, PartialEq)]
 #[ts(export_to = "Expense.ts")]
 pub struct ExpenseFields {
     pub account_id: ID,

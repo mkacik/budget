@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
 use ts_rs::TS;
 
-use crate::account::Account;
+use crate::account::{Account, AccountType};
 use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
-use crate::expense::{Expense, ExpenseCategory, ExpenseNotes};
+use crate::expense::{Expense, ExpenseCategory, ExpenseFields, ExpenseNotes};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::ApiResponse;
@@ -123,6 +123,67 @@ pub async fn delete_expenses(
     match Expense::delete_by_account_id_and_date(&db, account_id, &date).await {
         Ok(_) => ApiResponse::Success,
         Err(_) => ApiResponse::ServerError,
+    }
+}
+
+fn to_simple_csv_row(
+    transaction_date: &str,
+    amount: f64,
+    description: &str,
+) -> anyhow::Result<String> {
+    let mut wtr = csv::WriterBuilder::new()
+        .has_headers(false)
+        .from_writer(vec![]);
+    wtr.serialize((transaction_date, amount, description))?;
+    let data = wtr.into_inner()?;
+    let string = String::from_utf8(data)?;
+
+    Ok(string.trim().to_string())
+}
+
+#[post("/expenses/create", format = "json", data = "<json>")]
+pub async fn create_expense(
+    db: &State<Database>,
+    log_entry: &WriteLogEntry,
+    json: Json<ExpenseFields>,
+) -> ApiResponse {
+    let mut request = json.into_inner();
+    log_entry.set_content(&request);
+
+    let account = match Account::fetch_by_id(db, request.account_id).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: format!("Account with id {} could not be found.", request.account_id),
+            }
+        }
+    };
+
+    if account.fields.account_type != AccountType::Cash {
+        return ApiResponse::BadRequest {
+            message: format!("Manually adding expenses only allowed for Cash accounts."),
+        };
+    }
+
+    let raw_csv = match to_simple_csv_row(
+        &request.transaction_date,
+        request.amount,
+        &request.description,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            return ApiResponse::ServerErrorWithMessage {
+                message: format!("{}", error),
+            }
+        }
+    };
+    request.raw_csv = Some(raw_csv);
+
+    match Expense::create(&db, request).await {
+        Ok(_) => ApiResponse::Success,
+        Err(error) => ApiResponse::ServerErrorWithMessage {
+            message: format!("{}", error),
+        },
     }
 }
 

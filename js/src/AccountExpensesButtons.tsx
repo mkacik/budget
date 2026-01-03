@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { AccountView } from "./AccountsView";
 import { StatementSchema } from "./types/StatementSchema";
+import { ExpenseFields } from "./types/Expense";
 
 import {
   ErrorCard,
@@ -15,7 +16,11 @@ import {
   LoadingBanner,
 } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
-import { JSON_HEADERS } from "./Common";
+import { DEFAULT_ERROR, JSON_HEADERS } from "./Common";
+
+function formatDate(date: Date) {
+  return date.toJSON().substr(0, 10);
+}
 
 function SchemaNotes({ schema }: { schema: StatementSchema }) {
   if (schema.notes === null || schema.notes === "") {
@@ -130,7 +135,7 @@ function DeleteExpensesForm({
       return;
     }
     const request = {
-      newer_than_date: date.toJSON().substr(0, 10),
+      newer_than_date: formatDate(date),
     };
     setLoading(true);
     fetch(`api/accounts/${account.id}/expenses/delete`, {
@@ -242,5 +247,161 @@ export function DeleteExpensesButton({
         <DeleteExpensesForm account={account} onSuccess={onDeleteSuccess} />
       </ModalCard>
     </>
+  );
+}
+
+export function AddExpenseButton({
+  account,
+  onSuccess,
+}: {
+  account: AccountView;
+  onSuccess: () => void;
+}) {
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  const onAddSuccess = () => {
+    setModalVisible(false);
+    onSuccess();
+  };
+
+  return (
+    <>
+      <small>
+        <InlineGlyphButton
+          glyph="add"
+          text="add expense"
+          onClick={() => setModalVisible(true)}
+        />
+      </small>
+      <ModalCard
+        title={`Add expense for cash account - ${account.name}`}
+        visible={modalVisible}
+        hideModal={() => setModalVisible(false)}
+      >
+        <AddExpenseForm account={account} onSuccess={onAddSuccess} />
+      </ModalCard>
+    </>
+  );
+}
+
+type PartialExpenseFields = {
+  description: string;
+  amount: number;
+  transaction_date: Date | null;
+};
+
+function AddExpenseForm({
+  account,
+  onSuccess,
+}: {
+  account: AccountView;
+  onSuccess: () => void;
+}) {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [fields, setFields] = useState<PartialExpenseFields>({
+    transaction_date: new Date(),
+    amount: 0,
+    description: "",
+  } as PartialExpenseFields);
+
+  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
+
+  const onSubmit = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      if (fields.transaction_date === null) {
+        throw new Error("Transaction date for new expense cannot be empty!");
+      }
+      if (fields.amount === 0) {
+        throw new Error("Amount for new expense must be non-zero!");
+      }
+      if (fields.description === null) {
+        throw new Error("Description for new expense cannot be empty!");
+      }
+      if (fields.description !== fields.description.trim()) {
+        throw new Error(
+          "Description field contains disallowed leading/trailing whitespace!",
+        );
+      }
+
+      const request = {
+        account_id: account.id,
+        transaction_date: formatDate(fields.transaction_date),
+        transaction_time: null,
+        amount: fields.amount,
+        description: fields.description,
+      } as ExpenseFields;
+
+      const response = await fetch(`api/expenses/create`, {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify(request),
+      });
+
+      // to get error message need to get to json in both success and error case
+      // catch block will handle unexpected not-json responses
+      const json = await response.json();
+      if (!response.ok) {
+        setErrorMessage(json.error ?? DEFAULT_ERROR);
+        return;
+      }
+
+      clearErrorMessage();
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      console.error(error);
+      setErrorMessage(DEFAULT_ERROR);
+    }
+  };
+
+  const setDescription = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value;
+    setFields({ ...fields, description: value });
+  };
+
+  const setAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseFloat(e.currentTarget.value);
+    setFields({ ...fields, amount: value });
+  };
+
+  return (
+    <Section>
+      <ErrorCard message={errorMessage} />
+      <Form onSubmit={onSubmit}>
+        <label>Description</label>
+        <input
+          type="textarea"
+          value={fields.description}
+          onChange={setDescription}
+        />
+
+        <label>Amount</label>
+        <input
+          type="number"
+          step="0.01"
+          value={fields.amount}
+          onChange={setAmount}
+        />
+
+        <label>Transaction date [YYYY-MM-dd]</label>
+        <DatePicker
+          dateFormat="yyyy-MM-dd"
+          selected={fields.transaction_date}
+          onChange={(newDate) =>
+            setFields({ ...fields, transaction_date: newDate })
+          }
+          className="stretch-datepicker"
+        />
+        <FormButtons>
+          <FormSubmitButton text="Add" />
+        </FormButtons>
+      </Form>
+    </Section>
   );
 }

@@ -4,12 +4,13 @@ use ts_rs::TS;
 
 use crate::database::{Database, ID};
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export_to = "Account.ts")]
 pub enum AccountType {
     Bank,
     CreditCard,
     Shop,
+    Cash,
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]

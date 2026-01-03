@@ -4,6 +4,6 @@ export type Account = { id: number, name: string, account_type: AccountType, sta
 
 export type AccountFields = { name: string, account_type: AccountType, statement_schema_id: number | null, };
 
-export type AccountType = "Bank" | "CreditCard" | "Shop";
+export type AccountType = "Bank" | "CreditCard" | "Shop" | "Cash";
 
 export type Accounts = { accounts: Array<Account>, };

@@ -8,6 +8,7 @@ import {
 } from "./types/Expense";
 
 import {
+  AddExpenseButton,
   ImportExpensesButton,
   DeleteExpensesButton,
 } from "./AccountExpensesButtons";
@@ -195,7 +196,12 @@ export function ExpensesList({
   return (
     <>
       <ErrorCard message={error} />
-      <ImportDeleteExpenseButtons query={query} onSuccess={fetchExpenses} />
+      {query.variant === "account" && (
+        <ExpensesButtonsSection
+          account={query.account}
+          onSuccess={fetchExpenses}
+        />
+      )}
       <ExpensesTable
         budget={budget}
         expenses={expenses}
@@ -208,22 +214,23 @@ export function ExpensesList({
   );
 }
 
-function ImportDeleteExpenseButtons({
-  query,
+function ExpensesButtonsSection({
+  account,
   onSuccess,
 }: {
-  query: ExpensesQuery;
+  account: AccountView;
   onSuccess: () => void;
 }) {
-  if (query.variant !== "account") {
-    return null;
-  }
-  const account = query.account;
+  const isCashAccount = account.account_type === "Cash";
 
   return (
     <Section>
       <div className="flexrow">
-        <ImportExpensesButton account={account} onSuccess={onSuccess} />
+        {isCashAccount ? (
+          <AddExpenseButton account={account} onSuccess={onSuccess} />
+        ) : (
+          <ImportExpensesButton account={account} onSuccess={onSuccess} />
+        )}
         <DeleteExpensesButton account={account} onSuccess={onSuccess} />
       </div>
     </Section>
