@@ -245,6 +245,7 @@ export function BudgetPage({
           key={editedCategory?.name}
           budgetCategory={editedCategory?.category ?? null}
           onSuccess={onEditSuccess}
+          budget={budget}
         />
       );
       break;

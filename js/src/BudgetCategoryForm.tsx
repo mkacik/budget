@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
+import { BudgetView } from "./BudgetView";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
@@ -37,9 +38,11 @@ function deleteBudgetCategoryRequest(budgetCategory: BudgetCategory) {
 export function BudgetCategoryForm({
   budgetCategory,
   onSuccess,
+  budget,
 }: {
   budgetCategory: BudgetCategory | null;
   onSuccess: () => void;
+  budget: BudgetView;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -58,6 +61,7 @@ export function BudgetCategoryForm({
       const budgetCategoryFields: BudgetCategoryFields = {
         name: formHelper.getString("name"),
         ignored: formHelper.getBool("ignored"),
+        year: budget.year,
       } as BudgetCategoryFields;
       // if nothing threw by this point, mark any validation errors as cleared
       clearErrorMessage();
