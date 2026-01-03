@@ -11,7 +11,7 @@ import {
   AddExpenseButton,
   ImportExpensesButton,
   DeleteExpensesButton,
-} from "./AccountExpensesButtons";
+} from "./ExpensesListButtons";
 import {
   AccountView,
   AccountsView,

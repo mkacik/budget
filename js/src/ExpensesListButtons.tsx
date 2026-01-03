@@ -54,38 +54,43 @@ function ImportExpensesForm({
     }
   };
 
-  const onSubmit = (e: React.SyntheticEvent) => {
+  const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const maybeFile = formData.get("file") as File;
-    if (maybeFile?.name === "") {
-      setErrorMessage("File must be selected.");
-      return;
-    }
-    setLoading(true);
-    fetch(`api/accounts/${account.id}/expenses`, {
-      method: "POST",
-      body: formData,
-    }).then((response) => {
-      setLoading(false);
-      form.reset();
-      if (response.ok) {
-        clearErrorMessage();
-        onSuccess();
-      } else {
-        response
-          .json()
-          .then((json) => {
-            const message = json.error ?? "Something went wrong!";
-            setErrorMessage(message);
-          })
-          .catch((error) => {
-            console.log(response, error);
-            setErrorMessage("Something went wrong.");
-          });
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      const maybeFile = formData.get("file") as File;
+      if (maybeFile?.name === "") {
+        throw new Error("File must be selected.");
       }
-    });
+
+      setLoading(true);
+      const response = await fetch(`api/accounts/${account.id}/expenses`, {
+        method: "POST",
+        body: formData,
+      });
+      setLoading(false);
+
+      // to get error message need to get to json in both success and error case
+      // catch block will handle unexpected not-json responses
+      const json = await response.json();
+      if (!response.ok) {
+        setErrorMessage(json.error ?? DEFAULT_ERROR);
+        return;
+      }
+
+      form.reset();
+      clearErrorMessage();
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      console.error(error);
+      setErrorMessage(DEFAULT_ERROR);
+    }
   };
 
   const schema = account.statementSchema;
@@ -100,7 +105,7 @@ function ImportExpensesForm({
       <ErrorCard message={errorMessage} />
       <SchemaNotes schema={schema} />
       <Form onSubmit={onSubmit}>
-        <label htmlFor="file">Choose statement to upload (.csv,.txt)</label>
+        <label htmlFor="file">Statement to upload (.csv,.txt)</label>
         <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
         <FormButtons>
           <FormSubmitButton text="Upload" />
@@ -128,38 +133,47 @@ function DeleteExpensesForm({
     }
   };
 
-  const onSubmit = (e: React.SyntheticEvent) => {
+  const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (date === null) {
-      setErrorMessage("Date must be selected.");
-      return;
-    }
-    const request = {
-      newer_than_date: formatDate(date),
-    };
-    setLoading(true);
-    fetch(`api/accounts/${account.id}/expenses/delete`, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify(request),
-    }).then((response) => {
-      setLoading(false);
-      if (response.ok) {
-        clearErrorMessage();
-        onSuccess();
-      } else {
-        response
-          .json()
-          .then((json) => {
-            const message = json.error ?? "Something went wrong!";
-            setErrorMessage(message);
-          })
-          .catch((error) => {
-            console.log(response, error);
-            setErrorMessage("Something went wrong.");
-          });
+    try {
+      if (date === null) {
+        throw new Error("Date must be selected.");
       }
-    });
+
+      const request = {
+        newer_than_date: formatDate(date),
+      };
+
+      setLoading(true);
+      const response = await fetch(
+        `api/accounts/${account.id}/expenses/delete`,
+        {
+          method: "POST",
+          headers: JSON_HEADERS,
+          body: JSON.stringify(request),
+        },
+      );
+      setLoading(false);
+
+      // to get error message need to get to json in both success and error case
+      // catch block will handle unexpected not-json responses
+      const json = await response.json();
+      if (!response.ok) {
+        setErrorMessage(json.error ?? DEFAULT_ERROR);
+        return;
+      }
+
+      clearErrorMessage();
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      console.error(error);
+      setErrorMessage(DEFAULT_ERROR);
+    }
   };
 
   return (
