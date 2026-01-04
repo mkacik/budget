@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
-
+import { useAppSettingsContext } from "./AppSettings";
 import { BudgetCloneForm } from "./BudgetCloneForm";
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
@@ -112,9 +112,13 @@ export function BudgetTable({
     );
   }
 
+  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
+
   return (
     <table className="large">
-      <thead>{header}</thead>
+      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+        {header}
+      </thead>
       <tbody>{children}</tbody>
       <tfoot>{footer}</tfoot>
     </table>

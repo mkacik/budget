@@ -6,13 +6,19 @@ import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
 import { StatementSchemas } from "./types/StatementSchema";
 
+import {
+  getDefaultAppSettings,
+  AppSettings,
+  AppSettingsContext,
+  Tab,
+} from "./AppSettings";
 import { AccountsPage } from "./AccountsPage";
 import { AccountsView, AccountsViewContext } from "./AccountsView";
 import { AnalyzePage } from "./AnalyzePage";
 import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
-import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
+import { SettingsProvider } from "./SettingsProvider";
 import { ErrorCard, InlineGlyphButton } from "./ui/Common";
 import { FetchHelper } from "./Common";
 
@@ -30,30 +36,12 @@ function HeaderItem({
   );
 }
 
-enum Tab {
-  Budget,
-  Accounts,
-  Expenses,
-  Analyze,
-}
-
-interface AppSettings extends VersionedSettings {
-  tab: Tab;
-  year: number;
-}
-
 function App() {
   // *** Bootstrap settings
 
-  const defaultSettings = {
-    version: 2,
-    tab: Tab.Budget,
-    year: new Date().getFullYear(),
-  } as AppSettings;
-
   const settingsProvider = new SettingsProvider<AppSettings>(
     "settings",
-    defaultSettings,
+    getDefaultAppSettings(),
   );
 
   const [settings, setSettings] = useState<AppSettings>(
@@ -72,7 +60,6 @@ function App() {
   const setYear = (year: number) => updateSettings({ ...settings, year: year });
 
   // *** Fetch data
-  // not using FetchHelper here because
 
   const [budget, setBudget] = useState<BudgetView | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
@@ -165,36 +152,38 @@ function App() {
       </div>
 
       <div className="main">
-        <AccountsViewContext value={accountsView}>
-          {tab == Tab.Budget && (
-            <BudgetPage
-              budget={budget}
-              refreshBudget={fetchBudget}
-              setYear={setYear}
-            />
-          )}
-          {tab == Tab.Expenses && (
-            // keep key here and in analyze; without it the expenses/query from previously selected
-            // year will linger until they are refreshed, causing mismatch with budget that was
-            // already updated;
-            <ExpensesPage
-              key={`expenses.${budget.year}`}
-              budget={budget}
-              accounts={accountsView}
-            />
-          )}
-          {tab == Tab.Accounts && (
-            <AccountsPage
-              accounts={accounts.accounts}
-              refreshAccounts={fetchAccounts}
-              schemas={schemas.schemas}
-              refreshSchemas={fetchSchemas}
-            />
-          )}
-          {tab == Tab.Analyze && (
-            <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
-          )}
-        </AccountsViewContext>
+        <AppSettingsContext value={settings}>
+          <AccountsViewContext value={accountsView}>
+            {tab == Tab.Budget && (
+              <BudgetPage
+                budget={budget}
+                refreshBudget={fetchBudget}
+                setYear={setYear}
+              />
+            )}
+            {tab == Tab.Expenses && (
+              // keep key here and in analyze; without it the expenses/query from previously selected
+              // year will linger until they are refreshed, causing mismatch with budget that was
+              // already updated;
+              <ExpensesPage
+                key={`expenses.${budget.year}`}
+                budget={budget}
+                accounts={accountsView}
+              />
+            )}
+            {tab == Tab.Accounts && (
+              <AccountsPage
+                accounts={accounts.accounts}
+                refreshAccounts={fetchAccounts}
+                schemas={schemas.schemas}
+                refreshSchemas={fetchSchemas}
+              />
+            )}
+            {tab == Tab.Analyze && (
+              <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
+            )}
+          </AccountsViewContext>
+        </AppSettingsContext>
       </div>
     </>
   );

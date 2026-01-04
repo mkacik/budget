@@ -1,5 +1,6 @@
 import React from "react";
 
+import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { ExpensesQuery } from "./ExpensesList";
@@ -309,11 +310,13 @@ export function MonthlySpendingTable({
     }
   }
 
+  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
+
   return (
     <table>
       <SpendingTableColgroup />
 
-      <thead className={"sticky-header"}>
+      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <SpendingTableHeaderRow
           year={year}
           updateExpensesQuery={updateExpensesQuery}
