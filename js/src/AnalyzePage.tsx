@@ -6,7 +6,7 @@ import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { MonthlySpendingTable } from "./MonthlySpendingTable";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
-import { FetchHelper, DEFAULT_ERROR } from "./Common";
+import { FetchHelper } from "./Common";
 import { ErrorCard, Section, SectionHeader, LoadingBanner } from "./ui/Common";
 
 function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {

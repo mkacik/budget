@@ -106,7 +106,7 @@ function AccountForm({
         account === null
           ? createAccountRequest(accountFields)
           : updateAccountRequest(account, accountFields);
-      fetchHelper.fetch(request, (json) => onSuccess());
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }
@@ -116,7 +116,7 @@ function AccountForm({
     <GlyphButton
       glyph="delete"
       onClick={() =>
-        fetchHelper.fetch(deleteAccountRequest(account), (json) => onSuccess())
+        fetchHelper.fetch(deleteAccountRequest(account), (_json) => onSuccess())
       }
     />
   );

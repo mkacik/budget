@@ -2,8 +2,6 @@ export const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
-export const DEFAULT_ERROR = "Something went wrong.";
-
 export class FormHelper {
   static EMPTY: string = "";
   formData: FormData;
@@ -47,6 +45,8 @@ export class FormHelper {
   }
 }
 
+const DEFAULT_ERROR = "Something went wrong.";
+
 type FetchHelperSetErrorMessageHandler = (errorMessage: string | null) => void;
 type FetchHelperSetLoadingHandler = ((isLoading: boolean) => void) | null;
 
@@ -62,7 +62,7 @@ export class FetchHelper {
     this.setLoading = setLoading ?? null;
   }
 
-  handleError(error: any) {
+  handleError(error: unknown) {
     if (error instanceof Error) {
       this.setErrorMessage(error.message);
       return;
@@ -72,11 +72,17 @@ export class FetchHelper {
     this.setErrorMessage(DEFAULT_ERROR);
   }
 
-  async fetch(request: Request, callback: (result: Object) => void) {
+  setLoadingOptional(newValue: boolean) {
+    if (this.setLoading !== null) {
+      this.setLoading(newValue);
+    }
+  }
+
+  async fetch(request: Request, callback: (result: object) => void) {
     try {
-      this.setLoading && this.setLoading(true);
+      this.setLoadingOptional(true);
       const response = await fetch(request);
-      this.setLoading && this.setLoading(false);
+      this.setLoadingOptional(false);
 
       // to get error message need to get to json in both success and error case
       // catch block will handle unexpected not-json responses
@@ -91,7 +97,7 @@ export class FetchHelper {
       // if callback didn't throw, clear all previous errors;
       this.setErrorMessage(null);
     } catch (error) {
-      this.setLoading && this.setLoading(false);
+      this.setLoadingOptional(false);
       this.handleError(error);
     }
   }

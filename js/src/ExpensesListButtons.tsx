@@ -20,7 +20,7 @@ import {
   LabeledInput,
   LabeledDatePicker,
 } from "./ui/Form";
-import { FetchHelper, DEFAULT_ERROR, JSON_HEADERS } from "./Common";
+import { FetchHelper, JSON_HEADERS } from "./Common";
 
 function formatDate(date: Date) {
   return date.toJSON().substr(0, 10);
@@ -68,7 +68,7 @@ function ImportExpensesForm({
         method: "POST",
         body: formData,
       });
-      await fetchHelper.fetch(request, (json) => {
+      await fetchHelper.fetch(request, (_json) => {
         form.reset();
         onSuccess();
       });
@@ -115,8 +115,6 @@ function DeleteExpensesForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
-
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
@@ -138,7 +136,7 @@ function DeleteExpensesForm({
           body: JSON.stringify({ newer_than_date: formatDate(date) }),
         },
       );
-      fetchHelper.fetch(request, (json) => onSuccess());
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }
@@ -284,8 +282,6 @@ function AddExpenseForm({
     description: "",
   } as PartialExpenseFields);
 
-  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
-
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     const fetchHelper = new FetchHelper(setErrorMessage);
@@ -318,7 +314,7 @@ function AddExpenseForm({
         headers: JSON_HEADERS,
         body: JSON.stringify(requestBody),
       });
-      fetchHelper.fetch(request, (json) => onSuccess());
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }

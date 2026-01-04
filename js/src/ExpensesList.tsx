@@ -26,7 +26,7 @@ import {
 } from "./ExpensesSort";
 import { ExpenseView } from "./ExpenseView";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
-import { FetchHelper, JSON_HEADERS, DEFAULT_ERROR } from "./Common";
+import { FetchHelper, JSON_HEADERS } from "./Common";
 
 import { ErrorCard, Section } from "./ui/Common";
 

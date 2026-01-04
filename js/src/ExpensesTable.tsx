@@ -9,12 +9,7 @@ import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
 import { BudgetItemSelect } from "./BudgetItemSelect";
 import { JSON_HEADERS, FetchHelper } from "./Common";
-import {
-  Col,
-  ErrorCard,
-  SmallInlineGlyph,
-  InlineGlyphButton,
-} from "./ui/Common";
+import { Col, SmallInlineGlyph, InlineGlyphButton } from "./ui/Common";
 
 function ExpenseNotesGlyph({
   description,
@@ -84,7 +79,7 @@ function ExpenseRow({
       headers: JSON_HEADERS,
       body: JSON.stringify({ budget_item_id: newBudgetItemID }),
     });
-    fetchHelper.fetch(request, (json) => onExpenseCategoryChange());
+    fetchHelper.fetch(request, (_json) => onExpenseCategoryChange());
   };
 
   const updateNotes = (newNotes: string | null) => {
@@ -93,7 +88,7 @@ function ExpenseRow({
       headers: JSON_HEADERS,
       body: JSON.stringify({ notes: newNotes }),
     });
-    fetchHelper.fetch(request, (json) => onExpenseNotesChange());
+    fetchHelper.fetch(request, (_json) => onExpenseNotesChange());
   };
 
   const deleteExpense = (e: React.SyntheticEvent) => {
@@ -105,7 +100,7 @@ function ExpenseRow({
     const request = new Request(`/api/expenses/${expense.id}`, {
       method: "DELETE",
     });
-    fetchHelper.fetch(request, (json) => onExpenseDelete());
+    fetchHelper.fetch(request, (_json) => onExpenseDelete());
   };
 
   const dateTime =

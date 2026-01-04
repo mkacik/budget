@@ -104,7 +104,7 @@ function StatementSchemaForm({
         schema === null
           ? createStatementSchemaRequest(schemaFields)
           : updateStatementSchemaRequest(schema, schemaFields);
-      fetchHelper.fetch(request, (json) => onSuccess());
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }
@@ -114,7 +114,7 @@ function StatementSchemaForm({
     <GlyphButton
       glyph="delete"
       onClick={() =>
-        fetchHelper.fetch(deleteStatementSchemaRequest(schema), (json) =>
+        fetchHelper.fetch(deleteStatementSchemaRequest(schema), (_json) =>
           onSuccess(),
         )
       }
