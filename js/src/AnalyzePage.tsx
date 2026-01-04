@@ -1,12 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { SpendingDataPoint } from "./types/SpendingData";
+import { SpendingData } from "./types/SpendingData";
 
 import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { MonthlySpendingTable } from "./MonthlySpendingTable";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
-import { DEFAULT_ERROR } from "./Common";
+import { FetchHelper, DEFAULT_ERROR } from "./Common";
 import { ErrorCard, Section, SectionHeader, LoadingBanner } from "./ui/Common";
 
 function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
@@ -45,54 +45,33 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
   const [expensesQuery, setExpensesQuery] = useState<ExpensesQuery | null>(
     null,
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchSpendingData = async () => {
-    setLoading(true);
-
+    const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
     try {
-      const response = await fetch(`/api/spending/${budget.year}`);
+      const request = new Request(`/api/spending/${budget.year}`);
 
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
-      if (!response.ok) {
-        setLoading(false);
-        setError(json.error ?? DEFAULT_ERROR);
-        return;
-      }
-
-      const dataPoints = json.data as Array<SpendingDataPoint>;
-      const data = new MonthlySpendingData(dataPoints, budget);
-      setSpendingData(data);
-
-      setLoading(false);
-      setError(null);
+      fetchHelper.fetch(request, (json) => {
+        const response = json as SpendingData;
+        const data = new MonthlySpendingData(response.data, budget);
+        setSpendingData(data);
+      });
     } catch (error) {
-      setLoading(false);
-
-      if (error instanceof Error) {
-        setError(error.message);
-        return;
-      }
-
-      console.error(error);
-      setError(DEFAULT_ERROR);
+      fetchHelper.handleError(error);
     }
   };
 
   useEffect(() => {
-    if (spendingData === null && error === null) {
-      fetchSpendingData();
-    }
+    fetchSpendingData();
   }, []);
 
   return (
     <>
       <Section>
         <SectionHeader>Analyze spending</SectionHeader>
-        <ErrorCard message={error} />
+        <ErrorCard message={errorMessage} />
         {spendingData && (
           <MonthlySpendingTable
             data={spendingData}

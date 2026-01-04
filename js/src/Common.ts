@@ -91,6 +91,7 @@ export class FetchHelper {
       // if callback didn't throw, clear all previous errors;
       this.setErrorMessage(null);
     } catch (error) {
+      this.setLoading && this.setLoading(false);
       this.handleError(error);
     }
   }

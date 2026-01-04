@@ -26,7 +26,7 @@ import {
 } from "./ExpensesSort";
 import { ExpenseView } from "./ExpenseView";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
-import { JSON_HEADERS, DEFAULT_ERROR } from "./Common";
+import { FetchHelper, JSON_HEADERS, DEFAULT_ERROR } from "./Common";
 
 import { ErrorCard, Section } from "./ui/Common";
 
@@ -137,41 +137,29 @@ export function ExpensesList({
 }) {
   const [expenses, setExpenses] = useState<Array<ExpenseView>>([]);
   const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const accounts = useAccountsViewContext();
 
   const fetchExpenses = async () => {
+    const fetchHelper = new FetchHelper(setErrorMessage);
     try {
-      const response = await fetch("/api/expenses/query", {
+      const request = new Request("/api/expenses/query", {
         method: "POST",
         headers: JSON_HEADERS,
         body: JSON.stringify(getExpensesQueryRequest(query)),
       });
 
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
-      if (!response.ok) {
-        setError(json.error ?? DEFAULT_ERROR);
-        return;
-      }
-
-      const sortedExpenses = parseExpensesQueryResponse(
-        json as ExpensesQueryResponse,
-        accounts,
-        sortBy,
-      );
-      setExpenses(sortedExpenses);
-      setError(null);
+      fetchHelper.fetch(request, (json) => {
+        const sortedExpenses = parseExpensesQueryResponse(
+          json as ExpensesQueryResponse,
+          accounts,
+          sortBy,
+        );
+        setExpenses(sortedExpenses);
+      });
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-        return;
-      }
-
-      console.error(error);
-      setError(DEFAULT_ERROR);
+      fetchHelper.handleError(error);
     }
   };
 
@@ -195,7 +183,7 @@ export function ExpensesList({
 
   return (
     <>
-      <ErrorCard message={error} />
+      <ErrorCard message={errorMessage} />
       {query.variant === "account" && (
         <ExpensesButtonsSection
           account={query.account}
