@@ -13,7 +13,8 @@ import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
 import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
-import { InlineGlyphButton } from "./ui/Common";
+import { ErrorCard, InlineGlyphButton } from "./ui/Common";
+import { FetchHelper } from "./Common";
 
 function HeaderItem({
   onClick,
@@ -71,31 +72,30 @@ function App() {
   const setYear = (year: number) => updateSettings({ ...settings, year: year });
 
   // *** Fetch data
+  // not using FetchHelper here because
 
   const [budget, setBudget] = useState<BudgetView | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
   const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
 
-  const fetchBudget = () => {
-    fetch(`/api/budget/${year}`)
-      .then((response) => response.json())
-      .then((result) => {
-        const budget = new BudgetView(result as Budget);
-        setBudget(budget);
-      });
-  };
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchHelper = new FetchHelper(setErrorMessage);
+
+  const fetchBudget = () =>
+    fetchHelper.fetch(new Request(`/api/budget/${year}`), (json) => {
+      const budget = new BudgetView(json as Budget);
+      setBudget(budget);
+    });
 
   useEffect(() => {
     fetchBudget();
   }, [year]);
 
-  const fetchAccounts = () => {
-    fetch("/api/accounts")
-      .then((response) => response.json())
-      .then((result) => {
-        setAccounts(result as Accounts);
-      });
-  };
+  const fetchAccounts = () =>
+    fetchHelper.fetch(new Request("/api/accounts"), (json) =>
+      setAccounts(json as Accounts),
+    );
 
   useEffect(() => {
     if (accounts === null) {
@@ -103,19 +103,28 @@ function App() {
     }
   }, []);
 
-  const fetchSchemas = () => {
-    fetch("/api/schemas")
-      .then((response) => response.json())
-      .then((result) => {
-        setSchemas(result as StatementSchemas);
-      });
-  };
+  const fetchSchemas = () =>
+    fetchHelper.fetch(new Request("/api/schemas"), (json) =>
+      setSchemas(json as StatementSchemas),
+    );
 
   useEffect(() => {
     if (schemas === null) {
       fetchSchemas();
     }
   }, []);
+
+  if (errorMessage !== null) {
+    const message =
+      "Fatal error has occured while fetching base app data. " +
+      "Please check if server is running and reload the page. " +
+      `Error details: ${errorMessage}`;
+    return (
+      <div className="main">
+        <ErrorCard message={message} />
+      </div>
+    );
+  }
 
   if (budget === null || accounts === null || schemas === null) {
     return null;
