@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { AccountView, AccountsView } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
@@ -16,6 +16,7 @@ function AccountSelector({
   selected: AccountView;
   updateSelected: (AccountView) => void;
 }) {
+  const id = useId();
   const onSelectChange = (e: React.SyntheticEvent) => {
     const elem = e.target as HTMLSelectElement;
     const id = Number(elem.value);
@@ -24,13 +25,16 @@ function AccountSelector({
   };
 
   return (
-    <select onChange={onSelectChange} value={selected.id}>
-      {accounts.accounts.map((account, idx) => (
-        <option key={idx} value={account.id}>
-          {account.name}
-        </option>
-      ))}
-    </select>
+    <div className="flexrow">
+      <label htmlFor={id}>Account</label>
+      <select id={id} onChange={onSelectChange} value={selected.id}>
+        {accounts.accounts.map((account, idx) => (
+          <option key={idx} value={account.id}>
+            {account.name}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -101,14 +105,11 @@ export function ExpensesPage({
     <>
       <Section>
         <SectionHeader>Expenses</SectionHeader>
-        <div className="flexrow">
-          Account
-          <AccountSelector
-            accounts={accounts}
-            selected={selectedAccount}
-            updateSelected={setSelectedAccount}
-          />
-        </div>
+        <AccountSelector
+          accounts={accounts}
+          selected={selectedAccount}
+          updateSelected={setSelectedAccount}
+        />
       </Section>
 
       <Section>
