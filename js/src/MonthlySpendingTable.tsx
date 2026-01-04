@@ -104,10 +104,12 @@ function SpendingTableFooterRow({
   year,
   data,
   updateExpensesQuery,
+  yearlyBudget,
 }: {
   year: number;
   data: MonthlySpendingData;
   updateExpensesQuery: (ExpensesQuery) => void;
+  yearlyBudget: number;
 }) {
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
@@ -136,7 +138,7 @@ function SpendingTableFooterRow({
       <SpendingTableCell
         key="__total"
         spend={data.getTotalSpend()}
-        limit={null}
+        limit={yearlyBudget}
       />
     </tr>
   );
@@ -246,7 +248,7 @@ function SpendingTableRow({
       <SpendingTableCell
         key={month}
         spend={spend}
-        limit={obj.amountPerMonth}
+        limit={null}
         onClick={onClick}
       />
     );
@@ -337,6 +339,7 @@ export function MonthlySpendingTable({
           year={year}
           data={data}
           updateExpensesQuery={updateExpensesQuery}
+          yearlyBudget={budget.amountPerYear}
         />
       </tfoot>
     </table>
