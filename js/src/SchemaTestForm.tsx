@@ -5,15 +5,7 @@ import { StatementSchemaFields } from "./types/StatementSchema";
 import { TestSchemaRequest, TestSchemaResponse } from "./types/SchemaTest";
 import { ErrorCard, SectionHeader, StatusCard } from "./ui/Common";
 import { Form, FormButtons, FormFieldWide, FormSubmitButton } from "./ui/Form";
-import { JSON_HEADERS } from "./Common";
-
-function testSchemaRequest(request: TestSchemaRequest) {
-  return fetch("/api/schemas/test", {
-    method: "POST",
-    headers: JSON_HEADERS,
-    body: JSON.stringify(request),
-  });
-}
+import { FetchHelper, JSON_HEADERS } from "./Common";
 
 function TestSchemaResponseCard({
   response,
@@ -47,12 +39,6 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [response, setResponse] = useState<TestSchemaResponse | null>(null);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
-
   const updateRow = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLTextAreaElement;
     setRow(target.value);
@@ -60,31 +46,25 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-
+    const fetchHelper = new FetchHelper(setErrorMessage);
     try {
-      const request: TestSchemaRequest = {
+      const requestBody: TestSchemaRequest = {
         schema: fields,
         row: row,
       } as TestSchemaRequest;
 
-      clearErrorMessage();
+      const request = new Request("/api/schemas/test", {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify(requestBody),
+      });
 
-      testSchemaRequest(request).then((response) => {
-        if (!response.ok) {
-          setErrorMessage("Something went wrong when contacting the server.");
-          return;
-        }
-        response.json().then((json) => {
-          const typedResponse = json as TestSchemaResponse;
-          setResponse(typedResponse);
-        });
+      fetchHelper.fetch(request, (json) => {
+        const typedResponse = json as TestSchemaResponse;
+        setResponse(typedResponse);
       });
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
 
