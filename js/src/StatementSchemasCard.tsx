@@ -21,10 +21,11 @@ import {
   SectionHeader,
 } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
-import { JSON_HEADERS } from "./Common";
+import { FetchHelper, JSON_HEADERS } from "./Common";
+import { Section } from "./ui/Common";
 
-function createStatementSchemaRequest(fields: StatementSchemaFields) {
-  return fetch("/api/schemas", {
+function createStatementSchemaRequest(fields: StatementSchemaFields): Request {
+  return new Request("/api/schemas", {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(fields),
@@ -34,17 +35,17 @@ function createStatementSchemaRequest(fields: StatementSchemaFields) {
 function updateStatementSchemaRequest(
   schema: StatementSchema,
   fields: StatementSchemaFields,
-) {
+): Request {
   const updated = { ...schema, ...fields };
-  return fetch(`/api/schemas/${schema.id}`, {
+  return new Request(`/api/schemas/${schema.id}`, {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });
 }
 
-function deleteStatementSchemaRequest(schema: StatementSchema) {
-  return fetch(`/api/schemas/${schema.id}`, {
+function deleteStatementSchemaRequest(schema: StatementSchema): Request {
+  return new Request(`/api/schemas/${schema.id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
@@ -66,12 +67,6 @@ function StatementSchemaForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fields, setFields] = useState<StatementSchemaFields>(initialFields);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
-
   const setName = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLInputElement;
     setFields({ ...fields, name: target.value });
@@ -86,6 +81,8 @@ function StatementSchemaForm({
     setFields({ ...fields, record_mapping: newRecordMapping });
   };
 
+  const fetchHelper = new FetchHelper(setErrorMessage);
+
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
 
@@ -97,70 +94,32 @@ function StatementSchemaForm({
       if (fields.record_mapping === null) {
         throw new Error("Mapping must be configured for all columns");
       }
-
       const schemaFields: StatementSchemaFields = {
         name: updatedName,
         notes: fields.notes,
         record_mapping: fields.record_mapping,
       } as StatementSchemaFields;
 
-      // if nothing threw by this point, mark any validation errors as cleared
-      clearErrorMessage();
-
       const request =
         schema === null
           ? createStatementSchemaRequest(schemaFields)
           : updateStatementSchemaRequest(schema, schemaFields);
-      request.then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
+      fetchHelper.fetch(request, (json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
 
-  let maybeDeleteButton: React.ReactNode = null;
-  if (schema !== null) {
-    const deleteStatementSchema = () => {
-      deleteStatementSchemaRequest(schema).then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
-    };
-
-    maybeDeleteButton = (
-      <GlyphButton glyph="delete" onClick={deleteStatementSchema} />
-    );
-  }
+  const maybeDeleteButton = schema && (
+    <GlyphButton
+      glyph="delete"
+      onClick={() =>
+        fetchHelper.fetch(deleteStatementSchemaRequest(schema), (json) =>
+          onSuccess(),
+        )
+      }
+    />
+  );
 
   return (
     <>
@@ -223,14 +182,15 @@ export function StatementSchemasCard({
   return (
     <>
       <SectionHeader>Statement Schemas</SectionHeader>
+      <Section>
+        <GlyphButton
+          glyph="add"
+          text="add schema"
+          onClick={() => showEditModal(null)}
+        />
+      </Section>
 
       {rows}
-
-      <GlyphButton
-        glyph="add"
-        text="add schema"
-        onClick={() => showEditModal(null)}
-      />
 
       <ModalCard
         title={activeSchema === null ? "New Schema" : "Edit Schema"}

@@ -14,7 +14,8 @@ import {
   SectionHeader,
 } from "./ui/Common";
 import { Form, FormButtons } from "./ui/Form";
-import { FormHelper, JSON_HEADERS } from "./Common";
+import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
+import { Section } from "./ui/Common";
 
 const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = [
   "Bank",
@@ -23,28 +24,58 @@ const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = [
   "Shop",
 ];
 
-function createAccountRequest(fields: AccountFields) {
-  return fetch("/api/accounts", {
+function createAccountRequest(fields: AccountFields): Request {
+  return new Request("/api/accounts", {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(fields),
   });
 }
 
-function updateAccountRequest(account: Account, fields: AccountFields) {
+function updateAccountRequest(
+  account: Account,
+  fields: AccountFields,
+): Request {
   const updated = { ...account, ...fields };
-  return fetch(`/api/accounts/${account.id}`, {
+  return new Request(`/api/accounts/${account.id}`, {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });
 }
 
-function deleteAccountRequest(account: Account) {
-  return fetch(`/api/accounts/${account.id}`, {
+function deleteAccountRequest(account: Account): Request {
+  return new Request(`/api/accounts/${account.id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
+}
+
+function AccountTypeOptions() {
+  const options = ACCOUNT_TYPE_OPTIONS.map((value, idx) => (
+    <option key={idx} value={value}>
+      {value}
+    </option>
+  ));
+  return <>{options}</>;
+}
+
+function StatementSchemaOptions({
+  schemas,
+}: {
+  schemas: Array<StatementSchema>;
+}) {
+  const options = schemas.map((schema, idx) => (
+    <option key={idx} value={schema.id}>
+      {schema.name}
+    </option>
+  ));
+  return (
+    <>
+      <option value={FormHelper.EMPTY}>-</option>
+      {options}
+    </>
+  );
 }
 
 function AccountForm({
@@ -58,92 +89,41 @@ function AccountForm({
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
+  const fetchHelper = new FetchHelper(setErrorMessage);
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formHelper = new FormHelper(form);
-
     try {
       const accountFields: AccountFields = {
         name: formHelper.getString("name"),
         account_type: formHelper.getString("accountType") as AccountType,
         statement_schema_id: formHelper.getNumberOrNull("importConfig"),
       } as AccountFields;
-      // if nothing threw by this point, mark any validation errors as cleared
-      clearErrorMessage();
 
       const request =
         account === null
           ? createAccountRequest(accountFields)
           : updateAccountRequest(account, accountFields);
-      request.then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
+      fetchHelper.fetch(request, (json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
+
+  const maybeDeleteButton = account && (
+    <GlyphButton
+      glyph="delete"
+      onClick={() =>
+        fetchHelper.fetch(deleteAccountRequest(account), (json) => onSuccess())
+      }
+    />
+  );
 
   const accountName = account?.name;
   const accountType = account?.account_type ?? ACCOUNT_TYPE_OPTIONS[0];
   const importConfig = account?.statement_schema_id ?? FormHelper.EMPTY;
-  const accountTypeOptions = ACCOUNT_TYPE_OPTIONS.map((value, idx) => (
-    <option key={idx} value={value}>
-      {value}
-    </option>
-  ));
-  const schemaOptions = schemas.map((schema, idx) => (
-    <option key={idx} value={schema.id}>
-      {schema.name}
-    </option>
-  ));
-
-  let maybeDeleteButton: React.ReactNode = null;
-  if (account !== null) {
-    const deleteAccount = () => {
-      deleteAccountRequest(account).then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
-    };
-
-    maybeDeleteButton = <GlyphButton glyph="delete" onClick={deleteAccount} />;
-  }
 
   return (
     <>
@@ -154,16 +134,12 @@ function AccountForm({
 
         <label htmlFor="accountType">Account Type</label>
         <select name="accountType" defaultValue={accountType}>
-          {accountTypeOptions}
+          <AccountTypeOptions />
         </select>
 
         <label htmlFor="importConfig">Import Schema</label>
-        <select
-          name="importConfig"
-          defaultValue={importConfig ?? FormHelper.EMPTY}
-        >
-          <option value={FormHelper.EMPTY}>-</option>
-          {schemaOptions}
+        <select name="importConfig" defaultValue={importConfig}>
+          <StatementSchemaOptions schemas={schemas} />
         </select>
 
         <FormButtons>
@@ -217,15 +193,14 @@ export function AccountsCard({
   return (
     <>
       <SectionHeader>Accounts</SectionHeader>
-
+      <Section>
+        <GlyphButton
+          glyph="add"
+          text="add account"
+          onClick={() => showEditModal(null)}
+        />
+      </Section>
       {rows}
-
-      <GlyphButton
-        glyph="add"
-        text="add account"
-        onClick={() => showEditModal(null)}
-      />
-
       <ModalCard
         title={activeAccount === null ? "New Account" : "Edit Account"}
         visible={modalVisible}
