@@ -1,8 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import DatePicker from "react-datepicker";
-
-import "react-datepicker/dist/react-datepicker.css";
 
 import { AccountView } from "./AccountsView";
 import { StatementSchema } from "./types/StatementSchema";
@@ -15,7 +12,14 @@ import {
   Section,
   LoadingBanner,
 } from "./ui/Common";
-import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
+import {
+  Form,
+  FormButtons,
+  FormSubmitButton,
+  FormFieldWide,
+  LabeledInput,
+  LabeledDatePicker,
+} from "./ui/Form";
 import { DEFAULT_ERROR, JSON_HEADERS } from "./Common";
 
 function formatDate(date: Date) {
@@ -48,11 +52,7 @@ function ImportExpensesForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
+  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
 
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -105,8 +105,12 @@ function ImportExpensesForm({
       <ErrorCard message={errorMessage} />
       <SchemaNotes schema={schema} />
       <Form onSubmit={onSubmit}>
-        <label htmlFor="file">Statement to upload (.csv,.txt)</label>
-        <input type="file" id="file" name="file" accept=".csv,.CSV,.txt,.TXT" />
+        <LabeledInput
+          label="Statement to upload (.csv,.txt)"
+          name="file"
+          type="file"
+          accept=".csv,.CSV,.txt,.TXT"
+        />
         <FormButtons>
           <FormSubmitButton text="Upload" />
         </FormButtons>
@@ -127,17 +131,20 @@ function DeleteExpensesForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
+  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
 
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       if (date === null) {
         throw new Error("Date must be selected.");
+      }
+
+      const confirmed = confirm(
+        "Deleting expenses cannot be undone, are you sure?",
+      );
+      if (!confirmed) {
+        return;
       }
 
       const request = {
@@ -180,12 +187,15 @@ function DeleteExpensesForm({
     <Section>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label>Delete expenses newer than selected date [YYYY-MM-DD]</label>
-        <DatePicker
+        <FormFieldWide>
+          Expenses in chosen account <b>newer</b> than selected date will be
+          bulk-deleted. This is irreversible.
+        </FormFieldWide>
+        <LabeledDatePicker
+          label="Date [YYYY-MM-DD]"
           dateFormat="yyyy-MM-dd"
           selected={date}
           onChange={setDate}
-          className="stretch-datepicker"
         />
         <FormButtons>
           <FormSubmitButton text="Delete" />
@@ -212,13 +222,11 @@ export function ImportExpensesButton({
 
   return (
     <>
-      <small>
-        <InlineGlyphButton
-          glyph="upload"
-          text="import expenses"
-          onClick={() => setModalVisible(true)}
-        />
-      </small>
+      <InlineGlyphButton
+        glyph="upload"
+        text="import expenses"
+        onClick={() => setModalVisible(true)}
+      />
       <ModalCard
         title={`Import expenses - ${account.name}`}
         visible={modalVisible}
@@ -246,13 +254,11 @@ export function DeleteExpensesButton({
 
   return (
     <>
-      <small>
-        <InlineGlyphButton
-          glyph="delete"
-          text="delete expenses"
-          onClick={() => setModalVisible(true)}
-        />
-      </small>
+      <InlineGlyphButton
+        glyph="delete"
+        text="delete expenses"
+        onClick={() => setModalVisible(true)}
+      />
       <ModalCard
         title={`Delete expenses - ${account.name}`}
         visible={modalVisible}
@@ -280,13 +286,11 @@ export function AddExpenseButton({
 
   return (
     <>
-      <small>
-        <InlineGlyphButton
-          glyph="add"
-          text="add expense"
-          onClick={() => setModalVisible(true)}
-        />
-      </small>
+      <InlineGlyphButton
+        glyph="add"
+        text="add expense"
+        onClick={() => setModalVisible(true)}
+      />
       <ModalCard
         title={`Add expense for cash account - ${account.name}`}
         visible={modalVisible}
@@ -301,7 +305,7 @@ export function AddExpenseButton({
 type PartialExpenseFields = {
   description: string;
   amount: number;
-  transaction_date: Date | null;
+  transactionDate: Date | null;
 };
 
 function AddExpenseForm({
@@ -314,7 +318,7 @@ function AddExpenseForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [fields, setFields] = useState<PartialExpenseFields>({
-    transaction_date: new Date(),
+    transactionDate: new Date(),
     amount: 0,
     description: "",
   } as PartialExpenseFields);
@@ -324,27 +328,28 @@ function AddExpenseForm({
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
-      if (fields.transaction_date === null) {
+      if (fields.transactionDate === null) {
         throw new Error("Transaction date for new expense cannot be empty!");
       }
       if (fields.amount === 0) {
         throw new Error("Amount for new expense must be non-zero!");
       }
-      if (fields.description === null) {
+      const description = fields.description;
+      if (description === null || description.trim() === "") {
         throw new Error("Description for new expense cannot be empty!");
       }
-      if (fields.description !== fields.description.trim()) {
+      if (description !== description.trim()) {
         throw new Error(
-          "Description field contains disallowed leading/trailing whitespace!",
+          "Description field contains illegal leading/trailing whitespace!",
         );
       }
 
       const request = {
         account_id: account.id,
-        transaction_date: formatDate(fields.transaction_date),
+        transaction_date: formatDate(fields.transactionDate),
         transaction_time: null,
         amount: fields.amount,
-        description: fields.description,
+        description: description,
       } as ExpenseFields;
 
       const response = await fetch(`api/expenses/create`, {
@@ -388,29 +393,24 @@ function AddExpenseForm({
     <Section>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label>Description</label>
-        <input
+        <LabeledInput
+          label="Description"
           type="textarea"
           value={fields.description}
           onChange={setDescription}
         />
-
-        <label>Amount</label>
-        <input
+        <LabeledInput
+          label="Amount"
           type="number"
           step="0.01"
           value={fields.amount}
           onChange={setAmount}
         />
-
-        <label>Transaction date [YYYY-MM-dd]</label>
-        <DatePicker
+        <LabeledDatePicker
+          label="Transaction date [YYYY-MM-dd]"
           dateFormat="yyyy-MM-dd"
-          selected={fields.transaction_date}
-          onChange={(newDate) =>
-            setFields({ ...fields, transaction_date: newDate })
-          }
-          className="stretch-datepicker"
+          selected={fields.transactionDate}
+          onChange={(date) => setFields({ ...fields, transactionDate: date })}
         />
         <FormButtons>
           <FormSubmitButton text="Add" />

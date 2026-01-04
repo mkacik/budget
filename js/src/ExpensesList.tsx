@@ -226,14 +226,14 @@ function ExpensesButtonsSection({
 
   return (
     <Section>
-      <div className="flexrow">
+      <small className="flexrow">
         {isCashAccount ? (
           <AddExpenseButton account={account} onSuccess={onSuccess} />
         ) : (
           <ImportExpensesButton account={account} onSuccess={onSuccess} />
         )}
         <DeleteExpensesButton account={account} onSuccess={onSuccess} />
-      </div>
+      </small>
     </Section>
   );
 }

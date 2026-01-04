@@ -1,4 +1,8 @@
 import React from "react";
+import { useId } from "react";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export function Form({
   onSubmit,
@@ -39,4 +43,40 @@ export function FormSubmitButton({ text }: { text: string }) {
 
 export function FormFieldWide({ children }: { children: React.ReactNode }) {
   return <span className="edit-form-field-wide">{children}</span>;
+}
+
+interface LabeledInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+}
+
+export function LabeledInput({ label, ...rest }: LabeledInputProps) {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} {...rest} />
+    </>
+  );
+}
+
+// cannot simply import because this type is not known at compile time
+interface DatePickerProps {
+  dateFormat: string;
+  selected: Date | null;
+  onChange: (name: Date | null) => void;
+}
+
+interface LabeledDatePickerProps extends DatePickerProps {
+  label: string;
+}
+
+export function LabeledDatePicker({ label, ...rest }: LabeledDatePickerProps) {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <DatePicker id={id} className="stretch-datepicker" {...rest} />
+    </>
+  );
 }
