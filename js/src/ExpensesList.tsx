@@ -26,6 +26,7 @@ import {
 } from "./ExpensesSort";
 import { ExpenseView } from "./ExpenseView";
 import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
+import { ExpensesPivotTable } from "./ExpensesPivotTable";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 
 import { ErrorCard, Section } from "./ui/Common";
@@ -181,10 +182,12 @@ export function ExpensesList({
     }
   };
 
+  const isAccountQuery = query.variant === "account";
+
   return (
     <>
       <ErrorCard message={errorMessage} />
-      {query.variant === "account" && (
+      {isAccountQuery && (
         <ExpensesButtonsSection
           account={query.account}
           onSuccess={fetchExpenses}
@@ -199,6 +202,7 @@ export function ExpensesList({
         updateSortBy={updateSortBy}
         settings={getExpensesTableSettings(query)}
       />
+      {!isAccountQuery && <ExpensesPivotTable expenses={expenses} />}
     </>
   );
 }
