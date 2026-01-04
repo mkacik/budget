@@ -8,8 +8,13 @@ import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
 import { BudgetItemSelect } from "./BudgetItemSelect";
-import { JSON_HEADERS } from "./Common";
-import { Col, SmallInlineGlyph, InlineGlyphButton } from "./ui/Common";
+import { JSON_HEADERS, FetchHelper } from "./Common";
+import {
+  Col,
+  ErrorCard,
+  SmallInlineGlyph,
+  InlineGlyphButton,
+} from "./ui/Common";
 
 function ExpenseNotesGlyph({
   description,
@@ -70,53 +75,37 @@ function ExpenseRow({
   const budgetItemName =
     budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
 
+  const setErrorMessage = (msg: string | null) => msg && alert(msg);
+  const fetchHelper = new FetchHelper(setErrorMessage);
+
   const updateBudgetItemID = (newBudgetItemID: number | null) => {
-    fetch(`/api/expenses/${expense.id}/category`, {
+    const request = new Request(`/api/expenses/${expense.id}/category`, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({ budget_item_id: newBudgetItemID }),
-    }).then((response) => {
-      if (response.ok) {
-        onExpenseCategoryChange();
-      } else {
-        console.log(response);
-      }
     });
+    fetchHelper.fetch(request, (json) => onExpenseCategoryChange());
   };
 
   const updateNotes = (newNotes: string | null) => {
-    fetch(`/api/expenses/${expense.id}/notes`, {
+    const request = new Request(`/api/expenses/${expense.id}/notes`, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({ notes: newNotes }),
-    }).then((response) => {
-      if (response.ok) {
-        onExpenseNotesChange();
-      } else {
-        console.log(response);
-      }
     });
+    fetchHelper.fetch(request, (json) => onExpenseNotesChange());
   };
 
   const deleteExpense = (e: React.SyntheticEvent) => {
     e.stopPropagation();
-
-    const ack = confirm(
-      `Do you really want to delete expense: ${expense.description}?`,
-    );
-    if (ack === false) {
+    if (!confirm(`Do you really want to delete: ${expense.description}?`)) {
       return;
     }
 
-    fetch(`/api/expenses/${expense.id}`, { method: "DELETE" }).then(
-      (response) => {
-        if (response.ok) {
-          onExpenseDelete();
-        } else {
-          console.log(response);
-        }
-      },
-    );
+    const request = new Request(`/api/expenses/${expense.id}`, {
+      method: "DELETE",
+    });
+    fetchHelper.fetch(request, (json) => onExpenseDelete());
   };
 
   const dateTime =
