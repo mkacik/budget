@@ -6,7 +6,13 @@ import { BudgetView, BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
-import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
+import {
+  Form,
+  FormButtons,
+  FormSubmitButton,
+  LabeledInput,
+  LabeledSelect,
+} from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 
 const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
@@ -93,16 +99,13 @@ function BudgetItemUsageForm({
   updateUsage: (BudgetItemUsage) => void;
 }) {
   return (
-    <>
-      <label>Usage</label>
-      <select value={usage} onChange={updateUsage}>
-        <option value={"budget-and-categorization"}>
-          Budget & categorization
-        </option>
-        <option value={"budget-only"}>Budget only</option>
-        <option value={"categorization-only"}>Categorization only</option>
-      </select>
-    </>
+    <LabeledSelect label="Usage" value={usage} onChange={updateUsage}>
+      <option value={"budget-and-categorization"}>
+        Budget & categorization
+      </option>
+      <option value={"budget-only"}>Budget only</option>
+      <option value={"categorization-only"}>Categorization only</option>
+    </LabeledSelect>
   );
 }
 
@@ -222,13 +225,20 @@ export function BudgetItemForm({
     <>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label>Budget Item Name</label>
-        <input type="text" value={fields.name} onChange={setName} />
+        <LabeledInput
+          label="Budget Item Name"
+          type="text"
+          value={fields.name}
+          onChange={setName}
+        />
 
-        <label>Budget Item Category</label>
-        <select value={fields.category_id} onChange={setCategoryID}>
+        <LabeledSelect
+          label="Category"
+          value={fields.category_id}
+          onChange={setCategoryID}
+        >
           <CategoryOptions budget={budget} />
-        </select>
+        </LabeledSelect>
 
         {showUsageSelector && (
           <BudgetItemUsageForm usage={usage} updateUsage={setUsage} />

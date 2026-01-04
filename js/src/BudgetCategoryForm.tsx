@@ -5,7 +5,7 @@ import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
 import { BudgetView } from "./BudgetView";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
-import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
+import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 
 function createBudgetCategoryRequest(fields: BudgetCategoryFields): Request {
@@ -86,11 +86,15 @@ export function BudgetCategoryForm({
     <>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label htmlFor="name">BudgetCategory Name</label>
-        <input type="text" name="name" defaultValue={budgetCategory?.name} />
+        <LabeledInput
+          label="BudgetCategory Name"
+          type="text"
+          name="name"
+          defaultValue={budgetCategory?.name}
+        />
 
-        <label htmlFor="ignored">Ignore in spending analysis</label>
-        <input
+        <LabeledInput
+          label="Ignore in spending analysis"
           type="checkbox"
           name="ignored"
           defaultChecked={budgetCategory?.ignored ?? false}

@@ -2,7 +2,7 @@ import React from "react";
 
 import { BudgetAmount } from "./types/Budget";
 
-import { FormSection } from "./ui/Form";
+import { FormSection, LabeledInput, LabeledSelect } from "./ui/Form";
 
 const WEEKLY: string = "Weekly";
 const MONTHLY: string = "Monthly";
@@ -81,25 +81,30 @@ export function BudgetAmountForm({
     };
 
     maybeXSelector = (
-      <>
-        <label>Year interval</label>
-        <input type="number" value={params.x} onChange={onXChange} />
-      </>
+      <LabeledInput
+        label="Year interval"
+        type="number"
+        value={params.x}
+        onChange={onXChange}
+      />
     );
   }
 
   return (
     <FormSection title="Budget Amount">
-      <label>Frequency</label>
-      <select value={optionName} onChange={onOptionNameChange}>
+      <LabeledSelect
+        label="Frequency"
+        value={optionName}
+        onChange={onOptionNameChange}
+      >
         <option value={WEEKLY}>{WEEKLY}</option>
         <option value={MONTHLY}>{MONTHLY}</option>
         <option value={YEARLY}>{YEARLY}</option>
         <option value={EVERY_X_YEARS}>Every X Years</option>
-      </select>
+      </LabeledSelect>
 
-      <label>Amount</label>
-      <input
+      <LabeledInput
+        label="Amount"
         type="number"
         value={optionParams.amount}
         onChange={onAmountChange}

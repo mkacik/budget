@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Form } from "./ui/Form";
+import { Form, LabeledInput } from "./ui/Form";
 
 export type BudgetPageSettings = {
   showSettings: boolean;
@@ -28,11 +28,8 @@ export function BudgetPageSettingsForm({
         e.preventDefault();
       }}
     >
-      <label>
-        Show categorization-only budget items. Useful for budget creation if
-        table feels cluttered
-      </label>
-      <input
+      <LabeledInput
+        label="Show categorization-only budget items. Useful for budget creation if table feels cluttered"
         onChange={setShowCategorizationOnlyItems}
         type="checkbox"
         name="showCategorizationOnlyItems"
