@@ -13,7 +13,13 @@ import {
   Pill,
   SectionHeader,
 } from "./ui/Common";
-import { Form, FormButtons } from "./ui/Form";
+import {
+  Form,
+  FormButtons,
+  FormSubmitButton,
+  LabeledInput,
+  LabeledSelect,
+} from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 import { Section } from "./ui/Common";
 
@@ -129,26 +135,32 @@ function AccountForm({
     <>
       <ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
-        <label htmlFor="name">Account Name</label>
-        <input type="text" name="name" defaultValue={accountName} />
+        <LabeledInput
+          label="AccountName"
+          type="text"
+          name="name"
+          defaultValue={accountName}
+        />
 
-        <label htmlFor="accountType">Account Type</label>
-        <select name="accountType" defaultValue={accountType}>
+        <LabeledSelect
+          label="Account Type"
+          name="accountType"
+          defaultValue={accountType}
+        >
           <AccountTypeOptions />
-        </select>
+        </LabeledSelect>
 
-        <label htmlFor="importConfig">Import Schema</label>
-        <select name="importConfig" defaultValue={importConfig}>
+        <LabeledSelect
+          label="ImportSchema"
+          name="importConfig"
+          defaultValue={importConfig}
+        >
           <StatementSchemaOptions schemas={schemas} />
-        </select>
+        </LabeledSelect>
 
         <FormButtons>
           {maybeDeleteButton}
-          <input
-            className="button"
-            type="submit"
-            value={account === null ? "Create" : "Update"}
-          />
+          <FormSubmitButton text={account === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
     </>

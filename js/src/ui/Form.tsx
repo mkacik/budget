@@ -60,6 +60,27 @@ export function LabeledInput({ label, ...rest }: LabeledInputProps) {
   );
 }
 
+interface LabeledSelectProps
+  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label: string;
+}
+
+export function LabeledSelect({
+  label,
+  children,
+  ...rest
+}: LabeledSelectProps) {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <select id={id} {...rest}>
+        {children}
+      </select>
+    </>
+  );
+}
+
 // cannot simply import because this type is not known at compile time
 interface DatePickerProps {
   dateFormat: string;
