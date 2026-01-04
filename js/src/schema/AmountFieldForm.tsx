@@ -7,6 +7,7 @@ import {
   FromCreditDebitColumns,
   FromCreditDebitColumnsForm,
 } from "./FromColumn";
+import { LabeledSelect } from "../ui/Form";
 
 const FROM_COLUMN: string = "FromColumn";
 const FROM_CREDIT_DEBIT_COLUMNS: string = "FromCreditDebitColumns";
@@ -87,13 +88,16 @@ export function AmountFieldForm({
 
   return (
     <>
-      <label>Mapping function</label>
-      <select value={variant} onChange={onVariantChange}>
+      <LabeledSelect
+        label="Mapping function"
+        value={variant}
+        onChange={onVariantChange}
+      >
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
         <option value={FROM_CREDIT_DEBIT_COLUMNS}>
           {FROM_CREDIT_DEBIT_COLUMNS}
         </option>
-      </select>
+      </LabeledSelect>
       {paramsSelector}
     </>
   );

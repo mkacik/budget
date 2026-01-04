@@ -60,6 +60,21 @@ export function LabeledInput({ label, ...rest }: LabeledInputProps) {
   );
 }
 
+interface LabeledTextAreaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label: string;
+}
+
+export function LabeledTextArea({ label, ...rest }: LabeledTextAreaProps) {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <textarea id={id} {...rest} />
+    </>
+  );
+}
+
 interface LabeledSelectProps
   extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;

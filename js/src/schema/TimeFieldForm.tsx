@@ -2,6 +2,7 @@ import React from "react";
 
 import { TimeField } from "../types/RecordMapping";
 import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
+import { LabeledSelect } from "../ui/Form";
 
 const EMPTY = "Empty";
 const FROM_COLUMN = "FromColumn";
@@ -70,11 +71,14 @@ export function TimeFieldForm({
 
   return (
     <>
-      <label>Mapping function</label>
-      <select value={variant} onChange={onVariantChange}>
+      <LabeledSelect
+        label="Mapping function"
+        value={variant}
+        onChange={onVariantChange}
+      >
         <option value={EMPTY}>{EMPTY}</option>
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
-      </select>
+      </LabeledSelect>
       {paramsSelector}
     </>
   );

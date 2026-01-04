@@ -1,6 +1,7 @@
 import React from "react";
 
 import { TZ } from "../types/RecordMapping";
+import { LabeledInput, LabeledSelect } from "../ui/Form";
 
 const EMPTY = "";
 
@@ -20,10 +21,12 @@ export function FromColumnForm({
   };
 
   return (
-    <>
-      <label>Column</label>
-      <input type="number" value={params.col} onChange={updateCol} />
-    </>
+    <LabeledInput
+      label="Column"
+      type="number"
+      value={params.col}
+      onChange={updateCol}
+    />
   );
 }
 
@@ -52,14 +55,17 @@ export function FromColumnWithTZForm({
 
   return (
     <>
-      <label>Column</label>
-      <input type="number" value={params.col} onChange={updateCol} />
+      <LabeledInput
+        label="Column"
+        type="number"
+        value={params.col}
+        onChange={updateCol}
+      />
 
-      <label>Timezone</label>
-      <select value={params.tz} onChange={updateTz}>
+      <LabeledSelect label="Timezone" value={params.tz} onChange={updateTz}>
         <option value="Local">Local</option>
         <option value="UTC">UTC</option>
-      </select>
+      </LabeledSelect>
     </>
   );
 }
@@ -101,14 +107,22 @@ export function FromColumnWithInvertForm({
 
   return (
     <>
-      <label>Column</label>
-      <input type="number" value={params.col} onChange={updateCol} />
+      <LabeledInput
+        label="Column"
+        type="number"
+        value={params.col}
+        onChange={updateCol}
+      />
 
-      <label>Flip sign</label>
-      <input type="checkbox" checked={params.invert} onChange={updateInvert} />
+      <LabeledInput
+        label="Flip sign"
+        type="checkbox"
+        checked={params.invert}
+        onChange={updateInvert}
+      />
 
-      <label>Skip if field contains</label>
-      <input
+      <LabeledInput
+        label="Skip if field contains"
         type="input"
         value={params.skip_pattern ?? EMPTY}
         onChange={updateSkipPattern}
@@ -161,21 +175,29 @@ export function FromCreditDebitColumnsForm({
 
   return (
     <>
-      <label>Column</label>
-      <input type="number" value={params.first} onChange={updateFirst} />
+      <LabeledInput
+        label="Column"
+        type="number"
+        value={params.first}
+        onChange={updateFirst}
+      />
 
-      <label>Flip sign</label>
-      <input
+      <LabeledInput
+        label="Flip sign"
         type="checkbox"
         checked={params.invert_first}
         onChange={updateInvertFirst}
       />
 
-      <label>Column</label>
-      <input type="number" value={params.second} onChange={updateSecond} />
+      <LabeledInput
+        label="Column"
+        type="number"
+        value={params.second}
+        onChange={updateSecond}
+      />
 
-      <label>Flip sign</label>
-      <input
+      <LabeledInput
+        label="Flip sign"
         type="checkbox"
         checked={params.invert_second}
         onChange={updateInvertSecond}

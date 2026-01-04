@@ -2,6 +2,7 @@ import React from "react";
 
 import { TextField } from "../types/RecordMapping";
 import { FromColumn, FromColumnForm } from "./FromColumn";
+import { LabeledSelect } from "../ui/Form";
 
 const FROM_COLUMN = "FromColumn";
 
@@ -61,10 +62,13 @@ export function TextFieldForm({
 
   return (
     <>
-      <label>Mapping function</label>
-      <select value={variant} onChange={onVariantChange}>
+      <LabeledSelect
+        label="Mapping function"
+        value={variant}
+        onChange={onVariantChange}
+      >
         <option value={FROM_COLUMN}>{FROM_COLUMN}</option>
-      </select>
+      </LabeledSelect>
       {paramsSelector}
     </>
   );

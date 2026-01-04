@@ -20,7 +20,13 @@ import {
   ModalCard,
   SectionHeader,
 } from "./ui/Common";
-import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
+import {
+  Form,
+  FormButtons,
+  FormSubmitButton,
+  LabeledInput,
+  LabeledTextArea,
+} from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 import { Section } from "./ui/Common";
 
@@ -126,11 +132,18 @@ function StatementSchemaForm({
       <ErrorCard message={errorMessage} />
 
       <Form onSubmit={onSubmit}>
-        <label>Statement Schema Name</label>
-        <input type="text" value={fields.name} onChange={setName} />
+        <LabeledInput
+          label="Statement Schema Name"
+          type="text"
+          value={fields.name}
+          onChange={setName}
+        />
 
-        <label>Notes/Instructions</label>
-        <textarea value={fields.notes} onChange={setNotes} />
+        <LabeledTextArea
+          label="Notes/Instructions"
+          value={fields.notes}
+          onChange={setNotes}
+        />
 
         <RecordMappingForm
           recordMapping={fields.record_mapping}
