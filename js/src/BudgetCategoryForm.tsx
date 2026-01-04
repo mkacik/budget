@@ -6,10 +6,10 @@ import { BudgetView } from "./BudgetView";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
-import { FormHelper, JSON_HEADERS } from "./Common";
+import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 
-function createBudgetCategoryRequest(fields: BudgetCategoryFields) {
-  return fetch("/api/budget_categories", {
+function createBudgetCategoryRequest(fields: BudgetCategoryFields): Request {
+  return new Request("/api/budget_categories", {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(fields),
@@ -19,17 +19,17 @@ function createBudgetCategoryRequest(fields: BudgetCategoryFields) {
 function updateBudgetCategoryRequest(
   budgetCategory: BudgetCategory,
   fields: BudgetCategoryFields,
-) {
+): Request {
   const updated = { ...budgetCategory, ...fields };
-  return fetch(`/api/budget_categories/${budgetCategory.id}`, {
+  return new Request(`/api/budget_categories/${budgetCategory.id}`, {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });
 }
 
-function deleteBudgetCategoryRequest(budgetCategory: BudgetCategory) {
-  return fetch(`/api/budget_categories/${budgetCategory.id}`, {
+function deleteBudgetCategoryRequest(budgetCategory: BudgetCategory): Request {
+  return new Request(`/api/budget_categories/${budgetCategory.id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
@@ -46,80 +46,41 @@ export function BudgetCategoryForm({
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
+  const fetchHelper = new FetchHelper(setErrorMessage);
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formHelper = new FormHelper(form);
-
     try {
+      const form = e.target as HTMLFormElement;
+      const formHelper = new FormHelper(form);
+
       const budgetCategoryFields: BudgetCategoryFields = {
         name: formHelper.getString("name"),
         ignored: formHelper.getBool("ignored"),
         year: budget.year,
       } as BudgetCategoryFields;
-      // if nothing threw by this point, mark any validation errors as cleared
-      clearErrorMessage();
 
       const request =
         budgetCategory === null
           ? createBudgetCategoryRequest(budgetCategoryFields)
           : updateBudgetCategoryRequest(budgetCategory, budgetCategoryFields);
-      request.then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
 
-  let maybeDeleteButton: React.ReactNode = null;
-  if (budgetCategory !== null) {
-    const deleteBudgetCategory = () => {
-      deleteBudgetCategoryRequest(budgetCategory).then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
-    };
-
-    maybeDeleteButton = (
-      <GlyphButton glyph="delete" onClick={deleteBudgetCategory} />
-    );
-  }
+  const maybeDeleteButton = budgetCategory && (
+    <GlyphButton
+      glyph="delete"
+      onClick={() =>
+        fetchHelper.fetch(
+          deleteBudgetCategoryRequest(budgetCategory),
+          (_json) => onSuccess(),
+        )
+      }
+    />
+  );
 
   return (
     <>

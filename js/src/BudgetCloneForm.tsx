@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { BudgetCloneRequest } from "./types/Budget";
-import { FormHelper, JSON_HEADERS } from "./Common";
+import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 import { ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
 
@@ -17,46 +17,31 @@ export function BudgetCloneForm({
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formHelper = new FormHelper(form);
+    const fetchHelper = new FetchHelper(setErrorMessage);
 
     try {
+      const form = e.target as HTMLFormElement;
+      const formHelper = new FormHelper(form);
+
       const toYear = formHelper.getNumber("toYear");
       if (fromYear === toYear) {
         throw new Error("Target year must be different than source year!");
       }
 
-      const request = {
+      const requestBody = {
         from_year: fromYear,
         to_year: toYear,
       } as BudgetCloneRequest;
 
-      fetch("/api/budget/clone", {
+      const request = new Request("/api/budget/clone", {
         method: "POST",
         headers: JSON_HEADERS,
-        body: JSON.stringify(request),
-      }).then((response) => {
-        if (response.ok) {
-          onSuccess(toYear);
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
+        body: JSON.stringify(requestBody),
       });
+
+      fetchHelper.fetch(request, (_json) => onSuccess(toYear));
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
 

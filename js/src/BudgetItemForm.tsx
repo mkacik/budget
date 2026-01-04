@@ -7,12 +7,12 @@ import { BudgetAmountForm } from "./BudgetAmountForm";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton } from "./ui/Form";
-import { JSON_HEADERS } from "./Common";
+import { FetchHelper, JSON_HEADERS } from "./Common";
 
 const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
 
-function createBudgetItemRequest(fields: BudgetItemFields) {
-  return fetch("/api/budget_items", {
+function createBudgetItemRequest(fields: BudgetItemFields): Request {
+  return new Request("/api/budget_items", {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(fields),
@@ -22,17 +22,17 @@ function createBudgetItemRequest(fields: BudgetItemFields) {
 function updateBudgetItemRequest(
   budgetItem: BudgetItem,
   fields: BudgetItemFields,
-) {
+): Request {
   const updated = { ...budgetItem, ...fields };
-  return fetch(`/api/budget_items/${budgetItem.id}`, {
+  return new Request(`/api/budget_items/${budgetItem.id}`, {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });
 }
 
-function deleteBudgetItemRequest(budgetItem: BudgetItem) {
-  return fetch(`/api/budget_items/${budgetItem.id}`, {
+function deleteBudgetItemRequest(budgetItem: BudgetItem): Request {
+  return new Request(`/api/budget_items/${budgetItem.id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
@@ -128,12 +128,6 @@ export function BudgetItemForm({
   const categoryIgnored = isCategoryIgnored(fields.category_id, budget);
   const usage = getBudgetItemUsage(fields);
 
-  const clearErrorMessage = () => {
-    if (errorMessage !== null) {
-      setErrorMessage(null);
-    }
-  };
-
   const setName = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLInputElement;
     const newName = target.value;
@@ -178,6 +172,8 @@ export function BudgetItemForm({
     }
   };
 
+  const fetchHelper = new FetchHelper(setErrorMessage);
+
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
 
@@ -197,63 +193,27 @@ export function BudgetItemForm({
         budget_only: fields.budget_only,
       } as BudgetItemFields;
 
-      // if nothing threw by this point, mark any validation errors as cleared
-      clearErrorMessage();
-
       const request =
         budgetItem === null
           ? createBudgetItemRequest(updatedFields)
           : updateBudgetItemRequest(budgetItem, updatedFields);
-      request.then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
+
+      fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        console.log(error);
-      }
+      fetchHelper.handleError(error);
     }
   };
 
-  let maybeDeleteButton: React.ReactNode = null;
-  if (budgetItem !== null) {
-    const deleteBudgetItem = () => {
-      deleteBudgetItemRequest(budgetItem).then((response) => {
-        if (response.ok) {
-          onSuccess();
-        } else {
-          response
-            .json()
-            .then((json) => {
-              const message = json.error ?? "Something went wrong!";
-              setErrorMessage(message);
-            })
-            .catch((error) => {
-              console.log(response, error);
-              setErrorMessage("Something went wrong.");
-            });
-        }
-      });
-    };
-
-    maybeDeleteButton = (
-      <GlyphButton glyph="delete" onClick={deleteBudgetItem} />
-    );
-  }
+  const maybeDeleteButton = budgetItem && (
+    <GlyphButton
+      glyph="delete"
+      onClick={() =>
+        fetchHelper.fetch(deleteBudgetItemRequest(budgetItem), (_json) =>
+          onSuccess(),
+        )
+      }
+    />
+  );
 
   const showUsageSelector = !categoryIgnored;
   const showAmountSelector = !(categoryIgnored || fields.amount === null);
