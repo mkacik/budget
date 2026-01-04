@@ -20,7 +20,7 @@ import {
   LabeledInput,
   LabeledDatePicker,
 } from "./ui/Form";
-import { DEFAULT_ERROR, JSON_HEADERS } from "./Common";
+import { FetchHelper, DEFAULT_ERROR, JSON_HEADERS } from "./Common";
 
 function formatDate(date: Date) {
   return date.toJSON().substr(0, 10);
@@ -52,10 +52,10 @@ function ImportExpensesForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const clearErrorMessage = () => errorMessage && setErrorMessage(null);
-
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
+
     try {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
@@ -64,32 +64,16 @@ function ImportExpensesForm({
         throw new Error("File must be selected.");
       }
 
-      setLoading(true);
-      const response = await fetch(`api/accounts/${account.id}/expenses`, {
+      const request = new Request(`api/accounts/${account.id}/expenses`, {
         method: "POST",
         body: formData,
       });
-      setLoading(false);
-
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
-      if (!response.ok) {
-        setErrorMessage(json.error ?? DEFAULT_ERROR);
-        return;
-      }
-
-      form.reset();
-      clearErrorMessage();
-      onSuccess();
+      await fetchHelper.fetch(request, (json) => {
+        form.reset();
+        onSuccess();
+      });
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-        return;
-      }
-
-      console.error(error);
-      setErrorMessage(DEFAULT_ERROR);
+      fetchHelper.handleError(error);
     }
   };
 
@@ -135,51 +119,28 @@ function DeleteExpensesForm({
 
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
+
     try {
       if (date === null) {
         throw new Error("Date must be selected.");
       }
 
-      const confirmed = confirm(
-        "Deleting expenses cannot be undone, are you sure?",
-      );
-      if (!confirmed) {
+      if (!confirm("Deleting expenses cannot be undone, are you sure?")) {
         return;
       }
 
-      const request = {
-        newer_than_date: formatDate(date),
-      };
-
-      setLoading(true);
-      const response = await fetch(
+      const request = new Request(
         `api/accounts/${account.id}/expenses/delete`,
         {
           method: "POST",
           headers: JSON_HEADERS,
-          body: JSON.stringify(request),
+          body: JSON.stringify({ newer_than_date: formatDate(date) }),
         },
       );
-      setLoading(false);
-
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
-      if (!response.ok) {
-        setErrorMessage(json.error ?? DEFAULT_ERROR);
-        return;
-      }
-
-      clearErrorMessage();
-      onSuccess();
+      fetchHelper.fetch(request, (json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-        return;
-      }
-
-      console.error(error);
-      setErrorMessage(DEFAULT_ERROR);
+      fetchHelper.handleError(error);
     }
   };
 
@@ -327,6 +288,7 @@ function AddExpenseForm({
 
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    const fetchHelper = new FetchHelper(setErrorMessage);
     try {
       if (fields.transactionDate === null) {
         throw new Error("Transaction date for new expense cannot be empty!");
@@ -344,38 +306,21 @@ function AddExpenseForm({
         );
       }
 
-      const request = {
+      const requestBody = {
         account_id: account.id,
         transaction_date: formatDate(fields.transactionDate),
         transaction_time: null,
         amount: fields.amount,
         description: description,
       } as ExpenseFields;
-
-      const response = await fetch(`api/expenses/create`, {
+      const request = new Request(`api/expenses/create`, {
         method: "POST",
         headers: JSON_HEADERS,
-        body: JSON.stringify(request),
+        body: JSON.stringify(requestBody),
       });
-
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
-      if (!response.ok) {
-        setErrorMessage(json.error ?? DEFAULT_ERROR);
-        return;
-      }
-
-      clearErrorMessage();
-      onSuccess();
+      fetchHelper.fetch(request, (json) => onSuccess());
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-        return;
-      }
-
-      console.error(error);
-      setErrorMessage(DEFAULT_ERROR);
+      fetchHelper.handleError(error);
     }
   };
 
