@@ -8,8 +8,11 @@ import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 
-function createBudgetCategoryRequest(fields: BudgetCategoryFields): Request {
-  return new Request("/api/budget_categories", {
+function createBudgetCategoryRequest(
+  year: number,
+  fields: BudgetCategoryFields,
+): Request {
+  return new Request(`/api/budget_categories/${year}`, {
     method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(fields),
@@ -17,19 +20,18 @@ function createBudgetCategoryRequest(fields: BudgetCategoryFields): Request {
 }
 
 function updateBudgetCategoryRequest(
-  budgetCategory: BudgetCategory,
+  id: number,
   fields: BudgetCategoryFields,
 ): Request {
-  const updated = { ...budgetCategory, ...fields };
-  return new Request(`/api/budget_categories/${budgetCategory.id}`, {
-    method: "POST",
+  return new Request(`/api/budget_categories/${id}`, {
+    method: "PUT",
     headers: JSON_HEADERS,
-    body: JSON.stringify(updated),
+    body: JSON.stringify(fields),
   });
 }
 
-function deleteBudgetCategoryRequest(budgetCategory: BudgetCategory): Request {
-  return new Request(`/api/budget_categories/${budgetCategory.id}`, {
+function deleteBudgetCategoryRequest(id: number): Request {
+  return new Request(`/api/budget_categories/${id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
@@ -57,13 +59,15 @@ export function BudgetCategoryForm({
       const budgetCategoryFields: BudgetCategoryFields = {
         name: formHelper.getString("name"),
         ignored: formHelper.getBool("ignored"),
-        year: budget.year,
       } as BudgetCategoryFields;
 
       const request =
         budgetCategory === null
-          ? createBudgetCategoryRequest(budgetCategoryFields)
-          : updateBudgetCategoryRequest(budgetCategory, budgetCategoryFields);
+          ? createBudgetCategoryRequest(budget.year, budgetCategoryFields)
+          : updateBudgetCategoryRequest(
+              budgetCategory.id,
+              budgetCategoryFields,
+            );
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
@@ -75,7 +79,7 @@ export function BudgetCategoryForm({
       glyph="delete"
       onClick={() =>
         fetchHelper.fetch(
-          deleteBudgetCategoryRequest(budgetCategory),
+          deleteBudgetCategoryRequest(budgetCategory.id),
           (_json) => onSuccess(),
         )
       }

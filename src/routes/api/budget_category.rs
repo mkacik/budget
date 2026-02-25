@@ -1,71 +1,62 @@
 use rocket::serde::json::Json;
-use rocket::{delete, post, State};
+use rocket::{delete, post, put, State};
 
-use crate::budget::{BudgetCategory, BudgetCategoryFields, BudgetItem};
+use crate::budget::{BudgetCategory, BudgetCategoryFields};
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::ApiResponse;
 
-#[post("/budget_categories", format = "json", data = "<request>")]
-pub async fn add_budget_category(
+#[post("/budget_categories/<year>", format = "json", data = "<request>")]
+pub async fn create_budget_category(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
+    year: i32,
     request: Json<BudgetCategoryFields>,
 ) -> ApiResponse {
     let fields = request.into_inner();
     log_entry.set_content(&fields);
 
-    match BudgetCategory::create(&db, fields).await {
+    match BudgetCategory::create(&db, year, fields).await {
         Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Err(e) => ApiResponse::from_error(e),
     }
 }
 
-#[post(
-    "/budget_categories/<budget_category_id>",
-    format = "json",
-    data = "<request>"
-)]
+#[put("/budget_categories/<id>", format = "json", data = "<request>")]
 pub async fn update_budget_category(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    budget_category_id: ID,
-    request: Json<BudgetCategory>,
+    id: ID,
+    request: Json<BudgetCategoryFields>,
 ) -> ApiResponse {
-    let budget_category = request.into_inner();
-    log_entry.set_content(&budget_category);
+    let fields = request.into_inner();
+    log_entry.set_content(&fields);
 
-    if budget_category_id != budget_category.id {
-        return ApiResponse::BadRequest {
-            message: String::from("IDs for update don't match"),
-        };
-    }
-
-    match budget_category.update(&db).await {
+    match BudgetCategory::update(&db, id, fields).await {
         Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Err(e) => ApiResponse::from_error(e),
     }
 }
 
-#[delete("/budget_categories/<budget_category_id>")]
+#[delete("/budget_categories/<id>")]
 pub async fn delete_budget_category(
     db: &State<Database>,
     _log_entry: &WriteLogEntry,
-    budget_category_id: ID,
+    id: ID,
 ) -> ApiResponse {
-    let delete_blocked = match BudgetItem::any_has_budget_category_id(db, budget_category_id).await
-    {
-        Ok(value) => value,
-        Err(_) => return ApiResponse::ServerError,
+    match BudgetCategory::has_items(db, id).await {
+        Ok(true) => {
+            let message = "Can't delete category that has items attached.";
+            return ApiResponse::BadRequest {
+                message: message.to_string(),
+            };
+        }
+        Ok(false) => (),
+        Err(e) => return ApiResponse::from_error(e),
     };
-    if delete_blocked {
-        return ApiResponse::BadRequest {
-            message: String::from("Can't delete budget category that has items attached."),
-        };
-    }
 
-    match BudgetCategory::delete_by_id(db, budget_category_id).await {
+    match BudgetCategory::delete(db, id).await {
         Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Err(e) => ApiResponse::from_error(e),
     }
 }

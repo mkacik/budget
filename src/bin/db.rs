@@ -173,30 +173,30 @@ async fn print_accounts(db: &Database) -> anyhow::Result<()> {
 async fn add_budget(db: &Database) -> anyhow::Result<()> {
     let car_id = BudgetCategory::create(
         &db,
+        2025,
         BudgetCategoryFields {
             name: String::from("Car"),
             ignored: false,
-            year: 2025,
         },
     )
     .await?;
 
     let shopping_id = BudgetCategory::create(
         &db,
+        2025,
         BudgetCategoryFields {
             name: String::from("Shopping"),
             ignored: false,
-            year: 2025,
         },
     )
     .await?;
 
     let ignored_id = BudgetCategory::create(
         &db,
+        2025,
         BudgetCategoryFields {
             name: String::from("Ignored"),
             ignored: true,
-            year: 2025,
         },
     )
     .await?;

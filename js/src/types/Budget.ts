@@ -4,9 +4,9 @@ export type Budget = { year: number, categories: Array<BudgetCategory>, items: A
 
 export type BudgetAmount = { "Weekly": { amount: number, } } | { "Monthly": { amount: number, } } | { "Yearly": { amount: number, } } | { "EveryXYears": { x: number, amount: number, } };
 
-export type BudgetCategory = { id: number, name: string, ignored: boolean, year: number, };
+export type BudgetCategory = { id: number, year: number, name: string, ignored: boolean, };
 
-export type BudgetCategoryFields = { name: string, ignored: boolean, year: number, };
+export type BudgetCategoryFields = { name: string, ignored: boolean, };
 
 export type BudgetCloneRequest = { from_year: number, to_year: number, };
 

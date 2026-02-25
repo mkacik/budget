@@ -65,6 +65,12 @@ impl ApiResponse {
             },
         }
     }
+
+    pub fn from_error(error: anyhow::Error) -> ApiResponse {
+        ApiResponse::ServerErrorWithMessage {
+            message: error.to_string(),
+        }
+    }
 }
 
 fn error_from_str(error_message: &str) -> String {
