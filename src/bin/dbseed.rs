@@ -18,6 +18,8 @@ struct Args {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Seed the database with dummy data; use after creating database and applying all
+    /// schema changes from delta.{}.sql files
     Seed,
 }
 
