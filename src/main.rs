@@ -3,6 +3,8 @@ extern crate rocket;
 use rocket::fs::{relative, FileServer};
 use rocket::{Error as RocketError, Ignite, Rocket};
 
+use clap::{Parser, Subcommand};
+
 mod credentials;
 mod crypto;
 mod database;
@@ -10,12 +12,33 @@ mod datetime;
 mod error;
 mod guards;
 mod import;
+mod passwords;
 mod routes;
 mod schema;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
+use crate::passwords::Command as PasswordsCommand;
 use crate::routes::fairings::{GateKeeper, RouteMatcher};
+
+#[derive(Parser)]
+#[command(about)]
+struct Args {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Manage users and passwords
+    Passwords {
+        #[command(subcommand)]
+        command: PasswordsCommand,
+    },
+
+    /// Starts the server
+    Server,
+}
 
 async fn run() -> Result<Rocket<Ignite>, RocketError> {
     let db = Database::init().await;
@@ -76,17 +99,20 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
 }
 
 #[rocket::main]
-async fn main() {
+async fn main() -> () {
     if init_crypto().is_err() {
         println!("Error initializing crypto, aborting");
         return;
     }
 
-    match run().await {
-        Ok(_) => {}
-        Err(e) => {
-            println!("{:?}", e);
-            return;
+    let args = Args::parse();
+    match args.command {
+        Command::Passwords { command } => {
+            let database = Database::init().await;
+            passwords::manage_passwords(database, command).await;
         }
-    }
+        Command::Server => {
+            let _ = run().await;
+        }
+    };
 }
