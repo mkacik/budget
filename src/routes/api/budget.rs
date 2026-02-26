@@ -14,7 +14,9 @@ pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
 
     match serialize_result(result) {
         Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
+        Err(e) => ApiResponse::ServerErrorWithMessage {
+            message: format!("{}", e),
+        },
     }
 }
 

@@ -39,6 +39,9 @@ pub struct BudgetItemFields {
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetItem {
     pub id: ID,
+    pub year: i32,            // computed, inherited from Category
+    pub display_name: String, // computed, {category_name} :: {name}
+
     #[serde(flatten)]
     #[sqlx(flatten)]
     #[ts(flatten)]
@@ -148,7 +151,29 @@ impl BudgetItem {
         Ok(id)
     }
 
-    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+    pub async fn update(db: &Database, id: ID, fields: BudgetItemFields) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE budget_items SET
+                category_id = ?1,
+                name = ?2,
+                amount = ?3,
+                budget_only = ?4
+            WHERE id = ?5",
+            fields.category_id,
+            fields.name,
+            fields.amount,
+            fields.budget_only,
+            id,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!("DELETE FROM budget_items WHERE id = ?1", id,)
             .execute(&mut *conn)
@@ -160,10 +185,8 @@ impl BudgetItem {
     pub async fn fetch_by_year(db: &Database, year: i32) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, BudgetItem>(
-            "SELECT budget_items.*
-            FROM budget_items
-            JOIN budget_categories ON (budget_items.category_id = budget_categories.id)
-            WHERE budget_categories.year = ?1
+            "SELECT * FROM view_budget_items
+            WHERE year = ?1
             ORDER BY category_id, name",
         )
         .bind(year)
@@ -175,37 +198,28 @@ impl BudgetItem {
 
     pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<BudgetItem> {
         let mut conn = db.acquire_db_conn().await?;
-        let result = sqlx::query_as::<_, BudgetItem>(
-            "SELECT id, category_id, name, amount, budget_only
-             FROM budget_items WHERE id = ?1",
-        )
-        .bind(id)
-        .fetch_one(&mut *conn)
-        .await?;
+        let result =
+            sqlx::query_as::<_, BudgetItem>("SELECT * FROM view_budget_items WHERE id = ?1")
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?;
 
         Ok(result)
     }
 
-    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
+    pub async fn has_expenses(db: &Database, budget_item_id: ID) -> anyhow::Result<bool> {
         let mut conn = db.acquire_db_conn().await?;
-
-        sqlx::query!(
-            "UPDATE budget_items SET
-                category_id = ?2,
-                name = ?3,
-                amount = ?4,
-                budget_only = ?5
-            WHERE id = ?1",
-            self.id,
-            self.fields.category_id,
-            self.fields.name,
-            self.fields.amount,
-            self.fields.budget_only
+        let result = sqlx::query_scalar!(
+            "SELECT 1 FROM expenses WHERE budget_item_id = ?1 LIMIT 1",
+            budget_item_id,
         )
-        .execute(&mut *conn)
+        .fetch_optional(&mut *conn)
         .await?;
 
-        Ok(())
+        match result {
+            Some(_) => Ok(true),
+            None => Ok(false),
+        }
     }
 }
 

@@ -58,7 +58,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::budget_category::create_budget_category,
                 routes::api::budget_category::update_budget_category,
                 routes::api::budget_category::delete_budget_category,
-                routes::api::budget_item::add_budget_item,
+                routes::api::budget_item::create_budget_item,
                 routes::api::budget_item::update_budget_item,
                 routes::api::budget_item::delete_budget_item,
                 routes::api::expense::import_expenses,

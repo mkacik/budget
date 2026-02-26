@@ -26,19 +26,18 @@ function createBudgetItemRequest(fields: BudgetItemFields): Request {
 }
 
 function updateBudgetItemRequest(
-  budgetItem: BudgetItem,
+  id: number,
   fields: BudgetItemFields,
 ): Request {
-  const updated = { ...budgetItem, ...fields };
-  return new Request(`/api/budget_items/${budgetItem.id}`, {
-    method: "POST",
+  return new Request(`/api/budget_items/${id}`, {
+    method: "PUT",
     headers: JSON_HEADERS,
-    body: JSON.stringify(updated),
+    body: JSON.stringify(fields),
   });
 }
 
-function deleteBudgetItemRequest(budgetItem: BudgetItem): Request {
-  return new Request(`/api/budget_items/${budgetItem.id}`, {
+function deleteBudgetItemRequest(id: number): Request {
+  return new Request(`/api/budget_items/${id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
@@ -199,7 +198,7 @@ export function BudgetItemForm({
       const request =
         budgetItem === null
           ? createBudgetItemRequest(updatedFields)
-          : updateBudgetItemRequest(budgetItem, updatedFields);
+          : updateBudgetItemRequest(budgetItem.id, updatedFields);
 
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
@@ -211,7 +210,7 @@ export function BudgetItemForm({
     <GlyphButton
       glyph="delete"
       onClick={() =>
-        fetchHelper.fetch(deleteBudgetItemRequest(budgetItem), (_json) =>
+        fetchHelper.fetch(deleteBudgetItemRequest(budgetItem.id), (_json) =>
           onSuccess(),
         )
       }
