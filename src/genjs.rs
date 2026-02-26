@@ -3,16 +3,16 @@ use std::fs;
 use std::io;
 use ts_rs::{ExportError, TS};
 
-use budget::routes::api::budget::BudgetCloneRequest;
-use budget::routes::api::expense::ExpensesQueryRequest;
-use budget::schema::account::{AccountFields, Accounts};
-use budget::schema::budget::Budget;
-use budget::schema::budget_category::BudgetCategoryFields;
-use budget::schema::budget_item::BudgetItemFields;
-use budget::schema::expense::Expenses;
-use budget::schema::spending_data::SpendingData;
-use budget::schema::statement_schema::{StatementSchemaFields, StatementSchemas};
-use budget::schema::statement_schema_test::{TestSchemaRequest, TestSchemaResponse};
+use crate::routes::api::budget::BudgetCloneRequest;
+use crate::routes::api::expense::ExpensesQueryRequest;
+use crate::schema::account::{AccountFields, Accounts};
+use crate::schema::budget::Budget;
+use crate::schema::budget_category::BudgetCategoryFields;
+use crate::schema::budget_item::BudgetItemFields;
+use crate::schema::expense::Expenses;
+use crate::schema::spending_data::SpendingData;
+use crate::schema::statement_schema::{StatementSchemaFields, StatementSchemas};
+use crate::schema::statement_schema_test::{TestSchemaRequest, TestSchemaResponse};
 
 fn export() -> Result<(), ExportError> {
     // exports type with all dependencies, see https://docs.rs/ts-rs/latest/src/ts_rs/lib.rs.html
@@ -52,7 +52,7 @@ fn prepare(export_dir: &str) -> io::Result<()> {
     Ok(())
 }
 
-fn main() {
+pub fn export_types() {
     let export_dir = match env::var("TS_RS_EXPORT_DIR") {
         Ok(value) => value,
         Err(_) => {

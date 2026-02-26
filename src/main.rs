@@ -10,6 +10,7 @@ mod crypto;
 mod database;
 mod datetime;
 mod error;
+mod genjs;
 mod guards;
 mod import;
 mod passwords;
@@ -30,6 +31,9 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Generate TypeScript bindings for structs annottated with TS macros
+    Genjs,
+
     /// Manage users and passwords
     Passwords {
         #[command(subcommand)]
@@ -107,6 +111,9 @@ async fn main() -> () {
 
     let args = Args::parse();
     match args.command {
+        Command::Genjs => {
+            genjs::export_types();
+        }
         Command::Passwords { command } => {
             let database = Database::init().await;
             passwords::manage_passwords(database, command).await;
