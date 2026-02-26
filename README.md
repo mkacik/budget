@@ -55,3 +55,32 @@ Special Budget Items:
 ### Budget Category
 Groups Budget Items together, and acts as boundary for comparing spending against allowance for
 yearly budget.
+
+### Budget Fund
+Fund groups Budget Items across years and represents a saving bucket in anticipation of rare
+one-time big purchases, like buying new car or replacing AC unit in the house. This allows for
+tracking money that is not expected to be spent every year, but is instead set aside for a goal,
+and remove the need to move money to dedicated saving accounts.
+
+Funds are managed from Funds tab. Only Budget Items can be made a part of a Fund, not the whole
+Budget Categories. Each Item attached to a Fund contributes it's whole yearly amount to the
+Fund, regardless of actual spending for the Item in given year. This means yearly spend for Fund
+items will always show as at at least 100% of Budget Item amount.
+
+Fund's own allowance will be a total of budgeted amounts from Budget Items attached to a Fund.
+
+Following that, spend on Fund Items will count against total amount in the Fund. If in any year
+spend exceeds whatever amount has accumulated in the Fund, the Analyze page will show Item spend
+as Item's amount + excess spend above whatever amount was unspent in the Fund. This gives clear
+signal about Fund needing higher contributions/lower spending in future years.
+
+#### Notes
+
+Funds could also be implemented to be completely separate from yearly budget and just shown in
+categorization flow. However, I prefer to present them in the context of yearly spending as this
+is the view I care about the most.
+
+I also chose to allow mixing Fund and non-Fund Items within a Budget Category, because it makes
+budget easier to understand from user point of view. For example, one could have House category,
+with "Repairs" Fund Item, and non-Fund items of "Tax" and "Utilities", which then in yearly view
+conveniently group spending on house-related items.
