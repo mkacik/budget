@@ -1,14 +1,14 @@
 use clap::{Parser, Subcommand};
 
-use budget::account::{Account, AccountFields, AccountType};
-use budget::budget::{
-    Budget, BudgetAmount, BudgetCategory, BudgetCategoryFields, BudgetItem, BudgetItemFields,
-};
+use budget::schema::account::{Account, AccountFields, AccountType};
+use budget::schema::budget::Budget;
+use budget::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
+use budget::schema::budget_item::{BudgetAmount, BudgetItem, BudgetItemFields};
+use budget::schema::record_mapping::{AmountField, DateField, RecordMapping, TextField, TimeField};
+use budget::schema::statement_schema::{StatementSchema, StatementSchemaFields};
+
 use budget::database::Database;
 use budget::datetime::TZ;
-use budget::record_mapping::RecordMapping;
-use budget::record_mapping::{AmountField, DateField, TextField, TimeField};
-use budget::statement_schema::{StatementSchema, StatementSchemaFields};
 
 #[derive(Parser, Debug)]
 struct Args {

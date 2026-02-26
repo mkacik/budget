@@ -3,7 +3,7 @@ use sqlx::FromRow;
 use ts_rs::TS;
 
 use crate::database::{Database, ID};
-use crate::record_mapping::RecordMapping;
+use crate::schema::record_mapping::RecordMapping;
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
 #[ts(export_to = "StatementSchema.ts")]

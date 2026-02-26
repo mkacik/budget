@@ -3,22 +3,15 @@ extern crate rocket;
 use rocket::fs::{relative, FileServer};
 use rocket::{Error as RocketError, Ignite, Rocket};
 
-mod account;
-mod budget;
 mod credentials;
 mod crypto;
 mod database;
-mod database_enum;
 mod datetime;
 mod error;
-mod expense;
 mod guards;
 mod import;
-mod record_mapping;
 mod routes;
-mod schema_test;
-mod spending;
-mod statement_schema;
+mod schema;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;

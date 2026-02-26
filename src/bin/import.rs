@@ -1,9 +1,9 @@
 use clap::Parser;
 
-use budget::account::Account;
 use budget::database::Database;
 use budget::import::{read_expenses, save_expenses};
-use budget::statement_schema::StatementSchema;
+use budget::schema::account::Account;
+use budget::schema::statement_schema::StatementSchema;
 
 #[derive(Debug, Parser)]
 struct Args {

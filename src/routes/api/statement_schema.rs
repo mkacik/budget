@@ -1,12 +1,12 @@
 use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
 
-use crate::account::Account;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::{serialize_result, ApiResponse};
-use crate::schema_test::TestSchemaRequest;
-use crate::statement_schema::{StatementSchema, StatementSchemaFields};
+use crate::schema::account::Account;
+use crate::schema::statement_schema::{StatementSchema, StatementSchemaFields};
+use crate::schema::statement_schema_test::TestSchemaRequest;
 
 #[get("/schemas")]
 pub async fn get_schemas(db: &State<Database>) -> ApiResponse {

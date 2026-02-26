@@ -3,8 +3,9 @@ use std::cmp::Ordering;
 
 use crate::database::{Database, ID};
 use crate::error::ImportError;
-use crate::expense::{Expense, ExpenseFields, LatestExpenses};
-use crate::record_mapping::{ImportResult, RecordMapping};
+
+use crate::schema::expense::{Expense, ExpenseFields, LatestExpenses};
+use crate::schema::record_mapping::{ImportResult, RecordMapping};
 
 pub const STATEMENT_UPLOAD_PATH: &str = "www/upload/tmp.csv";
 
@@ -122,7 +123,7 @@ fn remove_duplicates(mut new: Vec<ExpenseFields>, old: Vec<Expense>) -> Vec<Expe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expense::{ExpenseCategory, ExpenseNotes};
+    use crate::schema::expense::{ExpenseCategory, ExpenseNotes};
 
     fn get_expense_fields(amount: f64) -> ExpenseFields {
         ExpenseFields {

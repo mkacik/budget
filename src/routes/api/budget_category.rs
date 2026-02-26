@@ -1,10 +1,10 @@
 use rocket::serde::json::Json;
 use rocket::{delete, post, put, State};
 
-use crate::budget::{BudgetCategory, BudgetCategoryFields};
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::ApiResponse;
+use crate::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
 
 #[post("/budget_categories/<year>", format = "json", data = "<request>")]
 pub async fn create_budget_category(

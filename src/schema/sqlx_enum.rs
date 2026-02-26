@@ -5,14 +5,14 @@ implementing sqlx::FromRow for every database-stored struct that could hold the 
 TODO: This is still lot of code repetition, and looks like I could autogenerate this via macro, or
 somehow add generically for everything that implements Deserialize trait. */
 
-use crate::account::AccountType;
-use crate::budget::BudgetAmount;
-use crate::record_mapping::RecordMapping;
-
 use sqlx::encode::IsNull;
 use sqlx::sqlite::SqliteArgumentValue;
 use sqlx::Database as SqlxDatabase;
 use sqlx::{Decode, Encode, Sqlite, Type};
+
+use crate::schema::account::AccountType;
+use crate::schema::budget_item::BudgetAmount;
+use crate::schema::record_mapping::RecordMapping;
 
 type BoxDynError = Box<dyn std::error::Error + 'static + Send + Sync>;
 

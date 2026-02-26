@@ -2,9 +2,9 @@ use csv::ReaderBuilder;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::expense::ExpenseFields;
-use crate::record_mapping::ImportResult;
-use crate::statement_schema::StatementSchemaFields;
+use crate::schema::expense::ExpenseFields;
+use crate::schema::record_mapping::ImportResult;
+use crate::schema::statement_schema::StatementSchemaFields;
 
 #[derive(Debug, Deserialize, TS)]
 #[ts(export_to = "SchemaTest.ts")]

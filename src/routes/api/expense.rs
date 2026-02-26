@@ -7,14 +7,15 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::remove_file;
 use ts_rs::TS;
 
-use crate::account::{Account, AccountType};
-use crate::budget::BudgetItem;
 use crate::database::{Database, ID};
-use crate::expense::{Expense, ExpenseCategory, ExpenseFields, ExpenseNotes};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::common::ApiResponse;
-use crate::statement_schema::StatementSchema;
+
+use crate::schema::account::{Account, AccountType};
+use crate::schema::budget_item::BudgetItem;
+use crate::schema::expense::{Expense, ExpenseCategory, ExpenseFields, ExpenseNotes};
+use crate::schema::statement_schema::StatementSchema;
 
 #[derive(FromForm)]
 pub struct UploadStatementForm<'f> {

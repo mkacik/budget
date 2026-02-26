@@ -5,7 +5,8 @@ use ts_rs::TS;
 
 use crate::database::ID;
 use crate::datetime::{to_local_date, to_local_time, TZ};
-use crate::expense::ExpenseFields;
+
+use crate::schema::expense::ExpenseFields;
 
 const SEPARATOR: &str = "\u{241F}";
 

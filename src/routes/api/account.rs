@@ -1,11 +1,11 @@
 use rocket::serde::json::Json;
 use rocket::{delete, get, post, State};
 
-use crate::account::{Account, AccountFields};
 use crate::database::{Database, ID};
-use crate::expense::Expense;
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::{serialize_result, ApiResponse};
+use crate::schema::account::{Account, AccountFields};
+use crate::schema::expense::Expense;
 
 #[get("/accounts")]
 pub async fn get_accounts(db: &State<Database>) -> ApiResponse {

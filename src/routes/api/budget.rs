@@ -3,10 +3,10 @@ use rocket::{get, post, State};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::budget::Budget;
 use crate::database::Database;
 use crate::routes::common::{serialize_result, ApiResponse};
-use crate::spending::SpendingData;
+use crate::schema::budget::Budget;
+use crate::schema::spending_data::SpendingData;
 
 #[get("/budget/<year>")]
 pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
