@@ -122,7 +122,7 @@ fn remove_duplicates(mut new: Vec<ExpenseFields>, old: Vec<Expense>) -> Vec<Expe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expense::ExpenseCategory;
+    use crate::expense::{ExpenseCategory, ExpenseNotes};
 
     fn get_expense_fields(amount: f64) -> ExpenseFields {
         ExpenseFields {
@@ -139,6 +139,9 @@ mod tests {
         Expense {
             id: 2,
             fields: get_expense_fields(amount),
+            notes: ExpenseNotes {
+                notes: Some("A note".to_string()),
+            },
             category: ExpenseCategory {
                 budget_item_id: None,
             },
