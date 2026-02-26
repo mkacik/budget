@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::database::ID;
-use crate::datetime::{to_local_date, to_local_time, TZ};
 
+use crate::schema::datetime::{to_local_date, to_local_time, TZ};
 use crate::schema::expense::ExpenseFields;
 
 const SEPARATOR: &str = "\u{241F}";
@@ -306,8 +306,8 @@ mod tests {
         }
         .from_record(&record);
         match result_err {
-            Err(ImportResult::Error { message }) => {}
-            _ => assert!(false, "Expected Err(ImportResult::Error {{ ... }})"),
+            Err(ImportResult::Error { .. }) => {}
+            _ => assert!(false, "Expected Err(ImportResult::Error {{ .. }})"),
         }
 
         let result_skip = AmountField::FromColumn {

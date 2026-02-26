@@ -8,8 +8,6 @@ use clap::{Parser, Subcommand};
 mod credentials;
 mod crypto;
 mod database;
-mod datetime;
-mod error;
 mod genjs;
 mod guards;
 mod import;
