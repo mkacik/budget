@@ -34,13 +34,11 @@ function getAmountPerYear(amount: BudgetAmount | null): number {
 export class BudgetItemView {
   item: BudgetItem;
   category: BudgetCategoryView;
-  displayName: string;
   amountPerYear: number;
 
   constructor(item: BudgetItem, category: BudgetCategoryView) {
     this.item = item;
     this.category = category;
-    this.displayName = `${category.name} :: ${item.name}`;
     this.amountPerYear = getAmountPerYear(item.amount);
   }
 
@@ -54,6 +52,10 @@ export class BudgetItemView {
 
   get name() {
     return this.item.name;
+  }
+
+  get displayName() {
+    return this.item.display_name;
   }
 
   get amountPerMonth() {
