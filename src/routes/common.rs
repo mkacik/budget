@@ -66,6 +66,15 @@ impl ApiResponse {
         }
     }
 
+    pub fn from_object<T: Serialize + TS>(object: T) -> ApiResponse {
+        let serialized = match to_string(&object) {
+            Ok(value) => value,
+            Err(error) => return ApiResponse::from_error(anyhow::anyhow!(error)),
+        };
+
+        ApiResponse::SuccessWithData { data: serialized }
+    }
+
     pub fn from_error(error: anyhow::Error) -> ApiResponse {
         ApiResponse::ServerErrorWithMessage {
             message: error.to_string(),

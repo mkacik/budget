@@ -7,6 +7,7 @@ export enum Tab {
   Accounts,
   Expenses,
   Analyze,
+  Funds,
 }
 
 export interface AppSettings extends VersionedSettings {

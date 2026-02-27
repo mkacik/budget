@@ -5,11 +5,14 @@ use ts_rs::{ExportError, TS};
 
 use crate::routes::api::budget::BudgetCloneRequest;
 use crate::routes::api::expense::ExpensesQueryRequest;
+use crate::routes::api::fund::GetAllFundsResponse;
+
 use crate::schema::account::{AccountFields, Accounts};
 use crate::schema::budget::Budget;
 use crate::schema::budget_category::BudgetCategoryFields;
 use crate::schema::budget_item::BudgetItemFields;
 use crate::schema::expense::Expenses;
+use crate::schema::fund::BudgetFundFields;
 use crate::schema::spending_data::SpendingData;
 use crate::schema::statement_schema::{StatementSchemaFields, StatementSchemas};
 use crate::schema::statement_schema_test::{TestSchemaRequest, TestSchemaResponse};
@@ -36,6 +39,9 @@ fn export() -> Result<(), ExportError> {
     BudgetCloneRequest::export_all()?;
 
     ExpensesQueryRequest::export_all()?;
+
+    GetAllFundsResponse::export_all()?;
+    BudgetFundFields::export_all()?;
 
     Ok(())
 }

@@ -11,6 +11,7 @@ type DollarAmount = f64;
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetItemFields {
     pub category_id: ID,
+    pub fund_id: Option<ID>,
     pub name: String,
     pub amount: Option<BudgetAmount>,
     pub budget_only: bool,
@@ -88,6 +89,17 @@ impl BudgetItem {
         Ok(())
     }
 
+    pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<BudgetItem> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result =
+            sqlx::query_as::<_, BudgetItem>("SELECT * FROM view_budget_items WHERE id = ?1")
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?;
+
+        Ok(result)
+    }
+
     pub async fn fetch_by_year(db: &Database, year: i32) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, BudgetItem>(
@@ -102,13 +114,13 @@ impl BudgetItem {
         Ok(results)
     }
 
-    pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<BudgetItem> {
+    pub async fn fetch_all_with_fund_id(db: &Database) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
-        let result =
-            sqlx::query_as::<_, BudgetItem>("SELECT * FROM view_budget_items WHERE id = ?1")
-                .bind(id)
-                .fetch_one(&mut *conn)
-                .await?;
+        let result = sqlx::query_as::<_, BudgetItem>(
+            "SELECT * FROM view_budget_items WHERE fund_id IS NOT NULL",
+        )
+        .fetch_all(&mut *conn)
+        .await?;
 
         Ok(result)
     }

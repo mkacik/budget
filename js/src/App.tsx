@@ -15,6 +15,7 @@ import {
 import { AccountsPage } from "./AccountsPage";
 import { AccountsView, AccountsViewContext } from "./AccountsView";
 import { AnalyzePage } from "./AnalyzePage";
+import { FundsPage } from "./FundsPage";
 import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
@@ -141,6 +142,7 @@ function App() {
         <span className="header-spacer flexrow">︱</span>
 
         <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
+        <HeaderItem onClick={() => setTab(Tab.Funds)}>Funds</HeaderItem>
 
         <span className="header-filler" />
 
@@ -179,6 +181,7 @@ function App() {
                 refreshSchemas={fetchSchemas}
               />
             )}
+            {tab == Tab.Funds && <FundsPage />}
             {tab == Tab.Analyze && (
               <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
             )}

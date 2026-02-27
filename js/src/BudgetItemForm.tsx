@@ -122,6 +122,7 @@ export function BudgetItemForm({
     category_id: budgetItem?.category_id ?? budget.categories[0].id,
     amount: budgetItem !== null ? budgetItem.amount : DEFAULT_AMOUNT,
     budget_only: budgetItem !== null ? budgetItem.budget_only : false,
+    fund_id: null,
   };
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -193,6 +194,7 @@ export function BudgetItemForm({
         category_id: fields.category_id,
         amount: updatedAmount,
         budget_only: fields.budget_only,
+        fund_id: null,
       } as BudgetItemFields;
 
       const request =
