@@ -33,12 +33,10 @@ function getAmountPerYear(amount: BudgetAmount | null): number {
 
 export class BudgetItemView {
   item: BudgetItem;
-  category: BudgetCategoryView;
   amountPerYear: number;
 
-  constructor(item: BudgetItem, category: BudgetCategoryView) {
+  constructor(item: BudgetItem) {
     this.item = item;
-    this.category = category;
     this.amountPerYear = getAmountPerYear(item.amount);
   }
 
@@ -46,7 +44,7 @@ export class BudgetItemView {
     return this.item.id;
   }
 
-  get categoryId() {
+  get categoryID() {
     return this.item.category_id;
   }
 
@@ -58,6 +56,14 @@ export class BudgetItemView {
     return this.item.display_name;
   }
 
+  get year() {
+    return this.item.year;
+  }
+
+  get ignored() {
+    return this.item.ignored;
+  }
+
   get amountPerMonth() {
     return this.amountPerYear / 12;
   }
@@ -67,7 +73,7 @@ export class BudgetItemView {
   }
 
   get isCategorizationOnly() {
-    return this.item.amount === null && !this.category.ignored;
+    return this.item.amount === null && !this.item.ignored;
   }
 }
 
@@ -133,10 +139,10 @@ export class BudgetView {
 
     const itemsMap = new Map<number, BudgetItemView>();
     for (const item of budget.items) {
-      const categoryId = item.category_id;
-      const category = categoriesMap.get(categoryId)!;
-      const itemView = new BudgetItemView(item, category);
+      const itemView = new BudgetItemView(item);
       itemsMap.set(itemView.id, itemView);
+
+      const category = categoriesMap.get(itemView.categoryID)!;
       category.items.push(itemView);
     }
 

@@ -61,10 +61,10 @@ export class MonthlySpendingData {
   }
 
   private addDataPoint(dataPoint: SpendingDataPoint) {
-    const budgetItemID = dataPoint.budget_item_id;
+    const itemID = dataPoint.budget_item_id;
     const amount = dataPoint.amount;
 
-    if (budgetItemID === null) {
+    if (itemID === null) {
       this.addUncategorizedSpend(dataPoint.month, amount);
 
       this.addMonthTotal(dataPoint.month, amount);
@@ -72,19 +72,18 @@ export class MonthlySpendingData {
       return;
     }
 
-    const item = this.budget.getItem(budgetItemID)!;
-    const category = item.category;
-    if (category.ignored) {
+    const item = this.budget.getItem(itemID)!;
+    if (item.ignored) {
       return;
     }
 
     // add itemized
-    this.addItemSpend(budgetItemID, dataPoint.month, amount);
-    this.addCategorySpend(category.id, dataPoint.month, amount);
+    this.addItemSpend(itemID, dataPoint.month, amount);
+    this.addCategorySpend(item.categoryID, dataPoint.month, amount);
 
     // add totals
-    this.addItemTotal(budgetItemID, amount);
-    this.addCategoryTotal(category.id, amount);
+    this.addItemTotal(itemID, amount);
+    this.addCategoryTotal(item.categoryID, amount);
     this.addMonthTotal(dataPoint.month, amount);
   }
 

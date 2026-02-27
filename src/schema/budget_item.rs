@@ -22,6 +22,7 @@ pub struct BudgetItemFields {
 pub struct BudgetItem {
     pub id: ID,
     pub year: i32,            // computed, inherited from Category
+    pub ignored: bool,        // computed, inherited from Category
     pub display_name: String, // computed, {category_name} :: {name}
 
     #[serde(flatten)]

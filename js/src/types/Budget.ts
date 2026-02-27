@@ -10,6 +10,6 @@ export type BudgetCategoryFields = { name: string, ignored: boolean, };
 
 export type BudgetCloneRequest = { from_year: number, to_year: number, };
 
-export type BudgetItem = { id: number, year: number, display_name: string, category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
+export type BudgetItem = { id: number, year: number, ignored: boolean, display_name: string, category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
 
 export type BudgetItemFields = { category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
