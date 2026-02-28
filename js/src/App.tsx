@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 
 import { Accounts } from "./types/Account";
 import { Budget } from "./types/Budget";
+import { Funds } from "./types/Fund";
 import { StatementSchemas } from "./types/StatementSchema";
 
 import {
@@ -63,6 +64,7 @@ function App() {
   // *** Fetch data
 
   const [budget, setBudget] = useState<BudgetView | null>(null);
+  const [funds, setFunds] = useState<Funds | null>(null);
   const [accounts, setAccounts] = useState<Accounts | null>(null);
   const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
 
@@ -85,21 +87,20 @@ function App() {
       setAccounts(json as Accounts),
     );
 
-  useEffect(() => {
-    if (accounts === null) {
-      fetchAccounts();
-    }
-  }, []);
-
   const fetchSchemas = () =>
     fetchHelper.fetch(new Request("/api/schemas"), (json) =>
       setSchemas(json as StatementSchemas),
     );
 
+  const fetchFunds = () =>
+    fetchHelper.fetch(new Request("/api/funds"), (json) =>
+      setFunds(json as Funds),
+    );
+
   useEffect(() => {
-    if (schemas === null) {
-      fetchSchemas();
-    }
+    fetchAccounts();
+    fetchSchemas();
+    fetchFunds();
   }, []);
 
   if (errorMessage !== null) {
@@ -114,7 +115,12 @@ function App() {
     );
   }
 
-  if (budget === null || accounts === null || schemas === null) {
+  if (
+    budget === null ||
+    accounts === null ||
+    schemas === null ||
+    funds === null
+  ) {
     return null;
   }
 
@@ -159,6 +165,7 @@ function App() {
             {tab == Tab.Budget && (
               <BudgetPage
                 budget={budget}
+                funds={funds.funds}
                 refreshBudget={fetchBudget}
                 setYear={setYear}
               />
@@ -181,7 +188,9 @@ function App() {
                 refreshSchemas={fetchSchemas}
               />
             )}
-            {tab == Tab.Funds && <FundsPage />}
+            {tab == Tab.Funds && (
+              <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />
+            )}
             {tab == Tab.Analyze && (
               <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
             )}

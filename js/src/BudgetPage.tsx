@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
+import { BudgetFund } from "./types/Fund";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetCloneForm } from "./BudgetCloneForm";
@@ -49,6 +50,7 @@ function BudgetItemRow({
         {item.name}
         {item.isBudgetOnly && <Pill>hidden in categorization</Pill>}
         {item.isCategorizationOnly && <Pill>categorization only</Pill>}
+        {item.fundID && <Pill>fund</Pill>}
         <InlineGlyphButton glyph="edit" onClick={editItem} />
       </td>
       {showAmountColumns && amounts}
@@ -153,10 +155,12 @@ enum ModalMode {
 
 export function BudgetPage({
   budget,
+  funds,
   refreshBudget,
   setYear,
 }: {
   budget: BudgetView;
+  funds: Array<BudgetFund>;
   refreshBudget: () => void;
   setYear: (number) => void; // after cloning
 }) {
@@ -262,6 +266,7 @@ export function BudgetPage({
           budgetItem={editedItem?.item ?? null}
           onSuccess={onEditSuccess}
           budget={budget}
+          funds={funds}
         />
       );
       break;

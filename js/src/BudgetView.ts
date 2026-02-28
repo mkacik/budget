@@ -48,16 +48,16 @@ export class BudgetItemView {
     return this.item.category_id;
   }
 
+  get fundID() {
+    return this.item.fund_id;
+  }
+
   get name() {
     return this.item.name;
   }
 
   get displayName() {
     return this.item.display_name;
-  }
-
-  get year() {
-    return this.item.year;
   }
 
   get ignored() {

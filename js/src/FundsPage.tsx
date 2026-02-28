@@ -1,21 +1,25 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { BudgetFund, GetAllFundsResponse } from "./types/Fund";
+import { BudgetFund, Funds, FundItems } from "./types/Fund";
 import { BudgetFundForm } from "./BudgetFundForm";
 import { FetchHelper } from "./Common";
 
 import * as UI from "./ui/Common";
-
-type FundsView = GetAllFundsResponse;
 
 type ModalState = {
   visible: boolean;
   target: BudgetFund | null;
 };
 
-export function FundsPage() {
-  const [fundsView, setFundsView] = useState<FundsView | null>(null);
+export function FundsPage({
+  funds,
+  refreshFunds,
+}: {
+  funds: Array<BudgetFund>;
+  refreshFunds: () => void;
+}) {
+  const [items, setItems] = useState<FundItems | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,28 +28,29 @@ export function FundsPage() {
     visible: false,
     target: null,
   });
+  const hideModal = () => setModalState({ visible: false, target: null });
   const showModal = (fund: BudgetFund | null) => {
     return () => setModalState({ visible: true, target: fund });
   };
-  const hideModal = () => setModalState({ visible: false, target: null });
 
-  const fetchFunds = async () => {
-    const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
-    const request = new Request(`/api/funds`);
-    fetchHelper.fetch(request, (json) => {
-      setFundsView(json as FundsView);
+  const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
+  const fetchItems = async () => {
+    console.log("fetching fund items");
+    fetchHelper.fetch(new Request(`/api/funds/items`), (json) => {
+      setItems(json as FundItems);
     });
   };
 
   useEffect(() => {
-    fetchFunds();
-  }, []);
+    fetchItems();
+  }, []); // subscribe to item changes
 
   return (
     <UI.Section>
       <UI.SectionHeader>Funds</UI.SectionHeader>
       <UI.GlyphButton glyph="add" text="add fund" onClick={showModal(null)} />
-      {fundsView && JSON.stringify(fundsView)}
+      {funds && JSON.stringify(funds)}
+      {items && JSON.stringify(items)}
 
       <UI.ModalCard
         title={modalState.target !== null ? "Edit Fund" : "Create fund"}
@@ -55,7 +60,7 @@ export function FundsPage() {
         <BudgetFundForm
           fund={modalState.target}
           onSuccess={() => {
-            fetchFunds();
+            refreshFunds();
             hideModal();
           }}
         />

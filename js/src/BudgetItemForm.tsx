@@ -2,6 +2,8 @@ import React from "react";
 import { useState } from "react";
 
 import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
+import { BudgetFund } from "./types/Fund";
+
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
@@ -75,6 +77,19 @@ function CategoryOptions({ budget }: { budget: BudgetView }) {
   );
 }
 
+function FundOptions({ funds }: { funds: Array<BudgetFund> }) {
+  return (
+    <>
+      <option value={0}>-</option>
+      {funds.map((fund) => (
+        <option key={fund.id} value={fund.id}>
+          {fund.name}
+        </option>
+      ))}
+    </>
+  );
+}
+
 type BudgetItemUsage =
   | "budget-and-categorization"
   | "budget-only"
@@ -112,21 +127,23 @@ export function BudgetItemForm({
   budgetItem,
   onSuccess,
   budget,
+  funds,
 }: {
   budgetItem: BudgetItem | null;
   onSuccess: () => void;
   budget: BudgetView;
+  funds: Array<BudgetFund>;
 }) {
-  const initialFields = {
-    name: budgetItem?.name ?? "",
-    category_id: budgetItem?.category_id ?? budget.categories[0].id,
-    amount: budgetItem !== null ? budgetItem.amount : DEFAULT_AMOUNT,
-    budget_only: budgetItem !== null ? budgetItem.budget_only : false,
-    fund_id: null,
-  };
-
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fields, setFields] = useState<BudgetItemFields>(initialFields);
+  const [fields, setFields] = useState<BudgetItemFields>(
+    budgetItem ?? {
+      name: "",
+      category_id: budget.categories[0].id,
+      amount: DEFAULT_AMOUNT,
+      budget_only: false,
+      fund_id: null,
+    },
+  );
 
   const categoryIgnored = isCategoryIgnored(fields.category_id, budget);
   const usage = getBudgetItemUsage(fields);
@@ -135,6 +152,12 @@ export function BudgetItemForm({
     const target = e.target as HTMLInputElement;
     const newName = target.value;
     setFields({ ...fields, name: newName });
+  };
+
+  const setFundID = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    const newFundID = Number(target.value);
+    setFields({ ...fields, fund_id: newFundID === 0 ? null : newFundID });
   };
 
   const setCategoryID = (e: React.SyntheticEvent) => {
@@ -194,7 +217,7 @@ export function BudgetItemForm({
         category_id: fields.category_id,
         amount: updatedAmount,
         budget_only: fields.budget_only,
-        fund_id: null,
+        fund_id: fields.fund_id,
       } as BudgetItemFields;
 
       const request =
@@ -239,6 +262,14 @@ export function BudgetItemForm({
           onChange={setCategoryID}
         >
           <CategoryOptions budget={budget} />
+        </LabeledSelect>
+
+        <LabeledSelect
+          label="Fund"
+          value={fields.fund_id || 0}
+          onChange={setFundID}
+        >
+          <FundOptions funds={funds} />
         </LabeledSelect>
 
         {showUsageSelector && (

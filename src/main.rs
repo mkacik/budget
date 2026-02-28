@@ -87,6 +87,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::expense::update_expense_notes,
                 routes::api::expense::query_expenses,
                 routes::api::fund::get_funds,
+                routes::api::fund::get_items,
                 routes::api::fund::create_fund,
                 routes::api::fund::update_fund,
                 routes::api::fund::delete_fund,

@@ -6,15 +6,19 @@ use ts_rs::TS;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::common::ApiResponse;
-use crate::schema::budget_item::BudgetItem;
+use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::fund::{BudgetFund, BudgetFundFields};
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = "Fund.ts")]
-pub struct GetAllFundsResponse {
+pub struct Funds {
     funds: Vec<BudgetFund>,
-    items: Vec<BudgetItem>,
-    // TODO: spending for all fund items
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export_to = "Fund.ts")]
+pub struct FundItems {
+    items: Vec<BudgetItemWithSpend>,
 }
 
 #[get("/funds")]
@@ -24,15 +28,19 @@ pub async fn get_funds(db: &State<Database>) -> ApiResponse {
         Err(e) => return ApiResponse::from_error(e),
     };
 
-    let items = match BudgetItem::fetch_all_with_fund_id(db).await {
+    let result = Funds { funds: funds };
+
+    ApiResponse::from_object(result)
+}
+
+#[get("/funds/items")]
+pub async fn get_items(db: &State<Database>) -> ApiResponse {
+    let items = match BudgetItem::fetch_all_fund_items(db).await {
         Ok(result) => result,
         Err(e) => return ApiResponse::from_error(e),
     };
 
-    let result = GetAllFundsResponse {
-        funds: funds,
-        items: items,
-    };
+    let result = FundItems { items: items };
 
     ApiResponse::from_object(result)
 }

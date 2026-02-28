@@ -21,7 +21,6 @@ pub struct BudgetItemFields {
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetItem {
     pub id: ID,
-    pub year: i32,            // computed, inherited from Category
     pub ignored: bool,        // computed, inherited from Category
     pub display_name: String, // computed, {category_name} :: {name}
 
@@ -29,6 +28,18 @@ pub struct BudgetItem {
     #[sqlx(flatten)]
     #[ts(flatten)]
     pub fields: BudgetItemFields,
+}
+
+#[derive(Debug, FromRow, Deserialize, Serialize, TS)]
+#[ts(export_to = "Budget.ts")]
+pub struct BudgetItemWithSpend {
+    pub year: i32, // computed, inherited from Category
+    pub spend: DollarAmount,
+
+    #[serde(flatten)]
+    #[sqlx(flatten)]
+    #[ts(flatten)]
+    pub item: BudgetItem,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
@@ -67,12 +78,14 @@ impl BudgetItem {
                 category_id = ?1,
                 name = ?2,
                 amount = ?3,
-                budget_only = ?4
-            WHERE id = ?5",
+                budget_only = ?4,
+                fund_id = ?5
+            WHERE id = ?6",
             fields.category_id,
             fields.name,
             fields.amount,
             fields.budget_only,
+            fields.fund_id,
             id,
         )
         .execute(&mut *conn)
@@ -115,10 +128,17 @@ impl BudgetItem {
         Ok(results)
     }
 
-    pub async fn fetch_all_with_fund_id(db: &Database) -> anyhow::Result<Vec<BudgetItem>> {
+    pub async fn fetch_all_fund_items(db: &Database) -> anyhow::Result<Vec<BudgetItemWithSpend>> {
         let mut conn = db.acquire_db_conn().await?;
-        let result = sqlx::query_as::<_, BudgetItem>(
-            "SELECT * FROM view_budget_items WHERE fund_id IS NOT NULL",
+        let result = sqlx::query_as::<_, BudgetItemWithSpend>(
+            "SELECT
+              items.*,
+              SUM(expenses.amount) AS spend
+            FROM view_budget_items items
+            LEFT JOIN expenses
+              ON (items.id = expenses.budget_item_id)
+            WHERE fund_id IS NOT NULL
+            GROUP BY items.id",
         )
         .fetch_all(&mut *conn)
         .await?;
