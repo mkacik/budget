@@ -5,7 +5,7 @@ import {
   BudgetItem,
 } from "./types/Budget";
 
-function getAmountPerYear(amount: BudgetAmount | null): number {
+export function getAmountPerYear(amount: BudgetAmount | null): number {
   if (amount === null) {
     return 0;
   }

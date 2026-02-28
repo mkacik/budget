@@ -2,8 +2,13 @@ import React from "react";
 import { useState, useEffect } from "react";
 
 import { BudgetFund, Funds, FundItems } from "./types/Fund";
+import { BudgetItemWithSpend } from "./types/Budget";
+
+import { getAmountPerYear } from "./BudgetView";
+import { useAppSettingsContext } from "./AppSettings";
 import { BudgetFundForm } from "./BudgetFundForm";
 import { FetchHelper } from "./Common";
+import { FundsView } from "./FundsView";
 
 import * as UI from "./ui/Common";
 
@@ -11,6 +16,63 @@ type ModalState = {
   visible: boolean;
   target: BudgetFund | null;
 };
+
+export function FundsTable({
+  funds,
+  items,
+  editFund,
+}: {
+  funds: Array<BudgetFund>;
+  items: Array<BudgetItemWithSpend>;
+  editFund: (fund: BudgetFund | null) => void;
+}) {
+  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
+
+  const fundsView = new FundsView(funds, items);
+
+  const rows: Array<React.ReactNode> = [];
+  for (const fund of fundsView.funds) {
+    const row = (
+      <tr className="bold highlight" key={fund.id}>
+        <td className="v-center">
+          {fund.name}
+          <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
+        </td>
+        <td>{fund.amount.toFixed(2)}</td>
+        <td>{fund.spend.toFixed(2)}</td>
+      </tr>
+    );
+    rows.push(row);
+
+    const fundItems = fundsView.getItems(fund.id);
+    for (const item of fundItems) {
+      const row = (
+        <tr key={item.id}>
+          <td className="v-center">
+            <UI.InlineGlyph glyph="chevron_right" />
+            {item.year} :: {item.display_name}
+          </td>
+          <td>{getAmountPerYear(item.amount).toFixed(2)}</td>
+          <td>{item.spend.toFixed(2)}</td>
+        </tr>
+      );
+      rows.push(row);
+    }
+  }
+
+  return (
+    <table className="large">
+      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+        <tr>
+          <th>Name</th>
+          <th>Allowance</th>
+          <th>Spend</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+}
 
 export function FundsPage({
   funds,
@@ -29,13 +91,11 @@ export function FundsPage({
     target: null,
   });
   const hideModal = () => setModalState({ visible: false, target: null });
-  const showModal = (fund: BudgetFund | null) => {
-    return () => setModalState({ visible: true, target: fund });
-  };
+  const editFund = (fund: BudgetFund | null) =>
+    setModalState({ visible: true, target: fund });
 
   const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
   const fetchItems = async () => {
-    console.log("fetching fund items");
     fetchHelper.fetch(new Request(`/api/funds/items`), (json) => {
       setItems(json as FundItems);
     });
@@ -48,9 +108,14 @@ export function FundsPage({
   return (
     <UI.Section>
       <UI.SectionHeader>Funds</UI.SectionHeader>
-      <UI.GlyphButton glyph="add" text="add fund" onClick={showModal(null)} />
-      {funds && JSON.stringify(funds)}
-      {items && JSON.stringify(items)}
+      <UI.GlyphButton
+        glyph="add"
+        text="add fund"
+        onClick={() => editFund(null)}
+      />
+      {items && (
+        <FundsTable funds={funds} items={items.items} editFund={editFund} />
+      )}
 
       <UI.ModalCard
         title={modalState.target !== null ? "Edit Fund" : "Create fund"}
