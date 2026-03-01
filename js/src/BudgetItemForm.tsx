@@ -139,9 +139,9 @@ export function BudgetItemForm({
     budgetItem ?? {
       name: "",
       category_id: budget.categories[0].id,
+      fund_id: null,
       amount: DEFAULT_AMOUNT,
       budget_only: false,
-      fund_id: null,
     },
   );
 
@@ -152,12 +152,6 @@ export function BudgetItemForm({
     const target = e.target as HTMLInputElement;
     const newName = target.value;
     setFields({ ...fields, name: newName });
-  };
-
-  const setFundID = (e: React.SyntheticEvent) => {
-    const target = e.target as HTMLInputElement;
-    const newFundID = Number(target.value);
-    setFields({ ...fields, fund_id: newFundID === 0 ? null : newFundID });
   };
 
   const setCategoryID = (e: React.SyntheticEvent) => {
@@ -174,6 +168,12 @@ export function BudgetItemForm({
     } else {
       setFields({ ...fields, category_id: newCategoryID });
     }
+  };
+
+  const setFundID = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLInputElement;
+    const newFundID = Number(target.value);
+    setFields({ ...fields, fund_id: newFundID === 0 ? null : newFundID });
   };
 
   const setAmount = (amount: BudgetAmount) => {
@@ -193,9 +193,11 @@ export function BudgetItemForm({
     const amount = fields.amount || budgetItem?.amount || DEFAULT_AMOUNT;
     if (newUsage === "budget-only") {
       setFields({ ...fields, amount: amount, budget_only: true });
-    } else if (newUsage === "budget-and-categorization") {
-      setFields({ ...fields, amount: amount, budget_only: false });
+      return;
     }
+
+    // "budget-and-categorization"
+    setFields({ ...fields, amount: amount, budget_only: false });
   };
 
   const fetchHelper = new FetchHelper(setErrorMessage);
@@ -208,10 +210,18 @@ export function BudgetItemForm({
       if (updatedName === "") {
         throw Error("Budget Item Name can't be empty!");
       }
+
+      if (categoryIgnored && fields.fund_id) {
+        throw Error(
+          "Budget Items attached to a fund can't be moved to ignored category",
+        );
+      }
+
       const updatedAmount = categoryIgnored ? null : fields.amount;
       if (fields.budget_only && (categoryIgnored || updatedAmount === null)) {
         throw Error("Budget only usage requires amount to be provided");
       }
+
       const updatedFields = {
         name: updatedName,
         category_id: fields.category_id,
@@ -243,6 +253,7 @@ export function BudgetItemForm({
   );
 
   const showUsageSelector = !categoryIgnored;
+  const showFundSelector = !categoryIgnored;
   const showAmountSelector = !(categoryIgnored || fields.amount === null);
 
   return (
@@ -264,13 +275,15 @@ export function BudgetItemForm({
           <CategoryOptions budget={budget} />
         </LabeledSelect>
 
-        <LabeledSelect
-          label="Fund"
-          value={fields.fund_id || 0}
-          onChange={setFundID}
-        >
-          <FundOptions funds={funds} />
-        </LabeledSelect>
+        {showFundSelector && (
+          <LabeledSelect
+            label="Fund"
+            value={fields.fund_id || 0}
+            onChange={setFundID}
+          >
+            <FundOptions funds={funds} />
+          </LabeledSelect>
+        )}
 
         {showUsageSelector && (
           <BudgetItemUsageForm usage={usage} updateUsage={setUsage} />
