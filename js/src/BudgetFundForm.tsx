@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 
 import { BudgetFund, BudgetFundFields } from "./types/Fund";
-import { BudgetView } from "./BudgetView";
 
 import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";

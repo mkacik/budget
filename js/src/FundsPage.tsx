@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { BudgetFund, Funds, FundItems } from "./types/Fund";
+import { BudgetFund, FundItems } from "./types/Fund";
 import { BudgetItemWithSpend } from "./types/Budget";
 
 import { getAmountPerYear } from "./BudgetView";
@@ -16,6 +16,10 @@ type ModalState = {
   visible: boolean;
   target: BudgetFund | null;
 };
+
+export function NumberCell({ children }: { children: React.ReactNode }) {
+  return <td className="number r-align">{children}</td>;
+}
 
 export function FundsTable({
   funds,
@@ -38,8 +42,8 @@ export function FundsTable({
           {fund.name}
           <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
         </td>
-        <td>{fund.amount.toFixed(2)}</td>
-        <td>{fund.spend.toFixed(2)}</td>
+        <NumberCell>{fund.amount.toFixed(2)}</NumberCell>
+        <NumberCell>{fund.spend.toFixed(2)}</NumberCell>
       </tr>
     );
     rows.push(row);
@@ -52,8 +56,8 @@ export function FundsTable({
             <UI.InlineGlyph glyph="chevron_right" />
             {item.year} :: {item.display_name}
           </td>
-          <td>{getAmountPerYear(item.amount).toFixed(2)}</td>
-          <td>{item.spend.toFixed(2)}</td>
+          <NumberCell>{getAmountPerYear(item.amount).toFixed(2)}</NumberCell>
+          <NumberCell>{item.spend.toFixed(2)}</NumberCell>
         </tr>
       );
       rows.push(row);
@@ -65,8 +69,8 @@ export function FundsTable({
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>
-          <th>Allowance</th>
-          <th>Spend</th>
+          <th className="r-align">Allowance</th>
+          <th className="r-align">Spend</th>
         </tr>
       </thead>
       <tbody>{rows}</tbody>
@@ -96,7 +100,7 @@ export function FundsPage({
 
   const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
   const fetchItems = async () => {
-    fetchHelper.fetch(new Request(`/api/funds/items`), (json) => {
+    fetchHelper.fetch(new Request("/api/funds/items"), (json) => {
       setItems(json as FundItems);
     });
   };
@@ -108,6 +112,7 @@ export function FundsPage({
   return (
     <UI.Section>
       <UI.SectionHeader>Funds</UI.SectionHeader>
+      <UI.ErrorCard message={errorMessage} />
       <UI.GlyphButton
         glyph="add"
         text="add fund"

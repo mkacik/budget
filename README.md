@@ -84,3 +84,15 @@ I also chose to allow mixing Fund and non-Fund Items within a Budget Category, b
 budget easier to understand from user point of view. For example, one could have House category,
 with "Repairs" Fund Item, and non-Fund items of "Tax" and "Utilities", which then in yearly view
 conveniently group spending on house-related items.
+
+What should be the value of "TOTAL + funds" column in Analyze spending table for Items that are
+part of a fund?
+* fund has allowance, item has allowance:
+  * item allowance because it contributes it's full amount every year
+* fund has allowance, item overspent:
+  * item allowance, because it was able to dip into allowance saved in previous years
+* fund overspent, item has allowance:
+  * item allowance, because the overspend came from different place
+* fund overspent, item overspent:
+  * item spend, for now, because I don't want to have to deal with distributing the overage
+    between potential multiple overspent items in a fund.

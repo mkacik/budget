@@ -192,7 +192,11 @@ function App() {
               <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />
             )}
             {tab == Tab.Analyze && (
-              <AnalyzePage key={`analyze.${budget.year}`} budget={budget} />
+              <AnalyzePage
+                key={`analyze.${budget.year}`}
+                budget={budget}
+                funds={funds.funds}
+              />
             )}
           </AccountsViewContext>
         </AppSettingsContext>

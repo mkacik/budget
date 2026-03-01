@@ -1,5 +1,6 @@
 import { SpendingDataPoint } from "./types/SpendingData";
-import { BudgetView } from "./BudgetView";
+import { BudgetItemView, BudgetView } from "./BudgetView";
+import { FundsView } from "./FundsView";
 
 type ID = number;
 type Month = string;
@@ -17,13 +18,19 @@ export class MonthlySpendingData {
   itemTotals: Map<ID, number>;
   monthTotals: Map<Month, number>;
 
+  categoryTotalsInclFunds: Map<ID, number>;
+  itemTotalsInclFunds: Map<ID, number>;
+
   budget: BudgetView;
+  funds: FundsView;
 
   constructor(
     spendingDataPoints: Array<SpendingDataPoint>,
     budget: BudgetView,
+    funds: FundsView,
   ) {
     this.budget = budget;
+    this.funds = funds;
 
     this.categories = new Map();
     this.items = new Map();
@@ -33,10 +40,13 @@ export class MonthlySpendingData {
     this.itemTotals = new Map();
     this.monthTotals = new Map();
 
-    console.log(spendingDataPoints);
+    this.categoryTotalsInclFunds = new Map();
+    this.itemTotalsInclFunds = new Map();
+
     for (const dataPoint of spendingDataPoints) {
       this.addDataPoint(dataPoint);
     }
+    this.fillInFundsData();
 
     this.validate();
   }
@@ -65,8 +75,10 @@ export class MonthlySpendingData {
     const amount = dataPoint.amount;
 
     if (itemID === null) {
+      // add monthly values
       this.addUncategorizedSpend(dataPoint.month, amount);
 
+      // add totals
       this.addMonthTotal(dataPoint.month, amount);
 
       return;
@@ -77,7 +89,7 @@ export class MonthlySpendingData {
       return;
     }
 
-    // add itemized
+    // add monthly values
     this.addItemSpend(itemID, dataPoint.month, amount);
     this.addCategorySpend(item.categoryID, dataPoint.month, amount);
 
@@ -87,7 +99,7 @@ export class MonthlySpendingData {
     this.addMonthTotal(dataPoint.month, amount);
   }
 
-  // *** add itemized
+  // *** add monthly values
 
   private addItemSpend(itemID: ID, month: Month, amount: number): void {
     if (!this.items.has(month)) {
@@ -129,36 +141,54 @@ export class MonthlySpendingData {
   // *** add totals
 
   private addItemTotal(itemID: ID, amount: number): void {
-    if (!this.itemTotals.has(itemID)) {
-      this.itemTotals.set(itemID, amount);
-      return;
-    }
-
-    const newTotal = this.itemTotals.get(itemID)! + amount;
-    this.itemTotals.set(itemID, newTotal);
+    const total = (this.itemTotals.get(itemID) ?? 0) + amount;
+    this.itemTotals.set(itemID, total);
   }
 
   private addCategoryTotal(categoryID: ID, amount: number): void {
-    if (!this.categoryTotals.has(categoryID)) {
-      this.categoryTotals.set(categoryID, amount);
-      return;
-    }
-
-    const newTotal = this.categoryTotals.get(categoryID)! + amount;
-    this.categoryTotals.set(categoryID, newTotal);
+    const total = (this.categoryTotals.get(categoryID) ?? 0) + amount;
+    this.categoryTotals.set(categoryID, total);
   }
 
   private addMonthTotal(month: Month, amount: number): void {
-    if (!this.monthTotals.has(month)) {
-      this.monthTotals.set(month, amount);
-      return;
-    }
-
-    const newTotal = this.monthTotals.get(month)! + amount;
-    this.monthTotals.set(month, newTotal);
+    const total = (this.monthTotals.get(month) ?? 0) + amount;
+    this.monthTotals.set(month, total);
   }
 
-  // *** get itemized
+  // ** filling in data required for TOTAL + funds column
+
+  private computeItemTotalInclFunds(item: BudgetItemView): number {
+    const itemID = item.id;
+    const itemTotal = this.getItemTotal(itemID);
+
+    const fundID = item.fundID;
+    if (fundID === null) {
+      return itemTotal;
+    }
+
+    const fund = this.funds.getFund(fundID);
+    if (itemTotal > item.amountPerYear && fund.spend > fund.amount) {
+      return itemTotal;
+    }
+
+    return item.amountPerYear;
+  }
+
+  private fillInFundsData(): void {
+    for (const category of this.budget.categories) {
+      let categoryTotal = 0;
+
+      for (const item of category.items) {
+        const itemTotal = this.computeItemTotalInclFunds(item);
+        categoryTotal += itemTotal;
+        this.itemTotalsInclFunds.set(item.id, itemTotal);
+      }
+
+      this.categoryTotalsInclFunds.set(category.id, categoryTotal);
+    }
+  }
+
+  // *** get monthly values
 
   getItemSpend(itemID: ID, month: Month): number {
     const monthData = this.items.get(month);
@@ -198,7 +228,19 @@ export class MonthlySpendingData {
     return this.monthTotals.get(month) || 0;
   }
 
+  getItemTotalInclFunds(itemID: ID): number {
+    return this.itemTotalsInclFunds.get(itemID) || 0;
+  }
+
+  getCategoryTotalInclFunds(categoryID: ID): number {
+    return this.categoryTotalsInclFunds.get(categoryID) || 0;
+  }
+
   getTotalSpend(): number {
     return sumUp(this.monthTotals);
+  }
+
+  getTotalSpendInclFunds(): number {
+    return sumUp(this.categoryTotalsInclFunds) + this.getUncategorizedTotal();
   }
 }

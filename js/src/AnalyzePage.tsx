@@ -2,6 +2,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { SpendingData } from "./types/SpendingData";
 
+import { BudgetFund } from "./types/Fund";
+import { FundsView } from "./FundsView";
 import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { MonthlySpendingTable } from "./MonthlySpendingTable";
@@ -38,33 +40,32 @@ function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
   return <SectionHeader>{titleParts}</SectionHeader>;
 }
 
-export function AnalyzePage({ budget }: { budget: BudgetView }) {
-  const [spendingData, setSpendingData] = useState<MonthlySpendingData | null>(
-    null,
-  );
+export function AnalyzePage({
+  budget,
+  funds,
+}: {
+  budget: BudgetView;
+  funds: Array<BudgetFund>;
+}) {
+  const [data, setData] = useState<MonthlySpendingData | null>(null);
   const [expensesQuery, setExpensesQuery] = useState<ExpensesQuery | null>(
     null,
   );
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchSpendingData = async () => {
+  const fetchData = async () => {
     const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
-    try {
-      const request = new Request(`/api/spending/${budget.year}`);
-
-      fetchHelper.fetch(request, (json) => {
-        const response = json as SpendingData;
-        const data = new MonthlySpendingData(response.data, budget);
-        setSpendingData(data);
-      });
-    } catch (error) {
-      fetchHelper.handleError(error);
-    }
+    fetchHelper.fetch(new Request(`/api/spending/${budget.year}`), (json) => {
+      const result = json as SpendingData;
+      const fundsView = new FundsView(funds, result.fund_items);
+      setData(new MonthlySpendingData(result.data, budget, fundsView));
+    });
   };
 
   useEffect(() => {
-    fetchSpendingData();
+    fetchData();
   }, []);
 
   return (
@@ -72,9 +73,9 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
       <Section>
         <SectionHeader>Analyze spending</SectionHeader>
         <ErrorCard message={errorMessage} />
-        {spendingData && (
+        {data && (
           <MonthlySpendingTable
-            data={spendingData}
+            data={data}
             budget={budget}
             updateExpensesQuery={(query) => setExpensesQuery(query)}
           />
@@ -86,7 +87,7 @@ export function AnalyzePage({ budget }: { budget: BudgetView }) {
           <ExpensesList
             query={expensesQuery}
             budget={budget}
-            onExpenseCategoryChange={fetchSpendingData}
+            onExpenseCategoryChange={fetchData}
           />
         )}
       </Section>

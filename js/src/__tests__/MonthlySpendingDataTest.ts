@@ -4,6 +4,7 @@ import { Budget, BudgetCategory, BudgetItem } from "../types/Budget";
 import { SpendingDataPoint } from "../types/SpendingData";
 
 import { BudgetView } from "../BudgetView";
+import { FundsView } from "../FundsView";
 import { MonthlySpendingData } from "../MonthlySpendingData";
 
 function getBudgetView(): BudgetView {
@@ -21,8 +22,16 @@ function getBudgetView(): BudgetView {
   return new BudgetView(budget);
 }
 
+function getFundsView(): FundsView {
+  const funds = [];
+  const items = [];
+
+  return new FundsView(funds, items);
+}
+
 test("parse spending data", () => {
   const budget = getBudgetView();
+  const funds = getFundsView();
   const dataPoints = [
     { month: "2025-11", budget_item_id: 1, amount: 10.0 } as SpendingDataPoint,
     {
@@ -36,7 +45,7 @@ test("parse spending data", () => {
     { month: "2025-12", budget_item_id: 3, amount: 7.0 } as SpendingDataPoint,
   ];
 
-  const spendingData = new MonthlySpendingData(dataPoints, budget);
+  const spendingData = new MonthlySpendingData(dataPoints, budget, funds);
 
   // non-ignored entries
   expect(spendingData.getItemSpend(1, "2025-11")).toBe(10.0);

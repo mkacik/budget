@@ -14,6 +14,7 @@ interface FundWithSpend extends BudgetFund {
 
 export class FundsView {
   funds: Array<FundWithSpend>;
+  fundsByID: Map<number, FundWithSpend>;
   itemsByFundID: Map<number, Array<BudgetItemWithSpend>>;
 
   constructor(funds: Array<BudgetFund>, items: Array<BudgetItemWithSpend>) {
@@ -49,9 +50,18 @@ export class FundsView {
 
     this.itemsByFundID = itemsMap;
     this.funds = fundsWithSpend;
+    this.fundsByID = new Map(fundsWithSpend.map((fund) => [fund.id, fund]));
   }
 
   getItems(id: number): Array<BudgetItemWithSpend> {
     return this.itemsByFundID.get(id) ?? [];
+  }
+
+  getFund(id: number): FundWithSpend {
+    const fund = this.fundsByID.get(id);
+    if (fund === undefined) {
+      throw new Error("Found refernce to a fund not in funds list. Aborting.");
+    }
+    return fund;
   }
 }

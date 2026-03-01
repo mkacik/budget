@@ -13,14 +13,17 @@ function getMonths(year: number): Array<string> {
   });
 }
 
-function SpendingTableColgroup() {
-  // 13 -> 12 months + total
+function SpendingTableColgroup({ hasFunds }: { hasFunds: boolean }) {
+  // 13/14 -> 12 months + total + optional funds
+  const columnCount = hasFunds ? 14 : 13;
   return (
     <colgroup>
       <Col />
-      {Array(13).map((month) => (
-        <Col key={month} widthPct={6} />
-      ))}
+      {Array(columnCount)
+        .fill(0)
+        .map((month) => (
+          <Col key={month} widthPct={6} />
+        ))}
     </colgroup>
   );
 }
@@ -69,9 +72,11 @@ function SpendingTableCell({
 
 function SpendingTableHeaderRow({
   year,
+  hasFunds,
   updateExpensesQuery,
 }: {
   year: number;
+  hasFunds: boolean;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
   const cells: Array<React.ReactNode> = [];
@@ -96,6 +101,7 @@ function SpendingTableHeaderRow({
       <th>Name</th>
       {cells}
       <th className="r-align">TOTAL</th>
+      {hasFunds && <th className="r-align">+funds</th>}
     </tr>
   );
 }
@@ -103,11 +109,13 @@ function SpendingTableHeaderRow({
 function SpendingTableFooterRow({
   year,
   data,
+  hasFunds,
   updateExpensesQuery,
   yearlyBudget,
 }: {
   year: number;
   data: MonthlySpendingData;
+  hasFunds: boolean;
   updateExpensesQuery: (ExpensesQuery) => void;
   yearlyBudget: number;
 }) {
@@ -135,11 +143,10 @@ function SpendingTableFooterRow({
     <tr>
       <th>TOTAL</th>
       {cells}
-      <SpendingTableCell
-        key="__total"
-        spend={data.getTotalSpend()}
-        limit={yearlyBudget}
-      />
+      <SpendingTableCell spend={data.getTotalSpend()} limit={yearlyBudget} />
+      {hasFunds && (
+        <SpendingTableCell spend={data.getTotalSpendInclFunds()} limit={null} />
+      )}
     </tr>
   );
 }
@@ -147,10 +154,12 @@ function SpendingTableFooterRow({
 function SpendingTableUncategorizedRow({
   year,
   data,
+  hasFunds,
   updateExpensesQuery,
 }: {
   year: number;
   data: MonthlySpendingData;
+  hasFunds: boolean;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
   const headerCellOnClick = () => {
@@ -187,20 +196,16 @@ function SpendingTableUncategorizedRow({
     cells.push(cell);
   }
 
-  const totalCell = (
-    <SpendingTableCell
-      key="__total"
-      spend={data.getUncategorizedTotal()}
-      limit={0}
-      onClick={headerCellOnClick}
-    />
-  );
+  const total = data.getUncategorizedTotal();
 
   return (
     <tr className="bold highlight">
       {headerCell}
       {cells}
-      {totalCell}
+      <SpendingTableCell spend={total} limit={0} onClick={headerCellOnClick} />
+      {hasFunds && (
+        <SpendingTableCell spend={data.getUncategorizedTotal()} limit={null} />
+      )}
     </tr>
   );
 }
@@ -209,11 +214,13 @@ function SpendingTableRow({
   obj,
   year,
   data,
+  hasFunds,
   updateExpensesQuery,
 }: {
   obj: BudgetItemView | BudgetCategoryView;
   year: number;
   data: MonthlySpendingData;
+  hasFunds: boolean;
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
   const isCategory = obj instanceof BudgetCategoryView;
@@ -258,20 +265,23 @@ function SpendingTableRow({
   const totalSpend = isCategory
     ? data.getCategoryTotal(obj.id)
     : data.getItemTotal(obj.id);
-  const totalCell = (
-    <SpendingTableCell
-      key="__total"
-      spend={totalSpend}
-      limit={obj.amountPerYear}
-      onClick={headerCellOnClick}
-    />
-  );
+
+  const totalSpendInclFunds = isCategory
+    ? data.getCategoryTotalInclFunds(obj.id)
+    : data.getItemTotalInclFunds(obj.id);
 
   return (
     <tr className={isCategory ? "bold highlight" : ""}>
       {headerCell}
       {cells}
-      {totalCell}
+      <SpendingTableCell
+        spend={totalSpend}
+        limit={obj.amountPerYear}
+        onClick={headerCellOnClick}
+      />
+      {hasFunds && (
+        <SpendingTableCell spend={totalSpendInclFunds} limit={null} />
+      )}
     </tr>
   );
 }
@@ -286,6 +296,7 @@ export function MonthlySpendingTable({
   updateExpensesQuery: (ExpensesQuery) => void;
 }) {
   const year = budget.year;
+  const hasFunds = budget.hasFunds;
 
   const rows: Array<React.ReactNode> = [];
   for (const category of budget.categories) {
@@ -295,6 +306,7 @@ export function MonthlySpendingTable({
         obj={category}
         year={year}
         data={data}
+        hasFunds={hasFunds}
         updateExpensesQuery={updateExpensesQuery}
       />,
     );
@@ -306,6 +318,7 @@ export function MonthlySpendingTable({
           obj={item}
           year={year}
           data={data}
+          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />,
       );
@@ -316,11 +329,12 @@ export function MonthlySpendingTable({
 
   return (
     <table>
-      <SpendingTableColgroup />
+      <SpendingTableColgroup hasFunds={hasFunds} />
 
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <SpendingTableHeaderRow
           year={year}
+          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />
       </thead>
@@ -330,6 +344,7 @@ export function MonthlySpendingTable({
         <SpendingTableUncategorizedRow
           year={year}
           data={data}
+          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />
       </tbody>
@@ -338,6 +353,7 @@ export function MonthlySpendingTable({
         <SpendingTableFooterRow
           year={year}
           data={data}
+          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
           yearlyBudget={budget.amountPerYear}
         />

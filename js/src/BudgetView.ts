@@ -128,6 +128,8 @@ export class BudgetView {
   ignoredItems: Array<BudgetItemView>;
   itemsByID: Map<number, BudgetItemView>;
 
+  hasFunds: boolean;
+
   budget: Budget;
 
   constructor(budget: Budget) {
@@ -138,9 +140,13 @@ export class BudgetView {
     }
 
     const itemsMap = new Map<number, BudgetItemView>();
+    let hasFunds = false;
     for (const item of budget.items) {
       const itemView = new BudgetItemView(item);
       itemsMap.set(itemView.id, itemView);
+      if (itemView.fundID) {
+        hasFunds = true;
+      }
 
       const category = categoriesMap.get(itemView.categoryID)!;
       category.items.push(itemView);
@@ -171,6 +177,8 @@ export class BudgetView {
       .map((category) => category.items)
       .flat();
     this.itemsByID = itemsMap;
+
+    this.hasFunds = hasFunds;
 
     this.budget = budget;
   }

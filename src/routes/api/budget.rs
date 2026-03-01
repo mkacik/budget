@@ -6,7 +6,8 @@ use ts_rs::TS;
 use crate::database::Database;
 use crate::routes::common::{serialize_result, ApiResponse};
 use crate::schema::budget::Budget;
-use crate::schema::spending_data::SpendingData;
+use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
+use crate::schema::spending_data::SpendingDataPoint;
 
 #[get("/budget/<year>")]
 pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
@@ -39,12 +40,28 @@ pub async fn clone_budget(db: &State<Database>, json: Json<BudgetCloneRequest>) 
     }
 }
 
+#[derive(Debug, Serialize, TS)]
+#[ts(export_to = "SpendingData.ts")]
+pub struct SpendingData {
+    data: Vec<SpendingDataPoint>,
+    fund_items: Vec<BudgetItemWithSpend>,
+}
+
 #[get("/spending/<year>")]
 pub async fn get_spending(db: &State<Database>, year: i32) -> ApiResponse {
-    let result = SpendingData::fetch(&db, year).await;
+    let data = match SpendingDataPoint::fetch_by_year(&db, year).await {
+        Ok(result) => result,
+        Err(e) => return ApiResponse::from_error(e),
+    };
+    let fund_items = match BudgetItem::fetch_all_fund_items(db).await {
+        Ok(result) => result,
+        Err(e) => return ApiResponse::from_error(e),
+    };
 
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
+    let result = SpendingData {
+        data: data,
+        fund_items: fund_items,
+    };
+
+    ApiResponse::from_object(result)
 }
