@@ -6,13 +6,6 @@ import { StatementSchema } from "./types/StatementSchema";
 import { ExpenseFields } from "./types/Expense";
 
 import {
-  ErrorCard,
-  InlineGlyphButton,
-  ModalCard,
-  Section,
-  LoadingBanner,
-} from "./ui/Common";
-import {
   Form,
   FormButtons,
   FormSubmitButton,
@@ -21,6 +14,8 @@ import {
   LabeledDatePicker,
 } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
+
+import * as UI from "./ui/Common";
 
 function formatDate(date: Date) {
   return date.toJSON().substr(0, 10);
@@ -79,14 +74,14 @@ function ImportExpensesForm({
 
   const schema = account.statementSchema;
   if (schema === null) {
-    return (
-      <ErrorCard message="Account does not have import schema attached, add one in Accounts tab." />
-    );
+    const error =
+      "Account does not have import schema attached, add one in Accounts tab.";
+    return <UI.ErrorCard message={error} />;
   }
 
   return (
-    <Section>
-      <ErrorCard message={errorMessage} />
+    <UI.Section>
+      <UI.ErrorCard message={errorMessage} />
       <SchemaNotes schema={schema} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
@@ -99,8 +94,8 @@ function ImportExpensesForm({
           <FormSubmitButton text="Upload" />
         </FormButtons>
       </Form>
-      <LoadingBanner isLoading={loading} />
-    </Section>
+      <UI.LoadingBanner isLoading={loading} />
+    </UI.Section>
   );
 }
 
@@ -143,8 +138,8 @@ function DeleteExpensesForm({
   };
 
   return (
-    <Section>
-      <ErrorCard message={errorMessage} />
+    <UI.Section>
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <FormFieldWide>
           Expenses in chosen account <b>newer</b> than selected date will be
@@ -160,8 +155,8 @@ function DeleteExpensesForm({
           <FormSubmitButton text="Delete" />
         </FormButtons>
       </Form>
-      <LoadingBanner isLoading={loading} />
-    </Section>
+      <UI.LoadingBanner isLoading={loading} />
+    </UI.Section>
   );
 }
 
@@ -181,18 +176,18 @@ export function ImportExpensesButton({
 
   return (
     <>
-      <InlineGlyphButton
+      <UI.GlyphButton
         glyph="upload"
         text="import expenses"
         onClick={() => setModalVisible(true)}
       />
-      <ModalCard
+      <UI.ModalCard
         title={`Import expenses - ${account.name}`}
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
         <ImportExpensesForm account={account} onSuccess={onImportSuccess} />
-      </ModalCard>
+      </UI.ModalCard>
     </>
   );
 }
@@ -213,18 +208,18 @@ export function DeleteExpensesButton({
 
   return (
     <>
-      <InlineGlyphButton
+      <UI.GlyphButton
         glyph="delete"
         text="delete expenses"
         onClick={() => setModalVisible(true)}
       />
-      <ModalCard
+      <UI.ModalCard
         title={`Delete expenses - ${account.name}`}
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
         <DeleteExpensesForm account={account} onSuccess={onDeleteSuccess} />
-      </ModalCard>
+      </UI.ModalCard>
     </>
   );
 }
@@ -245,18 +240,18 @@ export function AddExpenseButton({
 
   return (
     <>
-      <InlineGlyphButton
+      <UI.GlyphButton
         glyph="add"
         text="add expense"
         onClick={() => setModalVisible(true)}
       />
-      <ModalCard
+      <UI.ModalCard
         title={`Add expense for cash account - ${account.name}`}
         visible={modalVisible}
         hideModal={() => setModalVisible(false)}
       >
         <AddExpenseForm account={account} onSuccess={onAddSuccess} />
-      </ModalCard>
+      </UI.ModalCard>
     </>
   );
 }
@@ -331,8 +326,8 @@ function AddExpenseForm({
   };
 
   return (
-    <Section>
-      <ErrorCard message={errorMessage} />
+    <UI.Section>
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
           label="Description"
@@ -357,6 +352,6 @@ function AddExpenseForm({
           <FormSubmitButton text="Add" />
         </FormButtons>
       </Form>
-    </Section>
+    </UI.Section>
   );
 }

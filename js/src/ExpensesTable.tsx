@@ -10,7 +10,8 @@ import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
 import { BudgetItemSelect } from "./BudgetItemSelect";
 import { JSON_HEADERS, FetchHelper } from "./Common";
-import { Col, SmallInlineGlyph, InlineGlyphButton } from "./ui/Common";
+
+import * as UI from "./ui/Common";
 
 function ExpenseNotesGlyph({
   description,
@@ -28,7 +29,7 @@ function ExpenseNotesGlyph({
       return null;
     }
 
-    return <SmallInlineGlyph glyph="notes" />;
+    return <UI.SmallInlineGlyph glyph="notes" />;
   }
 
   const onClickEditButton = (e: React.SyntheticEvent) => {
@@ -47,7 +48,7 @@ function ExpenseNotesGlyph({
     }
   };
 
-  return <SmallInlineGlyph glyph="edit_note" onClick={onClickEditButton} />;
+  return <UI.SmallInlineGlyph glyph="edit_note" onClick={onClickEditButton} />;
 }
 
 function ExpenseRow({
@@ -137,17 +138,19 @@ function ExpenseRow({
 
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 
-      <td className="flexrow">
-        <ExpenseNotesGlyph
-          description={expense.description}
-          notes={expense.notes}
-          setNotes={updateNotes}
-          isActiveRow={active}
-        />
-        {showDeleteButton && (
-          <SmallInlineGlyph glyph="delete" onClick={deleteExpense} />
-        )}
-        {fullDescription}
+      <td>
+        <UI.Flex>
+          <ExpenseNotesGlyph
+            description={expense.description}
+            notes={expense.notes}
+            setNotes={updateNotes}
+            isActiveRow={active}
+          />
+          {showDeleteButton && (
+            <UI.SmallInlineGlyph glyph="delete" onClick={deleteExpense} />
+          )}
+          {fullDescription}
+        </UI.Flex>
       </td>
     </>
   );
@@ -268,11 +271,11 @@ export function ExpensesTable({
   return (
     <table className="expenses-table">
       <colgroup>
-        <Col widthPct={7} />
-        <Col widthPct={showAccount ? 15 : 20} />
-        <Col widthPct={7} />
-        {showAccount && <Col widthPct={10} />}
-        <Col />
+        <UI.Col widthPct={7} />
+        <UI.Col widthPct={showAccount ? 15 : 20} />
+        <UI.Col widthPct={7} />
+        {showAccount && <UI.Col widthPct={10} />}
+        <UI.Col />
       </colgroup>
 
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
@@ -352,11 +355,11 @@ function HeaderCell({
   const sortButtonss =
     sortByField === null ? null : (
       <>
-        <InlineGlyphButton
+        <UI.InlineGlyphButton
           glyph="arrow_downward"
           onClick={() => sortByField(SortOrder.Desc)}
         />
-        <InlineGlyphButton
+        <UI.InlineGlyphButton
           glyph="arrow_upward"
           onClick={() => sortByField(SortOrder.Asc)}
         />

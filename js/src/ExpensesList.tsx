@@ -8,11 +8,6 @@ import {
 } from "./types/Expense";
 
 import {
-  AddExpenseButton,
-  ImportExpensesButton,
-  DeleteExpensesButton,
-} from "./ExpensesListButtons";
-import {
   AccountView,
   AccountsView,
   useAccountsViewContext,
@@ -29,7 +24,7 @@ import { ExpensesTableSettings, ExpensesTable } from "./ExpensesTable";
 import { ExpensesPivotTable } from "./ExpensesPivotTable";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 
-import { ErrorCard, Section } from "./ui/Common";
+import * as UI from "./ui/Common";
 
 export type ExpensesQueryCategorySelector =
   | BudgetItemView
@@ -65,7 +60,7 @@ function getExpensesQueryRequestCategorySelector(
       params: { id: selector.id },
     } as ExpensesQueryRequestCategorySelector;
   }
-  throw new Error("malformed expenses query!");
+  throw Error("malformed expenses query!");
 }
 
 function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
@@ -90,7 +85,7 @@ function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
       } as ExpensesQueryRequest;
     }
     default:
-      throw new Error("malformed expenses query!");
+      throw Error("malformed expenses query!");
   }
 }
 
@@ -101,7 +96,7 @@ function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
     case "period":
       return { autoadvance: false, showAccount: true } as ExpensesTableSettings;
     default:
-      throw new Error("malformed expenses query!");
+      throw Error("malformed expenses query!");
   }
 }
 
@@ -182,17 +177,9 @@ export function ExpensesList({
     }
   };
 
-  const isAccountQuery = query.variant === "account";
-
   return (
     <>
-      <ErrorCard message={errorMessage} />
-      {isAccountQuery && (
-        <ExpensesButtonsSection
-          account={query.account}
-          onSuccess={fetchExpenses}
-        />
-      )}
+      <UI.ErrorCard message={errorMessage} />
       <ExpensesTable
         budget={budget}
         accounts={accounts}
@@ -203,30 +190,7 @@ export function ExpensesList({
         updateSortBy={updateSortBy}
         settings={getExpensesTableSettings(query)}
       />
-      {!isAccountQuery && <ExpensesPivotTable expenses={expenses} />}
+      <ExpensesPivotTable expenses={expenses} />
     </>
-  );
-}
-
-function ExpensesButtonsSection({
-  account,
-  onSuccess,
-}: {
-  account: AccountView;
-  onSuccess: () => void;
-}) {
-  const isCashAccount = account.account_type === "Cash";
-
-  return (
-    <Section>
-      <small className="flexrow">
-        {isCashAccount ? (
-          <AddExpenseButton account={account} onSuccess={onSuccess} />
-        ) : (
-          <ImportExpensesButton account={account} onSuccess={onSuccess} />
-        )}
-        <DeleteExpensesButton account={account} onSuccess={onSuccess} />
-      </small>
-    </Section>
   );
 }

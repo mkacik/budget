@@ -14,8 +14,11 @@ export default [
     settings: { react: { version: "detect" } },
     rules: {
       "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
+        "error", {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
       ],
     },
   },

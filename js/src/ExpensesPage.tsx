@@ -1,40 +1,92 @@
 import React from "react";
-import { useId, useState } from "react";
+import { useState } from "react";
 
 import { AccountView, AccountsView } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
 import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
-import { Section, SectionHeader } from "./ui/Common";
+import {
+  AddExpenseButton,
+  ImportExpensesButton,
+  DeleteExpensesButton,
+} from "./ExpensesPageButtons";
+import { LabeledSelect } from "./ui/Form";
+
+import * as UI from "./ui/Common";
 
 function AccountSelector({
+  account,
+  updateAccount,
   accounts,
-  selected,
-  updateSelected,
 }: {
+  account: AccountView;
+  updateAccount: (AccountView) => void;
   accounts: AccountsView;
-  selected: AccountView;
-  updateSelected: (AccountView) => void;
 }) {
-  const id = useId();
-  const onSelectChange = (e: React.SyntheticEvent) => {
+  const setAccount = (e: React.SyntheticEvent) => {
     const elem = e.target as HTMLSelectElement;
     const id = Number(elem.value);
-    const account = accounts.getAccount(id)!;
-    updateSelected(account);
+    const newAccount = accounts.getAccount(id)!;
+    updateAccount(newAccount);
   };
 
   return (
-    <div className="flexrow">
-      <label htmlFor={id}>Account</label>
-      <select id={id} onChange={onSelectChange} value={selected.id}>
-        {accounts.accounts.map((account, idx) => (
-          <option key={idx} value={account.id}>
-            {account.name}
-          </option>
-        ))}
-      </select>
-    </div>
+    <LabeledSelect
+      label="Account"
+      value={account.id}
+      onChange={setAccount}
+      style={{ width: "20%" }}
+    >
+      {accounts.accounts.map((account, idx) => (
+        <option key={idx} value={account.id}>
+          {account.name}
+        </option>
+      ))}
+    </LabeledSelect>
+  );
+}
+
+function ExpensesSection({
+  account,
+  updateAccount,
+  accounts,
+  budget,
+}: {
+  account: AccountView;
+  updateAccount: (AccountView) => void;
+  accounts: AccountsView;
+  budget: BudgetView;
+}) {
+  // used to force remount of ExpensesList which will refetch data
+  const [_, setLastUpdate] = useState<string>(Date());
+  const markUpdated = () => setLastUpdate(Date());
+
+  const expensesQuery = {
+    variant: "account",
+    account: account,
+    year: budget.year,
+  } as ExpensesQuery;
+
+  const importButton =
+    account.account_type === "Cash" ? (
+      <AddExpenseButton account={account} onSuccess={markUpdated} />
+    ) : (
+      <ImportExpensesButton account={account} onSuccess={markUpdated} />
+    );
+
+  return (
+    <UI.Section title="Expenses">
+      <UI.Flex>
+        <AccountSelector
+          account={account}
+          accounts={accounts}
+          updateAccount={updateAccount}
+        />
+        {importButton}
+        <DeleteExpensesButton account={account} onSuccess={markUpdated} />
+      </UI.Flex>
+      <ExpensesList budget={budget} query={expensesQuery} />
+    </UI.Section>
   );
 }
 
@@ -92,29 +144,15 @@ export function ExpensesPage({
   }
 
   if (selectedAccount === null) {
-    return <>{"Add accounts to enable imports and start categorizing"}</>;
+    return "Add accounts to enable imports and start categorizing";
   }
 
-  const expensesQuery = {
-    variant: "account",
-    account: selectedAccount,
-    year: budget.year,
-  } as ExpensesQuery;
-
   return (
-    <>
-      <Section>
-        <SectionHeader>Expenses</SectionHeader>
-        <AccountSelector
-          accounts={accounts}
-          selected={selectedAccount}
-          updateSelected={setSelectedAccount}
-        />
-      </Section>
-
-      <Section>
-        <ExpensesList budget={budget} query={expensesQuery} />
-      </Section>
-    </>
+    <ExpensesSection
+      account={selectedAccount}
+      updateAccount={setSelectedAccount}
+      accounts={accounts}
+      budget={budget}
+    />
   );
 }
