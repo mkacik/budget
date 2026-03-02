@@ -27,7 +27,7 @@ export class AccountsView {
       if (schema_id !== null) {
         const maybeSchema = schemasMap.get(schema_id);
         if (maybeSchema === undefined) {
-          throw new Error("Account has bad schema attached!");
+          throw Error("Account has bad schema attached!");
         }
         schema = maybeSchema;
       }
@@ -60,7 +60,7 @@ export class AccountsView {
   getAccount(accountID: number): AccountView {
     const account = this.accountsByID.get(accountID);
     if (account === null || account === undefined) {
-      throw new Error(
+      throw Error(
         `Something fucky happened - can't find account with id: ${accountID}`,
       );
     }
@@ -73,7 +73,7 @@ export const AccountsViewContext = createContext<AccountsView | null>(null);
 export const useAccountsViewContext = (): AccountsView => {
   const accountsView = useContext(AccountsViewContext);
   if (accountsView === null) {
-    throw new Error("AccountsViewContext requested but not provided");
+    throw Error("AccountsViewContext requested but not provided");
   }
   return accountsView;
 };

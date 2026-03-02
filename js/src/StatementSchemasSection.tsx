@@ -92,7 +92,7 @@ function StatementSchemaForm({
         throw Error("Budget Item Name can't be empty!");
       }
       if (fields.record_mapping === null) {
-        throw new Error("Mapping must be configured for all columns");
+        throw Error("Mapping must be configured for all columns");
       }
       const newFields: StatementSchemaFields = {
         name: updatedName,

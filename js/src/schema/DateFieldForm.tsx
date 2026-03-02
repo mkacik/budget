@@ -14,7 +14,7 @@ function getDefaultParams(variant: Variant): Params {
     case FROM_COLUMN:
       return { col: 0, tz: "Local" };
   }
-  throw new Error("Unexpected shape of DateField");
+  throw Error("Unexpected shape of DateField");
 }
 
 export function DateFieldForm({
@@ -34,7 +34,7 @@ export function DateFieldForm({
           updateDate({ variant: FROM_COLUMN, params: newParams });
           return;
         }
-        throw new Error("Unexpected shape of DateField");
+        throw Error("Unexpected shape of DateField");
     }
   };
 
@@ -57,7 +57,7 @@ export function DateFieldForm({
       break;
     }
     default:
-      throw new Error("Unexpected shape of DateField");
+      throw Error("Unexpected shape of DateField");
   }
 
   return (

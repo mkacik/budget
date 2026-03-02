@@ -56,7 +56,7 @@ function ImportExpensesForm({
       const formData = new FormData(form);
       const maybeFile = formData.get("file") as File;
       if (maybeFile?.name === "") {
-        throw new Error("File must be selected.");
+        throw Error("File must be selected.");
       }
 
       const request = new Request(`api/accounts/${account.id}/expenses`, {
@@ -116,7 +116,7 @@ function DeleteExpensesForm({
 
     try {
       if (date === null) {
-        throw new Error("Date must be selected.");
+        throw Error("Date must be selected.");
       }
 
       if (!confirm("Deleting expenses cannot be undone, are you sure?")) {
@@ -282,17 +282,17 @@ function AddExpenseForm({
     const fetchHelper = new FetchHelper(setErrorMessage);
     try {
       if (fields.transactionDate === null) {
-        throw new Error("Transaction date for new expense cannot be empty!");
+        throw Error("Transaction date for new expense cannot be empty!");
       }
       if (fields.amount === 0) {
-        throw new Error("Amount for new expense must be non-zero!");
+        throw Error("Amount for new expense must be non-zero!");
       }
       const description = fields.description;
       if (description === null || description.trim() === "") {
-        throw new Error("Description for new expense cannot be empty!");
+        throw Error("Description for new expense cannot be empty!");
       }
       if (description !== description.trim()) {
-        throw new Error(
+        throw Error(
           "Description field contains illegal leading/trailing whitespace!",
         );
       }

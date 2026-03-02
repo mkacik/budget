@@ -16,7 +16,7 @@ export class FormHelper {
       return null;
     }
     if (typeof value !== "string") {
-      throw new Error("File input found where string was expected.");
+      throw Error("File input found where string was expected.");
     }
     return value;
   }
@@ -24,7 +24,7 @@ export class FormHelper {
   getString(fieldName: string): string {
     const value = this.getStringOrNull(fieldName);
     if (value === null || value === FormHelper.EMPTY) {
-      throw new Error(`Required field '${fieldName}' was empty`);
+      throw Error(`Required field '${fieldName}' was empty`);
     }
     return value;
   }

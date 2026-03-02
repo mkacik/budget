@@ -14,7 +14,7 @@ function getDefaultParams(variant: Variant): Params {
     case FROM_COLUMN:
       return { col: 1 };
   }
-  throw new Error("Unexpected shape of TextField");
+  throw Error("Unexpected shape of TextField");
 }
 
 export function TextFieldForm({
@@ -34,7 +34,7 @@ export function TextFieldForm({
           updateText({ variant: FROM_COLUMN, params: newParams });
           return;
         }
-        throw new Error("Unexpected shape of TextField");
+        throw Error("Unexpected shape of TextField");
     }
   };
 
@@ -57,7 +57,7 @@ export function TextFieldForm({
       break;
     }
     default:
-      throw new Error("Unexpected shape of TextField");
+      throw Error("Unexpected shape of TextField");
   }
 
   return (

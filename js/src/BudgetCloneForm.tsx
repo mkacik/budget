@@ -26,7 +26,7 @@ export function BudgetCloneForm({
 
       const toYear = formHelper.getNumber("toYear");
       if (fromYear === toYear) {
-        throw new Error("Target year must be different than source year!");
+        throw Error("Target year must be different than source year!");
       }
 
       const requestBody = {

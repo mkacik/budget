@@ -22,7 +22,7 @@ function ExpensesSectionTitle({ query }: { query: ExpensesQuery | null }) {
   }
 
   if (query.variant !== "period") {
-    throw new Error("Only period query accepted in this context!");
+    throw Error("Only period query accepted in this context!");
   }
 
   const titleParts: Array<React.ReactNode> = [`[${query.period}]`, " "];

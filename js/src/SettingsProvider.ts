@@ -37,7 +37,7 @@ export class SettingsProvider<T extends VersionedSettings> {
 
   public saveSettings(settings: T): void {
     if (settings.version !== this.currentVersion) {
-      throw new Error("Settings version mismatch, refresh the page!");
+      throw Error("Settings version mismatch, refresh the page!");
     }
     localStorage.setItem(this.storageKey, JSON.stringify(settings));
   }

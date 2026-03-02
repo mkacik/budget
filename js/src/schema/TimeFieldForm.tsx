@@ -17,7 +17,7 @@ function getDefaultParams(variant: Variant): Params {
     case FROM_COLUMN:
       return { col: 0, tz: "Local" };
   }
-  throw new Error("Unexpected shape of TimeField");
+  throw Error("Unexpected shape of TimeField");
 }
 
 export function TimeFieldForm({
@@ -41,7 +41,7 @@ export function TimeFieldForm({
           updateTime({ variant: EMPTY });
           return;
         }
-        throw new Error("Unexpected shape of TimeField");
+        throw Error("Unexpected shape of TimeField");
     }
   };
 
@@ -66,7 +66,7 @@ export function TimeFieldForm({
     case EMPTY:
       break;
     default:
-      throw new Error("Unexpected shape of TimeField");
+      throw Error("Unexpected shape of TimeField");
   }
 
   return (

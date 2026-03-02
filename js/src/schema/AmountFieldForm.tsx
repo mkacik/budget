@@ -22,7 +22,7 @@ function getDefaultParams(variant: Variant): Params {
     case FROM_CREDIT_DEBIT_COLUMNS:
       return { first: 2, invert_first: false, second: 3, invert_second: true };
   }
-  throw new Error("Unexpected shape of AmountField");
+  throw Error("Unexpected shape of AmountField");
 }
 
 export function AmountFieldForm({
@@ -49,7 +49,7 @@ export function AmountFieldForm({
           });
           return;
         }
-        throw new Error("Unexpected shape of AmountField");
+        throw Error("Unexpected shape of AmountField");
     }
   };
 
@@ -83,7 +83,7 @@ export function AmountFieldForm({
       break;
     }
     default:
-      throw new Error("Unexpected shape of AmountField");
+      throw Error("Unexpected shape of AmountField");
   }
 
   return (

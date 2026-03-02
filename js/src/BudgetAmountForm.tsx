@@ -37,7 +37,7 @@ function getNewOptionParams(
     case EVERY_X_YEARS:
       return { amount: optionParams.amount, x: 5 };
     default:
-      throw new Error("Unexpected shape of BudgetAmount");
+      throw Error("Unexpected shape of BudgetAmount");
   }
 }
 

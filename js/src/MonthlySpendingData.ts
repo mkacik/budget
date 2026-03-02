@@ -61,12 +61,12 @@ export class MonthlySpendingData {
 
     if (round(categoryTotal) !== round(itemTotal)) {
       const msg = `categoryTotal: ${categoryTotal} != itemTotal: ${itemTotal}`;
-      throw new Error("Spending does not add up: " + msg);
+      throw Error("Spending does not add up: " + msg);
     }
 
     if (round(categoryTotal + uncategorizedTotal) !== round(monthTotal)) {
       const msg = `categoryTotal: ${categoryTotal} + uncategorizedTotal: ${uncategorizedTotal} != monthTotal: ${monthTotal}`;
-      throw new Error("Spending does not sum up: " + msg);
+      throw Error("Spending does not sum up: " + msg);
     }
   }
 
@@ -108,7 +108,7 @@ export class MonthlySpendingData {
 
     const monthData = this.items.get(month)!;
     if (monthData.has(itemID)) {
-      throw new Error(
+      throw Error(
         `Duplicate SpendingDataPoint for ${month} and item ${itemID}`,
       );
     }
@@ -132,7 +132,7 @@ export class MonthlySpendingData {
 
   private addUncategorizedSpend(month: Month, amount: number): void {
     if (this.uncategorized.has(month)) {
-      throw new Error(`Duplicate SpendingDataPoint for ${month} uncategorized`);
+      throw Error(`Duplicate SpendingDataPoint for ${month} uncategorized`);
     }
 
     this.uncategorized.set(month, amount);

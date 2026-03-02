@@ -60,6 +60,6 @@ export function getSortComparator(sortBy: SortBy) {
       return (a: ExpenseView, b: ExpenseView) =>
         (a.amount - b.amount) * sortOrderMultiplier;
     default:
-      throw new Error("SortBy not supported");
+      throw Error("SortBy not supported");
   }
 }

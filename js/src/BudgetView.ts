@@ -197,7 +197,7 @@ export class BudgetView {
   getItem(itemID: number): BudgetItemView {
     const item = this.itemsByID.get(itemID);
     if (item === null || item === undefined) {
-      throw new Error(
+      throw Error(
         `Something fucky happened - can't find budget item with id: ${itemID}`,
       );
     }
@@ -207,7 +207,7 @@ export class BudgetView {
   getCategory(categoryID: number): BudgetCategoryView {
     const category = this.categoriesByID.get(categoryID);
     if (category === null || category === undefined) {
-      throw new Error(
+      throw Error(
         `Something fucky happened - can't find budget category with id: ${categoryID}`,
       );
     }

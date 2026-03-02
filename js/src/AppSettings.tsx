@@ -30,7 +30,7 @@ export const AppSettingsContext = createContext<AppSettings | null>(null);
 export const useAppSettingsContext = (): AppSettings => {
   const appSettings = useContext(AppSettingsContext);
   if (appSettings === null) {
-    throw new Error("AppSettingsContext requested but not provided");
+    throw Error("AppSettingsContext requested but not provided");
   }
   return appSettings;
 };
