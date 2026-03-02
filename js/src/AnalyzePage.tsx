@@ -9,9 +9,10 @@ import { MonthlySpendingData } from "./MonthlySpendingData";
 import { MonthlySpendingTable } from "./MonthlySpendingTable";
 import { ExpensesQuery, ExpensesList } from "./ExpensesList";
 import { FetchHelper } from "./Common";
-import { ErrorCard, Section, SectionHeader, LoadingBanner } from "./ui/Common";
 
-function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
+import * as UI from "./ui/Common";
+
+function ExpensesSectionTitle({ query }: { query: ExpensesQuery | null }) {
   if (query === null) {
     return (
       <span className="soft">
@@ -37,7 +38,7 @@ function ExpensesSectionHeader({ query }: { query: ExpensesQuery | null }) {
     titleParts.push(categorySelector.displayName);
   }
 
-  return <SectionHeader>{titleParts}</SectionHeader>;
+  return titleParts;
 }
 
 export function AnalyzePage({
@@ -70,9 +71,8 @@ export function AnalyzePage({
 
   return (
     <>
-      <Section>
-        <SectionHeader>Analyze spending</SectionHeader>
-        <ErrorCard message={errorMessage} />
+      <UI.Section title="Analyze spending">
+        <UI.ErrorCard message={errorMessage} />
         {data && (
           <MonthlySpendingTable
             data={data}
@@ -80,18 +80,20 @@ export function AnalyzePage({
             updateExpensesQuery={(query) => setExpensesQuery(query)}
           />
         )}
-      </Section>
-      <Section>
-        <ExpensesSectionHeader query={expensesQuery} />
-        {expensesQuery && (
-          <ExpensesList
-            query={expensesQuery}
-            budget={budget}
-            onExpenseCategoryChange={fetchData}
-          />
-        )}
-      </Section>
-      <LoadingBanner isLoading={loading} />
+      </UI.Section>
+      {data && (
+        <UI.Section title={<ExpensesSectionTitle query={expensesQuery} />}>
+          {expensesQuery && (
+            <ExpensesList
+              query={expensesQuery}
+              budget={budget}
+              onExpenseCategoryChange={fetchData}
+            />
+          )}
+        </UI.Section>
+      )}
+
+      <UI.LoadingBanner isLoading={loading} />
     </>
   );
 }
