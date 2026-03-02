@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 import { ExpenseView } from "./ExpenseView";
 
-import { AccountsView, useAccountsViewContext } from "./AccountsView";
+import { AccountsView } from "./AccountsView";
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
@@ -161,6 +161,7 @@ export type ExpensesTableSettings = {
 
 export function ExpensesTable({
   budget,
+  accounts,
   expenses,
   onExpenseCategoryChange,
   onExpenseNotesChange,
@@ -169,6 +170,7 @@ export function ExpensesTable({
   settings,
 }: {
   budget: BudgetView;
+  accounts: AccountsView;
   expenses: Array<ExpenseView>;
   onExpenseCategoryChange: () => void;
   onExpenseNotesChange: () => void;
@@ -260,7 +262,6 @@ export function ExpensesTable({
   };
 
   const showAccount = settings.showAccount;
-  const accountsView = useAccountsViewContext();
 
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
@@ -330,7 +331,7 @@ export function ExpensesTable({
               }}
               onExpenseNotesChange={onExpenseNotesChange}
               onExpenseDelete={onExpenseDelete}
-              accounts={showAccount ? accountsView : null}
+              accounts={showAccount ? accounts : null}
             />
           </tr>
         ))}

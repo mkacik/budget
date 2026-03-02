@@ -21,8 +21,9 @@ import { BudgetPage } from "./BudgetPage";
 import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
 import { SettingsProvider } from "./SettingsProvider";
-import { ErrorCard, InlineGlyphButton } from "./ui/Common";
 import { FetchHelper } from "./Common";
+
+import * as UI from "./ui/Common";
 
 function HeaderItem({
   onClick,
@@ -68,9 +69,23 @@ function App() {
   const [accounts, setAccounts] = useState<Accounts | null>(null);
   const [schemas, setSchemas] = useState<StatementSchemas | null>(null);
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const fetchHelper = new FetchHelper(setErrorMessage);
+  const handleError = (newErrorMessage: string | null) => {
+    if (errorMessage || newErrorMessage === null) {
+      // if an error occurs while fetching data in top element there is no recovery path;
+      // because of that there is no point in clearing or updating error message
+      return;
+    }
+    setErrorMessage(
+      "Fatal error has occured while fetching base application data. " +
+        "Ensure that server is running and reload the page. Error details: " +
+        newErrorMessage,
+    );
+  };
+
+  const fetchHelper = new FetchHelper(handleError);
 
   const fetchBudget = () =>
     fetchHelper.fetch(new Request(`/api/budget/${year}`), (json) => {
@@ -103,39 +118,84 @@ function App() {
     fetchFunds();
   }, []);
 
-  if (errorMessage !== null) {
-    const message =
-      "Fatal error has occured while fetching base app data. " +
-      "Please check if server is running and reload the page. " +
-      `Error details: ${errorMessage}`;
-    return (
-      <div className="main">
-        <ErrorCard message={message} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    const allFetched = [budget, accounts, schemas, funds].every((val) => val);
+    if (allFetched || errorMessage) {
+      setIsLoading(false);
+    }
+  }, [budget, accounts, schemas, funds, errorMessage]);
 
-  if (
-    budget === null ||
-    accounts === null ||
-    schemas === null ||
-    funds === null
-  ) {
-    return null;
-  }
+  const getPageContent = () => {
+    if (
+      budget === null ||
+      accounts === null ||
+      schemas === null ||
+      funds === null
+    ) {
+      return null;
+    }
 
-  const accountsView = new AccountsView(accounts, schemas);
+    const accountsView = new AccountsView(accounts, schemas);
+
+    switch (tab) {
+      case Tab.Budget:
+        return (
+          <BudgetPage
+            budget={budget}
+            funds={funds.funds}
+            refreshBudget={fetchBudget}
+            setYear={setYear}
+          />
+        );
+      case Tab.Expenses:
+        // keep key in Expenses and in Analyze; without it the expenses/query from previously
+        // selected year will linger until they are refreshed, causing mismatch with budget
+        // that was already updated;
+        return (
+          <AccountsViewContext value={accountsView}>
+            <ExpensesPage
+              key={budget.year}
+              budget={budget}
+              accounts={accountsView}
+            />
+          </AccountsViewContext>
+        );
+      case Tab.Analyze:
+        return (
+          <AccountsViewContext value={accountsView}>
+            <AnalyzePage
+              key={budget.year}
+              budget={budget}
+              funds={funds.funds}
+            />
+          </AccountsViewContext>
+        );
+      case Tab.Accounts:
+        return (
+          <AccountsPage
+            accounts={accounts.accounts}
+            refreshAccounts={fetchAccounts}
+            schemas={schemas.schemas}
+            refreshSchemas={fetchSchemas}
+          />
+        );
+      case Tab.Funds:
+        return <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />;
+      default:
+        return "404";
+    }
+  };
 
   return (
     <>
       <div className="header">
         <span className="flexrow">
-          <InlineGlyphButton
+          <UI.InlineGlyphButton
             glyph="chevron_left"
             onClick={() => setYear(year - 1)}
           />
           <span className="header-year">{year}</span>
-          <InlineGlyphButton
+          <UI.InlineGlyphButton
             glyph="chevron_right"
             onClick={() => setYear(year + 1)}
           />
@@ -160,45 +220,11 @@ function App() {
       </div>
 
       <div className="main">
+        <UI.ErrorCard message={errorMessage} />
+        <UI.LoadingBanner isLoading={isLoading} />
+
         <AppSettingsContext value={settings}>
-          <AccountsViewContext value={accountsView}>
-            {tab == Tab.Budget && (
-              <BudgetPage
-                budget={budget}
-                funds={funds.funds}
-                refreshBudget={fetchBudget}
-                setYear={setYear}
-              />
-            )}
-            {tab == Tab.Expenses && (
-              // keep key here and in analyze; without it the expenses/query from previously selected
-              // year will linger until they are refreshed, causing mismatch with budget that was
-              // already updated;
-              <ExpensesPage
-                key={`expenses.${budget.year}`}
-                budget={budget}
-                accounts={accountsView}
-              />
-            )}
-            {tab == Tab.Accounts && (
-              <AccountsPage
-                accounts={accounts.accounts}
-                refreshAccounts={fetchAccounts}
-                schemas={schemas.schemas}
-                refreshSchemas={fetchSchemas}
-              />
-            )}
-            {tab == Tab.Funds && (
-              <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />
-            )}
-            {tab == Tab.Analyze && (
-              <AnalyzePage
-                key={`analyze.${budget.year}`}
-                budget={budget}
-                funds={funds.funds}
-              />
-            )}
-          </AccountsViewContext>
+          {getPageContent()}
         </AppSettingsContext>
       </div>
     </>

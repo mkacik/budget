@@ -195,6 +195,7 @@ export function ExpensesList({
       )}
       <ExpensesTable
         budget={budget}
+        accounts={accounts}
         expenses={expenses}
         onExpenseCategoryChange={handleExpenseCategoryChange}
         onExpenseNotesChange={fetchExpenses}

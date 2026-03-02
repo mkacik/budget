@@ -47,6 +47,7 @@
 body {
   margin: 0;
   display: block;
+  overflow: hidden;
 
   font-family: var(--font-family);
   font-size: var(--font-content-medium);
@@ -78,8 +79,15 @@ pre {
   overflow: auto;
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
 .header {
   display: flex;
+  flex-grow: 0;
   flex-direction: row;
   gap: 1rem;
   padding: var(--padding-medium);
@@ -119,10 +127,14 @@ pre {
 }
 
 .main {
+  flex-grow: 1;
+
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: var(--gap-large);
+
+  overflow: auto;
 }
 
 .section {
@@ -292,7 +304,7 @@ table {
 
   thead.sticky-header {
     position: sticky;
-    top: 0;
+    top: -1rem;
   }
 
   td {
@@ -496,6 +508,7 @@ table {
   transition-property: opacity;
   transition-duration: 0.5s;
 }
+
 
 .flexrow {
   display: flex;

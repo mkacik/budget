@@ -28,7 +28,6 @@ import {
   LabeledTextArea,
 } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
-import { Section } from "./ui/Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields): Request {
   return new Request("/api/schemas", {
@@ -195,13 +194,11 @@ export function StatementSchemasCard({
   return (
     <>
       <SectionHeader>Statement Schemas</SectionHeader>
-      <Section>
-        <GlyphButton
-          glyph="add"
-          text="add schema"
-          onClick={() => showEditModal(null)}
-        />
-      </Section>
+      <GlyphButton
+        glyph="add"
+        text="add schema"
+        onClick={() => showEditModal(null)}
+      />
 
       {rows}
 

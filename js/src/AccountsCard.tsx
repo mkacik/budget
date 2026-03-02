@@ -21,7 +21,6 @@ import {
   LabeledSelect,
 } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
-import { Section } from "./ui/Common";
 
 const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = [
   "Bank",
@@ -205,13 +204,11 @@ export function AccountsCard({
   return (
     <>
       <SectionHeader>Accounts</SectionHeader>
-      <Section>
-        <GlyphButton
-          glyph="add"
-          text="add account"
-          onClick={() => showEditModal(null)}
-        />
-      </Section>
+      <GlyphButton
+        glyph="add"
+        text="add account"
+        onClick={() => showEditModal(null)}
+      />
       {rows}
       <ModalCard
         title={activeAccount === null ? "New Account" : "Edit Account"}

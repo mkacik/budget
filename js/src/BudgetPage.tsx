@@ -295,30 +295,28 @@ export function BudgetPage({
       <Section>
         <SectionHeader>Budget</SectionHeader>
 
-        <Section>
-          <div className="flexrow">
-            <GlyphButton
-              glyph="add"
-              text="add category"
-              onClick={() => editCategory(null)}
-            />
-            {hasAnyCategories && (
-              <>
-                <GlyphButton
-                  glyph="add"
-                  text="add item"
-                  onClick={() => editItem(null)}
-                />
-                <GlyphButton
-                  glyph="file_copy"
-                  text="clone to empty year"
-                  onClick={() => setModalMode(ModalMode.CLONE)}
-                />
-              </>
-            )}
-            <GlyphButton glyph="settings" onClick={toggleSettings} />
-          </div>
-        </Section>
+        <div className="flexrow">
+          <GlyphButton
+            glyph="add"
+            text="add category"
+            onClick={() => editCategory(null)}
+          />
+          {hasAnyCategories && (
+            <>
+              <GlyphButton
+                glyph="add"
+                text="add item"
+                onClick={() => editItem(null)}
+              />
+              <GlyphButton
+                glyph="file_copy"
+                text="clone to empty year"
+                onClick={() => setModalMode(ModalMode.CLONE)}
+              />
+            </>
+          )}
+          <GlyphButton glyph="settings" onClick={toggleSettings} />
+        </div>
 
         {settings.showSettings && (
           <BudgetPageSettingsForm
