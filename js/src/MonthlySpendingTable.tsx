@@ -21,8 +21,8 @@ function SpendingTableColgroup({ hasFunds }: { hasFunds: boolean }) {
       <Col />
       {Array(columnCount)
         .fill(0)
-        .map((month) => (
-          <Col key={month} widthPct={6} />
+        .map((month, idx) => (
+          <Col key={idx} widthPct={6} />
         ))}
     </colgroup>
   );
