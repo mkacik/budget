@@ -75,10 +75,6 @@ export function StatusCard({
   );
 }
 
-export function ItemCard({ children }: { children: React.ReactNode }) {
-  return <div className="card item">{children}</div>;
-}
-
 export type Glyph =
   | "add"
   | "arrow_downward"

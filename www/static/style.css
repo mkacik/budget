@@ -179,14 +179,6 @@ pre {
   background-color: var(--color-card-success-background);
 }
 
-.item {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-medium);
-  align-items: center;
-  padding-left: 0.8rem;
-}
-
 .modal-container {
   z-index: 2;
   position: fixed;
