@@ -1,13 +1,17 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
+import {
+  BudgetItem,
+  BudgetItemFields,
+  BudgetAmount,
+  BudgetCategory,
+} from "./types/Budget";
 import { BudgetFund } from "./types/Fund";
 
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
 import { BudgetAmountForm } from "./BudgetAmountForm";
 
-import { GlyphButton, ErrorCard } from "./ui/Common";
 import {
   Form,
   FormButtons,
@@ -16,6 +20,8 @@ import {
   LabeledSelect,
 } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
+
+import * as UI from "./ui/Common";
 
 const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
 
@@ -45,33 +51,51 @@ function deleteBudgetItemRequest(id: number): Request {
   });
 }
 
-function isCategoryIgnored(categoryID: number, budget: BudgetView) {
-  const value = budget.ignoredCategories.find(
-    (category) => category.id === categoryID,
-  );
-  return value !== undefined && value !== null;
-}
+function CategoryOptions({
+  categories,
+  ignoredCategories,
+  hasFund,
+}: {
+  categories: Array<BudgetCategoryView>;
+  ignoredCategories: Array<BudgetCategoryView>;
+  hasFund: boolean;
+}) {
+  const getSpacer = () => {
+    if (ignoredCategories.length === 0) {
+      return null;
+    }
 
-function CategoryOption({ category }: { category: BudgetCategoryView }) {
-  return <option value={category.id}>{category.name}</option>;
-}
+    const baseText = "ignored categories below";
+    const extraText =
+      hasFund && " (cannot be selected for item attached to fund)";
 
-function CategoryOptions({ budget }: { budget: BudgetView }) {
-  const spacer =
-    budget.categories.length > 0 && budget.ignoredCategories.length > 0 ? (
+    return (
       <option value="" disabled>
-        — ignored categories below —
+        — {baseText}
+        {extraText} —
       </option>
-    ) : null;
+    );
+  };
 
   return (
     <>
-      {budget.categories.map((category) => (
-        <CategoryOption key={category.id} category={category} />
+      {categories.map((category) => (
+        <option key={category.id} value={category.id}>
+          {category.name}
+        </option>
       ))}
-      {spacer}
-      {budget.ignoredCategories.map((category) => (
-        <CategoryOption key={category.id} category={category} />
+      {getSpacer()}
+      {ignoredCategories.map((category) => (
+        <option
+          key={category.id}
+          value={category.id}
+          disabled={hasFund}
+          title={
+            hasFund ? "Cannot be selected for item attached to fund" : undefined
+          }
+        >
+          {category.name}
+        </option>
       ))}
     </>
   );
@@ -117,35 +141,37 @@ function BudgetItemUsageForm({
       <option value={"budget-and-categorization"}>
         Budget & categorization
       </option>
-      <option value={"budget-only"}>Budget only</option>
+      <option value={"budget-only"}>Budget creation only</option>
       <option value={"categorization-only"}>Categorization only</option>
     </LabeledSelect>
   );
 }
 
 export function BudgetItemForm({
-  budgetItem,
+  item,
+  categoryID,
   onSuccess,
   budget,
   funds,
 }: {
-  budgetItem: BudgetItem | null;
+  item: BudgetItem | null;
+  categoryID: number | null;
   onSuccess: () => void;
   budget: BudgetView;
   funds: Array<BudgetFund>;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fields, setFields] = useState<BudgetItemFields>(
-    budgetItem ?? {
+    item ?? {
       name: "",
-      category_id: budget.categories[0].id,
+      category_id: categoryID ?? budget.categories[0].id,
       fund_id: null,
       amount: DEFAULT_AMOUNT,
       budget_only: false,
     },
   );
 
-  const categoryIgnored = isCategoryIgnored(fields.category_id, budget);
+  const categoryIgnored = budget.getCategory(fields.category_id).ignored;
   const usage = getBudgetItemUsage(fields);
 
   const setName = (e: React.SyntheticEvent) => {
@@ -157,9 +183,9 @@ export function BudgetItemForm({
   const setCategoryID = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLSelectElement;
     const newCategoryID = Number(target.value);
-    const newCategoryIgnored = isCategoryIgnored(newCategoryID, budget);
+    const newCategoryIgnored = budget.getCategory(newCategoryID).ignored;
     if (categoryIgnored && !newCategoryIgnored) {
-      const amount = fields.amount || budgetItem?.amount || DEFAULT_AMOUNT;
+      const amount = fields.amount || item?.amount || DEFAULT_AMOUNT;
       setFields({
         ...fields,
         category_id: newCategoryID,
@@ -190,7 +216,7 @@ export function BudgetItemForm({
       setFields({ ...fields, amount: null, budget_only: false });
       return;
     }
-    const amount = fields.amount || budgetItem?.amount || DEFAULT_AMOUNT;
+    const amount = fields.amount || item?.amount || DEFAULT_AMOUNT;
     if (newUsage === "budget-only") {
       setFields({ ...fields, amount: amount, budget_only: true });
       return;
@@ -231,9 +257,9 @@ export function BudgetItemForm({
       } as BudgetItemFields;
 
       const request =
-        budgetItem === null
+        item === null
           ? createBudgetItemRequest(updatedFields)
-          : updateBudgetItemRequest(budgetItem.id, updatedFields);
+          : updateBudgetItemRequest(item.id, updatedFields);
 
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
@@ -241,11 +267,11 @@ export function BudgetItemForm({
     }
   };
 
-  const maybeDeleteButton = budgetItem && (
-    <GlyphButton
+  const maybeDeleteButton = item && (
+    <UI.GlyphButton
       glyph="delete"
       onClick={() =>
-        fetchHelper.fetch(deleteBudgetItemRequest(budgetItem.id), (_json) =>
+        fetchHelper.fetch(deleteBudgetItemRequest(item.id), (_json) =>
           onSuccess(),
         )
       }
@@ -255,10 +281,11 @@ export function BudgetItemForm({
   const showUsageSelector = !categoryIgnored;
   const showFundSelector = !categoryIgnored;
   const showAmountSelector = !(categoryIgnored || fields.amount === null);
+  const hasFund = fields.fund_id !== null;
 
   return (
     <>
-      <ErrorCard message={errorMessage} />
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
           label="Budget Item Name"
@@ -272,7 +299,11 @@ export function BudgetItemForm({
           value={fields.category_id}
           onChange={setCategoryID}
         >
-          <CategoryOptions budget={budget} />
+          <CategoryOptions
+            categories={budget.categories}
+            ignoredCategories={budget.ignoredCategories}
+            hasFund={hasFund}
+          />
         </LabeledSelect>
 
         {showFundSelector && (
@@ -298,7 +329,7 @@ export function BudgetItemForm({
 
         <FormButtons>
           {maybeDeleteButton}
-          <FormSubmitButton text={budgetItem === null ? "Create" : "Update"} />
+          <FormSubmitButton text={item === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
     </>

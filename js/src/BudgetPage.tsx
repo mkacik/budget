@@ -63,15 +63,18 @@ function BudgetItemRow({
 function BudgetCategoryRow({
   category,
   editCategory,
+  addItem,
 }: {
   category: BudgetCategoryView;
   editCategory: () => void;
+  addItem: () => void;
 }) {
   return (
     <tr className="bold highlight">
       <td className="v-center">
         {category.name}
         <UI.InlineGlyphButton glyph="edit" onClick={editCategory} />
+        <UI.InlineGlyphButton glyph="add" onClick={addItem} />
       </td>
       {!category.ignored && (
         <>
@@ -140,12 +143,11 @@ const DEFAULT_SETTINGS = {
   showCategorizationOnlyItems: true,
 } as BudgetPageSettings;
 
-enum ModalMode {
-  CATEGORY,
-  ITEM,
-  CLONE,
-  HIDDEN,
-}
+type ModalMode =
+  | { variant: "hidden" }
+  | { variant: "clone" }
+  | { variant: "item"; item: BudgetItemView | null; categoryID: number | null }
+  | { variant: "category"; category: BudgetCategoryView | null };
 
 export function BudgetPage({
   budget,
@@ -165,26 +167,25 @@ export function BudgetPage({
     setSettings({ ...settings, showSettings: !settings.showSettings });
   };
 
-  // Note: need this enum, because null value of edited object could represent either new item
-  // or new category;
-  const [modalMode, setModalMode] = useState<ModalMode>(ModalMode.HIDDEN);
-  const [editedCategory, setEditedCategory] =
-    useState<BudgetCategoryView | null>(null);
-  const [editedItem, setEditedItem] = useState<BudgetItemView | null>(null);
+  const [modalMode, setModalMode] = useState<ModalMode>({ variant: "hidden" });
+
+  const hideModal = () => setModalMode({ variant: "hidden" });
 
   const editCategory = (category: BudgetCategoryView | null) => {
-    setEditedCategory(category);
-    setModalMode(ModalMode.CATEGORY);
+    setModalMode({ variant: "category", category: category });
   };
 
-  const editItem = (item: BudgetItemView | null) => {
-    setEditedItem(item);
-    setModalMode(ModalMode.ITEM);
+  const editItem = (item: BudgetItemView | null, categoryID?: number) => {
+    setModalMode({
+      variant: "item",
+      item: item,
+      categoryID: categoryID ?? null,
+    });
   };
 
   const onEditSuccess = () => {
     refreshBudget();
-    setModalMode(ModalMode.HIDDEN);
+    hideModal();
   };
 
   const budgetRows: Array<React.ReactElement> = [];
@@ -192,8 +193,9 @@ export function BudgetPage({
     budgetRows.push(
       <BudgetCategoryRow
         key={category.id}
-        editCategory={() => editCategory(category)}
         category={category}
+        editCategory={() => editCategory(category)}
+        addItem={() => editItem(null, category.id)}
       />,
     );
 
@@ -216,8 +218,9 @@ export function BudgetPage({
     ignoredRows.push(
       <BudgetCategoryRow
         key={category.name}
-        editCategory={() => editCategory(category)}
         category={category}
+        editCategory={() => editCategory(category)}
+        addItem={() => editItem(null, category.id)}
       />,
     );
 
@@ -232,10 +235,12 @@ export function BudgetPage({
     }
   }
 
-  let modalTitle: string = "";
-  let modalContent: React.ReactNode = null;
-  switch (modalMode) {
-    case ModalMode.CATEGORY: {
+  let modalTitle = "";
+  let modalContent: React.ReactNode | null = null;
+
+  switch (modalMode.variant) {
+    case "category": {
+      const editedCategory = modalMode.category;
       modalTitle =
         editedCategory === null
           ? "New Budget Category"
@@ -243,19 +248,21 @@ export function BudgetPage({
       modalContent = (
         <BudgetCategoryForm
           key={editedCategory?.name}
-          budgetCategory={editedCategory?.category ?? null}
+          category={editedCategory?.category ?? null}
           onSuccess={onEditSuccess}
           budget={budget}
         />
       );
       break;
     }
-    case ModalMode.ITEM: {
+    case "item": {
+      const editedItem = modalMode.item;
       modalTitle = editedItem === null ? "New Budget Item" : "Edit Budget Item";
       modalContent = (
         <BudgetItemForm
-          key={editedItem?.name}
-          budgetItem={editedItem?.item ?? null}
+          key={editedItem?.displayName}
+          item={editedItem?.item ?? null}
+          categoryID={modalMode.categoryID}
           onSuccess={onEditSuccess}
           budget={budget}
           funds={funds}
@@ -263,21 +270,19 @@ export function BudgetPage({
       );
       break;
     }
-    case ModalMode.CLONE: {
+    case "clone": {
       modalTitle = `Clone ${budget.year} to an empty year`;
       modalContent = (
         <BudgetCloneForm
           fromYear={budget.year}
           onSuccess={(year) => {
-            setModalMode(ModalMode.HIDDEN);
             setYear(year);
+            hideModal();
           }}
         />
       );
       break;
     }
-    default:
-      break;
   }
 
   const hasCategories = budget.categories.length > 0;
@@ -301,7 +306,7 @@ export function BudgetPage({
               <UI.GlyphButton
                 glyph="file_copy"
                 text="clone to empty year"
-                onClick={() => setModalMode(ModalMode.CLONE)}
+                onClick={() => setModalMode({ variant: "clone" })}
               />
             </>
           )}
@@ -326,8 +331,8 @@ export function BudgetPage({
 
       <UI.ModalCard
         title={modalTitle}
-        visible={modalMode !== ModalMode.HIDDEN}
-        hideModal={() => setModalMode(ModalMode.HIDDEN)}
+        visible={modalMode.variant !== "hidden"}
+        hideModal={hideModal}
       >
         {modalContent}
       </UI.ModalCard>
