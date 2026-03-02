@@ -3,8 +3,9 @@ import { useState } from "react";
 
 import { BudgetCloneRequest } from "./types/Budget";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
-import { ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
+
+import * as UI from "./ui/Common";
 
 export function BudgetCloneForm({
   fromYear,
@@ -47,7 +48,7 @@ export function BudgetCloneForm({
 
   return (
     <>
-      <ErrorCard message={errorMessage} />
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
           label="Year to clone the budget to"

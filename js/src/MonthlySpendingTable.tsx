@@ -4,7 +4,8 @@ import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 import { ExpensesQuery } from "./ExpensesList";
-import { Col, SmallInlineGlyph } from "./ui/Common";
+
+import * as UI from "./ui/Common";
 
 function getMonths(year: number): Array<string> {
   return [...Array(12).keys()].map((m) => {
@@ -18,11 +19,11 @@ function SpendingTableColgroup({ hasFunds }: { hasFunds: boolean }) {
   const columnCount = hasFunds ? 14 : 13;
   return (
     <colgroup>
-      <Col />
+      <UI.Col />
       {Array(columnCount)
         .fill(0)
         .map((month, idx) => (
-          <Col key={idx} widthPct={6} />
+          <UI.Col key={idx} widthPct={6} />
         ))}
     </colgroup>
   );
@@ -234,7 +235,7 @@ function SpendingTableRow({
   };
   const headerCell = (
     <td className="v-center td-button" onClick={headerCellOnClick}>
-      {!isCategory && <SmallInlineGlyph glyph="chevron_right" />}
+      {!isCategory && <UI.SmallInlineGlyph glyph="chevron_right" />}
       {obj.name}
     </td>
   );

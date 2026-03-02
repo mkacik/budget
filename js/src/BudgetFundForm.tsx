@@ -3,9 +3,10 @@ import { useState } from "react";
 
 import { BudgetFund, BudgetFundFields } from "./types/Fund";
 
-import { GlyphButton, ErrorCard } from "./ui/Common";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
+
+import * as UI from "./ui/Common";
 
 function createBudgetFundRequest(fields: BudgetFundFields): Request {
   return new Request("/api/funds", {
@@ -65,7 +66,7 @@ export function BudgetFundForm({
   };
 
   const maybeDeleteButton = fund && (
-    <GlyphButton
+    <UI.GlyphButton
       glyph="delete"
       onClick={() =>
         fetchHelper.fetch(deleteBudgetFundRequest(fund.id), (_json) =>
@@ -77,7 +78,7 @@ export function BudgetFundForm({
 
   return (
     <>
-      <ErrorCard message={errorMessage} />
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
           label="Fund Name"

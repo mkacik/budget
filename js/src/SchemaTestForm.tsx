@@ -3,33 +3,26 @@ import { useState } from "react";
 
 import { StatementSchemaFields } from "./types/StatementSchema";
 import { TestSchemaRequest, TestSchemaResponse } from "./types/SchemaTest";
-import { ErrorCard, SectionHeader, StatusCard } from "./ui/Common";
 import { Form, FormButtons, FormFieldWide, FormSubmitButton } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 
-function TestSchemaResponseCard({
-  response,
-}: {
-  response: TestSchemaResponse | null;
-}) {
-  if (response === null) {
-    return null;
-  }
+import * as UI from "./ui/Common";
 
+function ResultCard({ response }: { response: TestSchemaResponse }) {
   switch (response.result) {
     case "Success": {
       return (
-        <StatusCard status="success" message="Row will be parsed into:">
+        <UI.StatusCard status="success" message="Row will be parsed into:">
           <pre>{JSON.stringify(response.expense, null, 4)}</pre>
-        </StatusCard>
+        </UI.StatusCard>
       );
     }
     case "Skip": {
-      return <StatusCard status="info" message="Row will be skipped" />;
+      return <UI.StatusCard status="info" message="Row will be skipped" />;
     }
     case "Error":
     default: {
-      return <ErrorCard message={response.error} />;
+      return <UI.ErrorCard message={response.error} />;
     }
   }
 }
@@ -69,12 +62,10 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
   };
 
   return (
-    <>
-      <SectionHeader>Test Schema</SectionHeader>
+    <UI.Section title="Test Schema">
+      <UI.ErrorCard message={errorMessage} />
 
-      <ErrorCard message={errorMessage} />
-
-      <TestSchemaResponseCard response={response} />
+      {response && <ResultCard response={response} />}
 
       <Form onSubmit={onSubmit}>
         <FormFieldWide>
@@ -90,6 +81,6 @@ export function SchemaTestForm({ fields }: { fields: StatementSchemaFields }) {
           <FormSubmitButton text="Test Schema" />
         </FormButtons>
       </Form>
-    </>
+    </UI.Section>
   );
 }
