@@ -13,9 +13,30 @@ function getBudgetView(): BudgetView {
     { id: 2, name: "Category 2", ignored: true } as BudgetCategory,
   ];
   const items = [
-    { id: 1, category_id: 1, name: "Item 1", amount: null } as BudgetItem,
-    { id: 2, category_id: 2, name: "Item 2", amount: null } as BudgetItem,
-    { id: 3, category_id: 1, name: "Item 3", amount: null } as BudgetItem,
+    {
+      id: 1,
+      category_id: 1,
+      name: "Item 1",
+      amount: null,
+      fund_id: null,
+      ignored: false,
+    } as BudgetItem,
+    {
+      id: 2,
+      category_id: 2,
+      name: "Item 2",
+      amount: null,
+      fund_id: null,
+      ignored: true,
+    } as BudgetItem,
+    {
+      id: 3,
+      category_id: 1,
+      name: "Item 3",
+      amount: null,
+      fund_id: null,
+      ignored: false,
+    } as BudgetItem,
   ];
   const budget = { categories: categories, items: items } as Budget;
 

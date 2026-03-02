@@ -19,4 +19,5 @@ export default [
       ],
     },
   },
+  { ignores: [ "*.config.{js,cjs}" ] }
 ];

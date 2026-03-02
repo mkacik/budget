@@ -60,7 +60,7 @@ export class FundsView {
   getFund(id: number): FundWithSpend {
     const fund = this.fundsByID.get(id);
     if (fund === undefined) {
-      throw new Error("Found refernce to a fund not in funds list. Aborting.");
+      throw Error("Found refernce to a fund not in funds list. Aborting.");
     }
     return fund;
   }

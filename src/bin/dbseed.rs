@@ -210,6 +210,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Fuel"),
             amount: Some(BudgetAmount::Weekly { amount: 50. }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -221,6 +222,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Loan"),
             amount: Some(BudgetAmount::Monthly { amount: 300. }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -232,6 +234,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Insurance"),
             amount: Some(BudgetAmount::Yearly { amount: 1000. }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -246,6 +249,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
                 amount: 5000.,
             }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -257,6 +261,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Groceries"),
             amount: Some(BudgetAmount::Weekly { amount: 100. }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -268,6 +273,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Clothing"),
             amount: Some(BudgetAmount::Monthly { amount: 200. }),
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -279,6 +285,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("X-Account Transfers"),
             amount: None,
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
@@ -290,6 +297,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Amazon"),
             amount: None,
             budget_only: false,
+            fund_id: None,
         },
     )
     .await?;
