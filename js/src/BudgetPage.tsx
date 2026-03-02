@@ -97,7 +97,9 @@ export function BudgetTable({
   amountPerYear?: number;
   children: React.ReactNode;
 }) {
-  const header = amountPerYear ? (
+  const showAmounts = amountPerYear !== undefined && amountPerYear !== 0;
+
+  const header = showAmounts ? (
     <tr>
       <th>Name</th>
       <th className="r-align">Amortized monthly</th>
@@ -118,7 +120,7 @@ export function BudgetTable({
       </thead>
       <tbody>{children}</tbody>
       <tfoot>
-        {amountPerYear && <BudgetTableFooter amountPerYear={amountPerYear} />}
+        {showAmounts && <BudgetTableFooter amountPerYear={amountPerYear} />}
       </tfoot>
     </table>
   );
