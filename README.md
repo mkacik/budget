@@ -56,6 +56,9 @@ Special Budget Items:
 Groups Budget Items together, and acts as boundary for comparing spending against allowance for
 yearly budget.
 
+Ignored categories can be used to explicitly mark some expenses as excluded from tracking. This
+can be useful to prevent double counting transactions from cross-account transfers.
+
 ### Budget Fund
 Fund groups Budget Items across years and represents a saving bucket in anticipation of rare
 one-time big purchases, like buying new car or replacing AC unit in the house. This allows for

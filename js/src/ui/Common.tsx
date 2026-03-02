@@ -160,12 +160,27 @@ export function Pill({ children }: { children: string }) {
   return <span className="pill">{children}</span>;
 }
 
-export function Section({ children }: { children: React.ReactNode }) {
-  return <div className="section">{children}</div>;
+export function Section({
+  title,
+  children,
+}: {
+  title?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="section">
+      {title && <SectionHeader>{title}</SectionHeader>}
+      {children}
+    </div>
+  );
 }
 
 export function SectionHeader({ children }: { children: React.ReactNode }) {
   return <span className="title">{children}</span>;
+}
+
+export function Flex({ children }: { children: React.ReactNode }) {
+  return <span className="flexrow">{children}</span>;
 }
 
 export function Col({ widthPct }: { widthPct?: number }) {

@@ -11,49 +11,51 @@ import {
   BudgetPageSettings,
   BudgetPageSettingsForm,
 } from "./BudgetPageSettings";
-import {
-  GlyphButton,
-  InlineGlyph,
-  InlineGlyphButton,
-  ModalCard,
-  Pill,
-  Section,
-  SectionHeader,
-} from "./ui/Common";
+
+import * as UI from "./ui/Common";
 
 function BudgetItemRow({
   item,
   editItem,
-  skipAmountColumns,
 }: {
   item: BudgetItemView;
   editItem: () => void;
-  skipAmountColumns?: boolean;
 }) {
-  const amounts = item.isCategorizationOnly ? (
-    <>
-      <td className="r-align soft">—</td>
-      <td className="r-align soft">—</td>
-    </>
-  ) : (
-    <>
-      <td className="number r-align">{(item.amountPerYear / 12).toFixed(2)}</td>
-      <td className="number r-align">{item.amountPerYear.toFixed(2)}</td>
-    </>
-  );
+  const getAmountColumns = () => {
+    if (item.ignored) {
+      return null;
+    }
 
-  const showAmountColumns = !skipAmountColumns;
+    if (item.isCategorizationOnly) {
+      return (
+        <>
+          <td className="r-align soft">—</td>
+          <td className="r-align soft">—</td>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <td className="number r-align">
+          {(item.amountPerYear / 12).toFixed(2)}
+        </td>
+        <td className="number r-align">{item.amountPerYear.toFixed(2)}</td>
+      </>
+    );
+  };
+
   return (
     <tr>
       <td className="v-center">
-        <InlineGlyph glyph="chevron_right" />
+        <UI.InlineGlyph glyph="chevron_right" />
         {item.name}
-        {item.isBudgetOnly && <Pill>hidden in categorization</Pill>}
-        {item.isCategorizationOnly && <Pill>categorization only</Pill>}
-        {item.fundID && <Pill>fund</Pill>}
-        <InlineGlyphButton glyph="edit" onClick={editItem} />
+        {item.isBudgetOnly && <UI.Pill>hidden in categorization</UI.Pill>}
+        {item.isCategorizationOnly && <UI.Pill>categorization only</UI.Pill>}
+        {item.fundID && <UI.Pill>fund</UI.Pill>}
+        <UI.InlineGlyphButton glyph="edit" onClick={editItem} />
       </td>
-      {showAmountColumns && amounts}
+      {getAmountColumns()}
     </tr>
   );
 }
@@ -61,28 +63,26 @@ function BudgetItemRow({
 function BudgetCategoryRow({
   category,
   editCategory,
-  skipAmountColumns,
 }: {
   category: BudgetCategoryView;
   editCategory: () => void;
-  skipAmountColumns?: boolean;
 }) {
-  const amounts = skipAmountColumns ? null : (
-    <>
-      <td className="number r-align">
-        {(category.amountPerYear / 12).toFixed(2)}
-      </td>
-      <td className="number r-align">{category.amountPerYear.toFixed(2)}</td>
-    </>
-  );
-
   return (
     <tr className="bold highlight">
       <td className="v-center">
         {category.name}
-        <InlineGlyphButton glyph="edit" onClick={editCategory} />
+        <UI.InlineGlyphButton glyph="edit" onClick={editCategory} />
       </td>
-      {amounts}
+      {!category.ignored && (
+        <>
+          <td className="number r-align">
+            {(category.amountPerYear / 12).toFixed(2)}
+          </td>
+          <td className="number r-align">
+            {category.amountPerYear.toFixed(2)}
+          </td>
+        </>
+      )}
     </tr>
   );
 }
@@ -94,25 +94,17 @@ export function BudgetTable({
   amountPerYear?: number;
   children: React.ReactNode;
 }) {
-  let header: React.ReactNode = null;
-  let footer: React.ReactNode = null;
-
-  if (amountPerYear !== undefined && amountPerYear !== null) {
-    header = (
-      <tr>
-        <th>Name</th>
-        <th className="r-align">Amortized monthly</th>
-        <th className="r-align">Amortized yearly</th>
-      </tr>
-    );
-    footer = <BudgetTableFooter amountPerYear={amountPerYear} />;
-  } else {
-    header = (
-      <tr>
-        <th>Name</th>
-      </tr>
-    );
-  }
+  let header = amountPerYear ? (
+    <tr>
+      <th>Name</th>
+      <th className="r-align">Amortized monthly</th>
+      <th className="r-align">Amortized yearly</th>
+    </tr>
+  ) : (
+    <tr>
+      <th>Name</th>
+    </tr>
+  );
 
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
@@ -122,7 +114,9 @@ export function BudgetTable({
         {header}
       </thead>
       <tbody>{children}</tbody>
-      <tfoot>{footer}</tfoot>
+      <tfoot>
+        {amountPerYear && <BudgetTableFooter amountPerYear={amountPerYear} />}
+      </tfoot>
     </table>
   );
 }
@@ -167,6 +161,10 @@ export function BudgetPage({
   const [settings, setSettings] =
     useState<BudgetPageSettings>(DEFAULT_SETTINGS);
 
+  const toggleSettings = () => {
+    setSettings({ ...settings, showSettings: !settings.showSettings });
+  };
+
   // Note: need this enum, because null value of edited object could represent either new item
   // or new category;
   const [modalMode, setModalMode] = useState<ModalMode>(ModalMode.HIDDEN);
@@ -182,10 +180,6 @@ export function BudgetPage({
   const editItem = (item: BudgetItemView | null) => {
     setEditedItem(item);
     setModalMode(ModalMode.ITEM);
-  };
-
-  const toggleSettings = () => {
-    setSettings({ ...settings, showSettings: !settings.showSettings });
   };
 
   const onEditSuccess = () => {
@@ -224,7 +218,6 @@ export function BudgetPage({
         key={category.name}
         editCategory={() => editCategory(category)}
         category={category}
-        skipAmountColumns={true}
       />,
     );
 
@@ -234,7 +227,6 @@ export function BudgetPage({
           key={item.name}
           item={item}
           editItem={() => editItem(item)}
-          skipAmountColumns={true}
         />,
       );
     }
@@ -288,35 +280,33 @@ export function BudgetPage({
       break;
   }
 
-  const hasAnyCategories = budget.categories.length > 0;
+  const hasCategories = budget.categories.length > 0;
 
   return (
     <>
-      <Section>
-        <SectionHeader>Budget</SectionHeader>
-
-        <div className="flexrow">
-          <GlyphButton
+      <UI.Section title="Budget">
+        <UI.Flex>
+          <UI.GlyphButton
             glyph="add"
             text="add category"
             onClick={() => editCategory(null)}
           />
-          {hasAnyCategories && (
+          {hasCategories && (
             <>
-              <GlyphButton
+              <UI.GlyphButton
                 glyph="add"
                 text="add item"
                 onClick={() => editItem(null)}
               />
-              <GlyphButton
+              <UI.GlyphButton
                 glyph="file_copy"
                 text="clone to empty year"
                 onClick={() => setModalMode(ModalMode.CLONE)}
               />
             </>
           )}
-          <GlyphButton glyph="settings" onClick={toggleSettings} />
-        </div>
+          <UI.GlyphButton glyph="settings" onClick={toggleSettings} />
+        </UI.Flex>
 
         {settings.showSettings && (
           <BudgetPageSettingsForm
@@ -328,24 +318,19 @@ export function BudgetPage({
         <BudgetTable amountPerYear={budget.amountPerYear}>
           {budgetRows}
         </BudgetTable>
-      </Section>
+      </UI.Section>
 
-      <Section>
-        <SectionHeader>Ignored categories</SectionHeader>
-        <span>
-          Items from ignored categories can be used to exclude x-account moves.
-        </span>
-
+      <UI.Section title="Ignored categories">
         <BudgetTable>{ignoredRows}</BudgetTable>
-      </Section>
+      </UI.Section>
 
-      <ModalCard
+      <UI.ModalCard
         title={modalTitle}
         visible={modalMode !== ModalMode.HIDDEN}
         hideModal={() => setModalMode(ModalMode.HIDDEN)}
       >
         {modalContent}
-      </ModalCard>
+      </UI.ModalCard>
     </>
   );
 }
