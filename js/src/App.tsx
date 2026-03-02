@@ -173,9 +173,8 @@ function App() {
       case Tab.Accounts:
         return (
           <AccountsPage
-            accounts={accounts.accounts}
+            accounts={accountsView}
             refreshAccounts={fetchAccounts}
-            schemas={schemas.schemas}
             refreshSchemas={fetchSchemas}
           />
         );

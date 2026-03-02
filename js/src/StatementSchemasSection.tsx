@@ -13,14 +13,6 @@ import {
 } from "./RecordMappingForm";
 import { SchemaTestForm } from "./SchemaTestForm";
 import {
-  ErrorCard,
-  GlyphButton,
-  InlineGlyphButton,
-  ItemCard,
-  ModalCard,
-  SectionHeader,
-} from "./ui/Common";
-import {
   Form,
   FormButtons,
   FormSubmitButton,
@@ -28,6 +20,9 @@ import {
   LabeledTextArea,
 } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
+import { useAppSettingsContext } from "./AppSettings";
+
+import * as UI from "./ui/Common";
 
 function createStatementSchemaRequest(fields: StatementSchemaFields): Request {
   return new Request("/api/schemas", {
@@ -99,7 +94,7 @@ function StatementSchemaForm({
       if (fields.record_mapping === null) {
         throw new Error("Mapping must be configured for all columns");
       }
-      const schemaFields: StatementSchemaFields = {
+      const newFields: StatementSchemaFields = {
         name: updatedName,
         notes: fields.notes,
         record_mapping: fields.record_mapping,
@@ -107,28 +102,17 @@ function StatementSchemaForm({
 
       const request =
         schema === null
-          ? createStatementSchemaRequest(schemaFields)
-          : updateStatementSchemaRequest(schema, schemaFields);
+          ? createStatementSchemaRequest(newFields)
+          : updateStatementSchemaRequest(schema, newFields);
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }
   };
 
-  const maybeDeleteButton = schema && (
-    <GlyphButton
-      glyph="delete"
-      onClick={() =>
-        fetchHelper.fetch(deleteStatementSchemaRequest(schema), (_json) =>
-          onSuccess(),
-        )
-      }
-    />
-  );
-
   return (
     <>
-      <ErrorCard message={errorMessage} />
+      <UI.ErrorCard message={errorMessage} />
 
       <Form onSubmit={onSubmit}>
         <LabeledInput
@@ -150,7 +134,17 @@ function StatementSchemaForm({
         />
 
         <FormButtons>
-          {maybeDeleteButton}
+          {schema && (
+            <UI.GlyphButton
+              glyph="delete"
+              onClick={() =>
+                fetchHelper.fetch(
+                  deleteStatementSchemaRequest(schema),
+                  (_json) => onSuccess(),
+                )
+              }
+            />
+          )}
           <FormSubmitButton text={schema === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
@@ -160,7 +154,42 @@ function StatementSchemaForm({
   );
 }
 
-export function StatementSchemasCard({
+function StatementSchemasTable({
+  schemas,
+  editSchema,
+}: {
+  schemas: Array<StatementSchema>;
+  editSchema: (schema: StatementSchema | null) => void;
+}) {
+  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
+
+  const rows = schemas.map((schema) => {
+    return (
+      <tr key={schema.id}>
+        <td className="v-center">
+          {schema.name}
+          <UI.InlineGlyphButton
+            glyph="edit"
+            onClick={() => editSchema(schema)}
+          />
+        </td>
+      </tr>
+    );
+  });
+
+  return (
+    <table className="large">
+      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+        <tr>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+}
+
+export function StatementSchemasSection({
   schemas,
   refreshSchemas,
 }: {
@@ -172,47 +201,37 @@ export function StatementSchemasCard({
     null,
   );
 
-  const showEditModal = (schema: StatementSchema | null) => {
+  const editSchema = (schema: StatementSchema | null) => {
     setActiveSchema(schema);
     setModalVisible(true);
   };
-  const hideEditModal = () => setModalVisible(false);
+  const hideModal = () => setModalVisible(false);
   const onEditSuccess = () => {
     refreshSchemas();
-    hideEditModal();
+    hideModal();
   };
 
-  const rows = schemas.map((schema) => {
-    return (
-      <ItemCard key={schema.id}>
-        <span>{schema.name}</span>
-        <InlineGlyphButton glyph="edit" onClick={() => showEditModal(schema)} />
-      </ItemCard>
-    );
-  });
-
   return (
-    <>
-      <SectionHeader>Statement Schemas</SectionHeader>
-      <GlyphButton
+    <UI.Section title="Statement Schemas">
+      <UI.GlyphButton
         glyph="add"
         text="add schema"
-        onClick={() => showEditModal(null)}
+        onClick={() => editSchema(null)}
       />
 
-      {rows}
+      <StatementSchemasTable schemas={schemas} editSchema={editSchema} />
 
-      <ModalCard
+      <UI.ModalCard
         title={activeSchema === null ? "New Schema" : "Edit Schema"}
         visible={modalVisible}
-        hideModal={hideEditModal}
+        hideModal={hideModal}
       >
         <StatementSchemaForm
           key={activeSchema?.name}
           schema={activeSchema}
           onSuccess={onEditSuccess}
         />
-      </ModalCard>
-    </>
+      </UI.ModalCard>
+    </UI.Section>
   );
 }

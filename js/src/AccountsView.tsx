@@ -11,7 +11,7 @@ export class AccountsView {
   accounts: Array<AccountView>;
   accountsByID: Map<number, AccountView>;
 
-  // schemasByID: Map<number, StatementSchema>;
+  schemas: Array<StatementSchema>;
 
   constructor(accounts: Accounts, schemas: StatementSchemas) {
     const schemasMap = new Map<number, StatementSchema>();
@@ -46,6 +46,7 @@ export class AccountsView {
 
     this.accountsByID = accountsMap;
     this.accounts = Array.from(accountsMap.values()).toSorted(cmp);
+    this.schemas = schemas.schemas;
   }
 
   firstOrNull(): AccountView | null {

@@ -107,7 +107,7 @@ export function FundsPage({
 
   useEffect(() => {
     fetchItems();
-  }, []); // subscribe to item changes
+  }, []);
 
   return (
     <UI.Section>

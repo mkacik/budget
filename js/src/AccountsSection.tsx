@@ -4,15 +4,9 @@ import { useState } from "react";
 import { Account, AccountFields, AccountType } from "./types/Account";
 import { StatementSchema } from "./types/StatementSchema";
 
-import {
-  ErrorCard,
-  GlyphButton,
-  InlineGlyphButton,
-  ItemCard,
-  ModalCard,
-  Pill,
-  SectionHeader,
-} from "./ui/Common";
+import { AccountView, AccountsView } from "./AccountsView";
+import { useAppSettingsContext } from "./AppSettings";
+
 import {
   Form,
   FormButtons,
@@ -21,6 +15,8 @@ import {
   LabeledSelect,
 } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
+
+import * as UI from "./ui/Common";
 
 const ACCOUNT_TYPE_OPTIONS: Array<AccountType> = [
   "Bank",
@@ -70,15 +66,14 @@ function StatementSchemaOptions({
 }: {
   schemas: Array<StatementSchema>;
 }) {
-  const options = schemas.map((schema, idx) => (
-    <option key={idx} value={schema.id}>
-      {schema.name}
-    </option>
-  ));
   return (
     <>
       <option value={FormHelper.EMPTY}>-</option>
-      {options}
+      {schemas.map((schema, idx) => (
+        <option key={idx} value={schema.id}>
+          {schema.name}
+        </option>
+      ))}
     </>
   );
 }
@@ -101,7 +96,7 @@ function AccountForm({
     const form = e.target as HTMLFormElement;
     const formHelper = new FormHelper(form);
     try {
-      const accountFields: AccountFields = {
+      const fields: AccountFields = {
         name: formHelper.getString("name"),
         account_type: formHelper.getString("accountType") as AccountType,
         statement_schema_id: formHelper.getNumberOrNull("importConfig"),
@@ -109,22 +104,13 @@ function AccountForm({
 
       const request =
         account === null
-          ? createAccountRequest(accountFields)
-          : updateAccountRequest(account, accountFields);
+          ? createAccountRequest(fields)
+          : updateAccountRequest(account, fields);
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
     }
   };
-
-  const maybeDeleteButton = account && (
-    <GlyphButton
-      glyph="delete"
-      onClick={() =>
-        fetchHelper.fetch(deleteAccountRequest(account), (_json) => onSuccess())
-      }
-    />
-  );
 
   const accountName = account?.name;
   const accountType = account?.account_type ?? ACCOUNT_TYPE_OPTIONS[0];
@@ -132,7 +118,7 @@ function AccountForm({
 
   return (
     <>
-      <ErrorCard message={errorMessage} />
+      <UI.ErrorCard message={errorMessage} />
       <Form onSubmit={onSubmit}>
         <LabeledInput
           label="AccountName"
@@ -158,7 +144,16 @@ function AccountForm({
         </LabeledSelect>
 
         <FormButtons>
-          {maybeDeleteButton}
+          {account && (
+            <UI.GlyphButton
+              glyph="delete"
+              onClick={() =>
+                fetchHelper.fetch(deleteAccountRequest(account), (_json) =>
+                  onSuccess(),
+                )
+              }
+            />
+          )}
           <FormSubmitButton text={account === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>
@@ -166,62 +161,86 @@ function AccountForm({
   );
 }
 
-export function AccountsCard({
+function AccountsTable({
   accounts,
-  refreshAccounts,
-  schemas,
+  editAccount,
 }: {
-  accounts: Array<Account>;
-  refreshAccounts: () => void;
-  schemas: Array<StatementSchema>;
+  accounts: Array<AccountView>;
+  editAccount: (account: Account | null) => void;
 }) {
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [activeAccount, setActiveAccount] = useState<Account | null>(null);
-
-  const showEditModal = (account: Account | null) => {
-    setActiveAccount(account);
-    setModalVisible(true);
-  };
-  const hideEditModal = () => setModalVisible(false);
-  const onEditSuccess = () => {
-    refreshAccounts();
-    hideEditModal();
-  };
+  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   const rows = accounts.map((account) => {
     return (
-      <ItemCard key={account.id}>
-        <span>{account.name}</span>
-        <Pill>{account.account_type}</Pill>
-        <InlineGlyphButton
-          glyph="edit"
-          onClick={() => showEditModal(account)}
-        />
-      </ItemCard>
+      <tr key={account.id}>
+        <td className="v-center">
+          {account.name}
+          <UI.InlineGlyphButton
+            glyph="edit"
+            onClick={() => editAccount(account)}
+          />
+        </td>
+        <td>{account.account_type}</td>
+        <td>{account.statementSchema?.name}</td>
+      </tr>
     );
   });
 
   return (
-    <>
-      <SectionHeader>Accounts</SectionHeader>
-      <GlyphButton
+    <table className="large">
+      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Schema</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+}
+
+export function AccountsSection({
+  accounts,
+  refreshAccounts,
+}: {
+  accounts: AccountsView;
+  refreshAccounts: () => void;
+}) {
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [activeAccount, setActiveAccount] = useState<Account | null>(null);
+
+  const editAccount = (account: Account | null) => {
+    setActiveAccount(account);
+    setModalVisible(true);
+  };
+  const hideModal = () => setModalVisible(false);
+  const onEditSuccess = () => {
+    refreshAccounts();
+    hideModal();
+  };
+
+  return (
+    <UI.Section title="Accounts">
+      <UI.GlyphButton
         glyph="add"
         text="add account"
-        onClick={() => showEditModal(null)}
+        onClick={() => editAccount(null)}
       />
-      {rows}
-      <ModalCard
+      <AccountsTable accounts={accounts.accounts} editAccount={editAccount} />
+
+      <UI.ModalCard
         title={activeAccount === null ? "New Account" : "Edit Account"}
         visible={modalVisible}
-        hideModal={hideEditModal}
+        hideModal={hideModal}
       >
         <AccountForm
           key={activeAccount?.name}
           account={activeAccount}
           onSuccess={onEditSuccess}
-          schemas={schemas}
+          schemas={accounts.schemas}
         />
-      </ModalCard>
-    </>
+      </UI.ModalCard>
+    </UI.Section>
   );
 }

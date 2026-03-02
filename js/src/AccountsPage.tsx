@@ -1,38 +1,25 @@
 import React from "react";
 
-import { Account } from "./types/Account";
-import { StatementSchema } from "./types/StatementSchema";
-
-import { AccountsCard } from "./AccountsCard";
-import { StatementSchemasCard } from "./StatementSchemasCard";
-import { Section } from "./ui/Common";
+import { AccountsSection } from "./AccountsSection";
+import { AccountsView } from "./AccountsView";
+import { StatementSchemasSection } from "./StatementSchemasSection";
 
 export function AccountsPage({
   accounts,
   refreshAccounts,
-  schemas,
   refreshSchemas,
 }: {
-  accounts: Array<Account>;
+  accounts: AccountsView;
   refreshAccounts: () => void;
-  schemas: Array<StatementSchema>;
   refreshSchemas: () => void;
 }) {
   return (
     <>
-      <Section>
-        <AccountsCard
-          accounts={accounts}
-          refreshAccounts={refreshAccounts}
-          schemas={schemas}
-        />
-      </Section>
-      <Section>
-        <StatementSchemasCard
-          schemas={schemas}
-          refreshSchemas={refreshSchemas}
-        />
-      </Section>
+      <AccountsSection accounts={accounts} refreshAccounts={refreshAccounts} />
+      <StatementSchemasSection
+        schemas={accounts.schemas}
+        refreshSchemas={refreshSchemas}
+      />
     </>
   );
 }
