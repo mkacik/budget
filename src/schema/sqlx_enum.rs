@@ -11,7 +11,7 @@ use sqlx::Database as SqlxDatabase;
 use sqlx::{Decode, Encode, Sqlite, Type};
 
 use crate::schema::account::AccountType;
-use crate::schema::budget_item::BudgetAmount;
+use crate::schema::budget_item::{BudgetAllowance, BudgetAmount};
 use crate::schema::record_mapping::RecordMapping;
 
 type BoxDynError = Box<dyn std::error::Error + 'static + Send + Sync>;
@@ -39,6 +39,44 @@ impl Type<Sqlite> for AccountType {
 }
 
 impl<'q> Encode<'q, Sqlite> for AccountType {
+    fn encode_by_ref(&self, buf: &mut Vec<SqliteArgumentValue<'q>>) -> Result<IsNull, BoxDynError> {
+        let string = match serde_json::to_string(&self) {
+            Ok(value) => value,
+            Err(e) => {
+                let err: BoxDynError = format!("{:?}", e).into();
+                return Err(err);
+            }
+        };
+
+        Encode::<Sqlite>::encode(string, buf)
+    }
+}
+
+impl<'r> Decode<'r, Sqlite> for BudgetAllowance {
+    fn decode(
+        value: <Sqlite as SqlxDatabase>::ValueRef<'r>,
+    ) -> Result<BudgetAllowance, BoxDynError> {
+        let json_string = <&str as Decode<Sqlite>>::decode(value)?;
+
+        let value: BudgetAllowance = match serde_json::from_str(json_string) {
+            Ok(value) => value,
+            Err(e) => {
+                let err: BoxDynError = format!("{:?}", e).into();
+                return Err(err);
+            }
+        };
+
+        Ok(value)
+    }
+}
+
+impl Type<Sqlite> for BudgetAllowance {
+    fn type_info() -> <Sqlite as SqlxDatabase>::TypeInfo {
+        <&str as Type<Sqlite>>::type_info()
+    }
+}
+
+impl<'q> Encode<'q, Sqlite> for BudgetAllowance {
     fn encode_by_ref(&self, buf: &mut Vec<SqliteArgumentValue<'q>>) -> Result<IsNull, BoxDynError> {
         let string = match serde_json::to_string(&self) {
             Ok(value) => value,

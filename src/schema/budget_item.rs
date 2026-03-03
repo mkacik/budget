@@ -6,6 +6,16 @@ use crate::database::{Database, ID};
 
 // helper PRIVATE type to not have to fuck with changing all places that use f64.
 type DollarAmount = f64;
+type CentAmount = i32;
+
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(tag = "variant", content = "params")]
+#[ts(export_to = "Budget.ts", tag = "variant", content = "amount")]
+pub enum BudgetAllowance {
+    Weekly(CentAmount),
+    Monthly(CentAmount),
+    Yearly(CentAmount),
+}
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = "Budget.ts")]
@@ -15,6 +25,7 @@ pub struct BudgetItemFields {
     pub name: String,
     pub amount: Option<BudgetAmount>,
     pub budget_only: bool,
+    pub allowance: Option<BudgetAllowance>,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]

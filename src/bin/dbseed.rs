@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 use budget::schema::account::{Account, AccountFields, AccountType};
 use budget::schema::budget::Budget;
 use budget::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
-use budget::schema::budget_item::{BudgetAmount, BudgetItem, BudgetItemFields};
+use budget::schema::budget_item::{BudgetAllowance, BudgetAmount, BudgetItem, BudgetItemFields};
 use budget::schema::datetime::TZ;
 use budget::schema::record_mapping::{AmountField, DateField, RecordMapping, TextField, TimeField};
 use budget::schema::statement_schema::{StatementSchema, StatementSchemaFields};
@@ -211,6 +211,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: Some(BudgetAmount::Weekly { amount: 50. }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Weekly(50 * 100)),
         },
     )
     .await?;
@@ -223,6 +224,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: Some(BudgetAmount::Monthly { amount: 300. }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Monthly(300 * 100)),
         },
     )
     .await?;
@@ -235,6 +237,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: Some(BudgetAmount::Yearly { amount: 1000. }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Yearly(1000 * 100)),
         },
     )
     .await?;
@@ -250,6 +253,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Yearly(1000 * 100)),
         },
     )
     .await?;
@@ -262,6 +266,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: Some(BudgetAmount::Weekly { amount: 100. }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Weekly(100 * 100)),
         },
     )
     .await?;
@@ -274,6 +279,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: Some(BudgetAmount::Monthly { amount: 200. }),
             budget_only: false,
             fund_id: None,
+            allowance: Some(BudgetAllowance::Monthly(200 * 100)),
         },
     )
     .await?;
@@ -286,6 +292,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: None,
             budget_only: false,
             fund_id: None,
+            allowance: None,
         },
     )
     .await?;
@@ -298,6 +305,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             amount: None,
             budget_only: false,
             fund_id: None,
+            allowance: None,
         },
     )
     .await?;
