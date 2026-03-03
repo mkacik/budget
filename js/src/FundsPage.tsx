@@ -33,7 +33,7 @@ export function FundsTable({
   const rows: Array<React.ReactNode> = [];
   for (const fund of fundsView.funds) {
     const row = (
-      <tr className="bold highlight" key={fund.id}>
+      <tr className="bold highlight" key={`fund:${fund.id}`}>
         <td className="v-center">
           {fund.name}
           <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
@@ -47,7 +47,7 @@ export function FundsTable({
     const fundItems = fundsView.getItems(fund.id);
     for (const item of fundItems) {
       const row = (
-        <tr key={item.id}>
+        <tr key={`item:${item.id}`}>
           <td className="v-center">
             <UI.InlineGlyph glyph="chevron_right" />
             {item.year} :: {item.display_name}
