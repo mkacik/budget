@@ -11,6 +11,7 @@ mod database;
 mod genjs;
 mod guards;
 mod import;
+mod migration;
 mod passwords;
 mod routes;
 mod schema;
@@ -40,6 +41,9 @@ enum Command {
 
     /// Starts the server
     Server,
+
+    /// Perform data migration
+    Migration,
 }
 
 async fn run() -> Result<Rocket<Ignite>, RocketError> {
@@ -123,6 +127,11 @@ async fn main() -> () {
         }
         Command::Server => {
             let _ = run().await;
+        }
+        Command::Migration => {
+            if let Err(error) = migration::run().await {
+                println!("Migration failed: {:?}", error);
+            }
         }
     };
 }
