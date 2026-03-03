@@ -185,9 +185,13 @@ function App() {
     }
   };
 
+  const isDev = process.env.NODE_ENV !== "production";
   return (
     <>
-      <div className="header">
+      <div
+        className="header"
+        style={isDev ? { backgroundColor: "pink" } : undefined}
+      >
         <span className="flexrow">
           <UI.InlineGlyphButton
             glyph="chevron_left"
