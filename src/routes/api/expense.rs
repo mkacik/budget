@@ -129,7 +129,7 @@ pub async fn delete_expenses(
 
 fn to_simple_csv_row(
     transaction_date: &str,
-    amount: f64,
+    amount: i32,
     description: &str,
 ) -> anyhow::Result<String> {
     let mut wtr = csv::WriterBuilder::new()

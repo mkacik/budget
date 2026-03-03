@@ -1,33 +1,25 @@
 import {
   Budget,
-  BudgetAmount,
+  BudgetAllowance,
   BudgetCategory,
   BudgetItem,
 } from "./types/Budget";
 
-export function getAmountPerYear(amount: BudgetAmount | null): number {
-  if (amount === null) {
+export function getAmountPerYear(allowance: BudgetAllowance | null) {
+  if (allowance === null) {
     return 0;
   }
 
-  const props = Object.keys(amount);
-  if (props.length !== 1) {
-    throw Error("Incorrect BudgetAmount enum value!");
-  }
-  const enumKey = props[0];
-  const enumProps = amount[enumKey];
-
-  switch (enumKey) {
+  const amount = allowance.amount;
+  switch (allowance.variant) {
     case "Weekly":
-      return enumProps.amount! * 52;
+      return amount * 52;
     case "Monthly":
-      return enumProps.amount! * 12;
+      return amount * 12;
     case "Yearly":
-      return enumProps.amount! * 1;
-    case "EveryXYears":
-      return enumProps.amount! / enumProps.x!;
+      return amount;
     default:
-      throw Error("Incorrect BudgetAmount enum value!");
+      throw Error("Incorrect BudgetAllowance variant!");
   }
 }
 
@@ -37,11 +29,15 @@ export class BudgetItemView {
 
   constructor(item: BudgetItem) {
     this.item = item;
-    this.amountPerYear = getAmountPerYear(item.amount);
+    this.amountPerYear = getAmountPerYear(item.allowance);
   }
 
   get id() {
     return this.item.id;
+  }
+
+  get allowance() {
+    return this.item.allowance;
   }
 
   get categoryID() {
@@ -73,7 +69,7 @@ export class BudgetItemView {
   }
 
   get isCategorizationOnly() {
-    return this.item.amount === null && !this.item.ignored;
+    return this.item.allowance === null && !this.item.ignored;
   }
 }
 

@@ -26,9 +26,11 @@ function BudgetItemRow({
       return null;
     }
 
-    if (item.isCategorizationOnly) {
+    if (item.allowance === null) {
       return (
         <>
+          <td className="r-align soft">—</td>
+          <td className="soft">—</td>
           <td className="r-align soft">—</td>
           <td className="r-align soft">—</td>
         </>
@@ -37,10 +39,10 @@ function BudgetItemRow({
 
     return (
       <>
-        <td className="number r-align">
-          {(item.amountPerYear / 12).toFixed(2)}
-        </td>
-        <td className="number r-align">{item.amountPerYear.toFixed(2)}</td>
+        <UI.CurrencyCell value={item.allowance.amount} />
+        <td>{item.allowance.variant}</td>
+        <UI.CurrencyCell value={item.amountPerYear / 12} />
+        <UI.CurrencyCell value={item.amountPerYear} />
       </>
     );
   };
@@ -78,12 +80,10 @@ function BudgetCategoryRow({
       </td>
       {!category.ignored && (
         <>
-          <td className="number r-align">
-            {(category.amountPerYear / 12).toFixed(2)}
-          </td>
-          <td className="number r-align">
-            {category.amountPerYear.toFixed(2)}
-          </td>
+          <td></td>
+          <td></td>
+          <UI.CurrencyCell value={category.amountPerYear / 12} />
+          <UI.CurrencyCell value={category.amountPerYear} />
         </>
       )}
     </tr>
@@ -102,6 +102,8 @@ export function BudgetTable({
   const header = showAmounts ? (
     <tr>
       <th>Name</th>
+      <th className="r-align">Allowance</th>
+      <th>Frequency</th>
       <th className="r-align">Amortized monthly</th>
       <th className="r-align">Amortized yearly</th>
     </tr>
@@ -134,8 +136,10 @@ export function BudgetTableFooter({
   return (
     <tr className="bold">
       <td>TOTAL</td>
-      <td className="number r-align">{(amountPerYear / 12).toFixed(2)}</td>
-      <td className="number r-align">{amountPerYear.toFixed(2)}</td>
+      <td></td>
+      <td></td>
+      <UI.CurrencyCell value={amountPerYear / 12} />
+      <UI.CurrencyCell value={amountPerYear} />
     </tr>
   );
 }

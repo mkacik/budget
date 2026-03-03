@@ -57,16 +57,16 @@ export class MonthlySpendingData {
     const monthTotal = sumUp(this.monthTotals);
     const uncategorizedTotal = sumUp(this.uncategorized);
 
-    const round = (n: number) => Math.round(100 * n);
-
-    if (round(categoryTotal) !== round(itemTotal)) {
+    if (categoryTotal !== itemTotal) {
       const msg = `categoryTotal: ${categoryTotal} != itemTotal: ${itemTotal}`;
       throw Error("Spending does not add up: " + msg);
     }
 
-    if (round(categoryTotal + uncategorizedTotal) !== round(monthTotal)) {
-      const msg = `categoryTotal: ${categoryTotal} + uncategorizedTotal: ${uncategorizedTotal} != monthTotal: ${monthTotal}`;
-      throw Error("Spending does not sum up: " + msg);
+    if (categoryTotal + uncategorizedTotal !== monthTotal) {
+      const msg =
+        `categoryTotal: ${categoryTotal} + uncategorizedTotal: ${uncategorizedTotal}` +
+        ` != monthTotal: ${monthTotal}`;
+      throw Error("Spending does not add up: " + msg);
     }
   }
 
@@ -167,7 +167,7 @@ export class MonthlySpendingData {
     }
 
     const fund = this.funds.getFund(fundID);
-    if (itemTotal > item.amountPerYear && fund.spend > fund.amount) {
+    if (itemTotal > item.amountPerYear && fund.spend > fund.allowance) {
       return itemTotal;
     }
 

@@ -1,11 +1,11 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetItem, BudgetItemFields, BudgetAmount } from "./types/Budget";
+import { BudgetItem, BudgetItemFields, BudgetAllowance } from "./types/Budget";
 import { BudgetFund } from "./types/Fund";
 
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
-import { BudgetAmountForm } from "./BudgetAmountForm";
+import { BudgetAllowanceForm } from "./BudgetAllowanceForm";
 
 import {
   Form,
@@ -18,7 +18,7 @@ import { FetchHelper, JSON_HEADERS } from "./Common";
 
 import * as UI from "./ui/Common";
 
-const DEFAULT_AMOUNT: BudgetAmount = { Weekly: { amount: 0 } };
+const DEFAULT_ALLOWANCE: BudgetAllowance = { variant: "Weekly", amount: 10000 };
 
 function createBudgetItemRequest(fields: BudgetItemFields): Request {
   return new Request("/api/budget_items", {
@@ -115,7 +115,7 @@ type BudgetItemUsage =
   | "categorization-only";
 
 function getBudgetItemUsage(fields: BudgetItemFields): BudgetItemUsage {
-  if (fields.amount === null) {
+  if (fields.allowance === null) {
     return "categorization-only";
   }
   if (fields.budget_only) {
@@ -161,7 +161,7 @@ export function BudgetItemForm({
       name: "",
       category_id: categoryID ?? budget.categories[0].id,
       fund_id: null,
-      amount: DEFAULT_AMOUNT,
+      allowance: DEFAULT_ALLOWANCE,
       budget_only: false,
     },
   );
@@ -180,11 +180,19 @@ export function BudgetItemForm({
     const newCategoryID = Number(target.value);
     const newCategoryIgnored = budget.getCategory(newCategoryID).ignored;
     if (categoryIgnored && !newCategoryIgnored) {
-      const amount = fields.amount || item?.amount || DEFAULT_AMOUNT;
+      /* ignored categories do not have allowance set, but new category is not ignored, so it
+      needs non-null allowance to start.
+        1. try allowance from locally saved fields - used may have already filled something
+          in there but did not click save yet, so they will expect to pop back to what they
+          edited
+        2. try allowance from item
+        3. if item was empty or it's allowance was empty, fall back to DEFAULT_ALLOWANCE */
+      const allowance =
+        fields.allowance || item?.allowance || DEFAULT_ALLOWANCE;
       setFields({
         ...fields,
         category_id: newCategoryID,
-        amount: amount,
+        allowance: allowance,
       });
     } else {
       setFields({ ...fields, category_id: newCategoryID });
@@ -197,8 +205,8 @@ export function BudgetItemForm({
     setFields({ ...fields, fund_id: newFundID === 0 ? null : newFundID });
   };
 
-  const setAmount = (amount: BudgetAmount) => {
-    setFields({ ...fields, amount: amount });
+  const setAllowance = (allowance: BudgetAllowance) => {
+    setFields({ ...fields, allowance: allowance });
   };
 
   const setUsage = (e: React.SyntheticEvent) => {
@@ -207,18 +215,21 @@ export function BudgetItemForm({
     if (usage === newUsage) {
       return;
     }
+
     if (newUsage === "categorization-only") {
-      setFields({ ...fields, amount: null, budget_only: false });
+      setFields({ ...fields, allowance: null, budget_only: false });
       return;
     }
-    const amount = fields.amount || item?.amount || DEFAULT_AMOUNT;
+
+    // see comment from setCategoryID about the order of choosing allowance below
+    const allowance = fields.allowance || item?.allowance || DEFAULT_ALLOWANCE;
     if (newUsage === "budget-only") {
-      setFields({ ...fields, amount: amount, budget_only: true });
+      setFields({ ...fields, allowance: allowance, budget_only: true });
       return;
     }
 
     // "budget-and-categorization"
-    setFields({ ...fields, amount: amount, budget_only: false });
+    setFields({ ...fields, allowance: allowance, budget_only: false });
   };
 
   const fetchHelper = new FetchHelper(setErrorMessage);
@@ -238,17 +249,20 @@ export function BudgetItemForm({
         );
       }
 
-      const updatedAmount = categoryIgnored ? null : fields.amount;
-      if (fields.budget_only && (categoryIgnored || updatedAmount === null)) {
-        throw Error("Budget only usage requires amount to be provided");
+      const updatedAllowance = categoryIgnored ? null : fields.allowance;
+      if (
+        fields.budget_only &&
+        (categoryIgnored || updatedAllowance === null)
+      ) {
+        throw Error("Budget only usage requires allowance to be provided");
       }
 
       const updatedFields = {
         name: updatedName,
         category_id: fields.category_id,
-        amount: updatedAmount,
-        budget_only: fields.budget_only,
         fund_id: fields.fund_id,
+        allowance: updatedAllowance,
+        budget_only: fields.budget_only,
       } as BudgetItemFields;
 
       const request =
@@ -262,20 +276,9 @@ export function BudgetItemForm({
     }
   };
 
-  const maybeDeleteButton = item && (
-    <UI.GlyphButton
-      glyph="delete"
-      onClick={() =>
-        fetchHelper.fetch(deleteBudgetItemRequest(item.id), (_json) =>
-          onSuccess(),
-        )
-      }
-    />
-  );
-
-  const showUsageSelector = !categoryIgnored;
-  const showFundSelector = !categoryIgnored;
-  const showAmountSelector = !(categoryIgnored || fields.amount === null);
+  const showUsageSelector = !categoryIgnored; // usage is moot for ignored category
+  const showFundSelector = !categoryIgnored; // funds can't be mixed with ignored category
+  const showAllowanceSelector = !(categoryIgnored || fields.allowance === null);
   const hasFund = fields.fund_id !== null;
 
   return (
@@ -315,15 +318,24 @@ export function BudgetItemForm({
           <BudgetItemUsageForm usage={usage} updateUsage={setUsage} />
         )}
 
-        {showAmountSelector && (
-          <BudgetAmountForm
-            budgetAmount={fields.amount!}
-            updateBudgetAmount={setAmount}
+        {showAllowanceSelector && (
+          <BudgetAllowanceForm
+            allowance={fields.allowance!}
+            updateAllowance={setAllowance}
           />
         )}
 
         <FormButtons>
-          {maybeDeleteButton}
+          {item && (
+            <UI.GlyphButton
+              glyph="delete"
+              onClick={() =>
+                fetchHelper.fetch(deleteBudgetItemRequest(item.id), (_json) =>
+                  onSuccess(),
+                )
+              }
+            />
+          )}
           <FormSubmitButton text={item === null ? "Create" : "Update"} />
         </FormButtons>
       </Form>

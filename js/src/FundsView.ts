@@ -8,7 +8,7 @@ function cmp(a: BudgetItemWithSpend, b: BudgetItemWithSpend) {
 }
 
 interface FundWithSpend extends BudgetFund {
-  amount: number;
+  allowance: number;
   spend: number;
 }
 
@@ -35,14 +35,14 @@ export class FundsView {
     const fundsWithSpend: Array<FundWithSpend> = [];
     for (const fund of funds) {
       const fundItems = itemsMap.get(fund.id) ?? [];
-      const amount = fundItems.reduce(
-        (acc, item) => acc + getAmountPerYear(item.amount),
+      const allowance = fundItems.reduce(
+        (acc, item) => acc + getAmountPerYear(item.allowance),
         0,
       );
       const spend = fundItems.reduce((acc, item) => acc + item.spend, 0);
       const fundWithSpend = {
         ...fund,
-        amount: amount,
+        allowance: allowance,
         spend: spend,
       } as FundWithSpend;
       fundsWithSpend.push(fundWithSpend);

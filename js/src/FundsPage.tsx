@@ -17,10 +17,6 @@ type ModalState = {
   target: BudgetFund | null;
 };
 
-export function NumberCell({ children }: { children: React.ReactNode }) {
-  return <td className="number r-align">{children}</td>;
-}
-
 export function FundsTable({
   funds,
   items,
@@ -42,8 +38,8 @@ export function FundsTable({
           {fund.name}
           <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
         </td>
-        <NumberCell>{fund.amount.toFixed(2)}</NumberCell>
-        <NumberCell>{fund.spend.toFixed(2)}</NumberCell>
+        <UI.CurrencyCell value={fund.allowance} />
+        <UI.CurrencyCell value={fund.spend} />
       </tr>
     );
     rows.push(row);
@@ -56,8 +52,8 @@ export function FundsTable({
             <UI.InlineGlyph glyph="chevron_right" />
             {item.year} :: {item.display_name}
           </td>
-          <NumberCell>{getAmountPerYear(item.amount).toFixed(2)}</NumberCell>
-          <NumberCell>{item.spend.toFixed(2)}</NumberCell>
+          <UI.CurrencyCell value={getAmountPerYear(item.allowance)} />
+          <UI.CurrencyCell value={item.spend} />
         </tr>
       );
       rows.push(row);

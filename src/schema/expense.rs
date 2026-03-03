@@ -11,7 +11,7 @@ pub struct ExpenseFields {
     pub transaction_date: String,
     pub transaction_time: Option<String>,
     pub description: String,
-    pub amount: f64,
+    pub amount: i32,
     #[ts(skip)]
     pub raw_csv: Option<String>,
 }

@@ -2,6 +2,8 @@ import React from "react";
 
 import { ExpenseView } from "./ExpenseView";
 
+import * as UI from "./ui/Common";
+
 export function ExpensesPivotTable({
   expenses,
 }: {
@@ -20,7 +22,7 @@ export function ExpensesPivotTable({
       <thead>
         <tr>
           <td>Account</td>
-          <td>Total</td>
+          <td className="r-align">Total</td>
         </tr>
       </thead>
       <tbody>
@@ -29,7 +31,7 @@ export function ExpensesPivotTable({
           .map((accountName) => (
             <tr key={accountName}>
               <td>{accountName}</td>
-              <td>{sumByAccount.get(accountName)!.toFixed(2)}</td>
+              <UI.CurrencyCell value={sumByAccount.get(accountName) || 0} />
             </tr>
           ))}
       </tbody>

@@ -4,8 +4,6 @@ use ts_rs::TS;
 
 use crate::database::{Database, ID};
 
-// helper PRIVATE type to not have to fuck with changing all places that use f64.
-type DollarAmount = f64;
 type CentAmount = i32;
 
 #[derive(Debug, Deserialize, Serialize, TS)]
@@ -17,36 +15,14 @@ pub enum BudgetAllowance {
     Yearly(CentAmount),
 }
 
-// TODO: deleteme
-fn to_cents(amount: DollarAmount) -> CentAmount {
-    let cents = (amount * 100.).round();
-
-    cents as CentAmount
-}
-
-// TODO: deleteme
-impl BudgetAllowance {
-    pub fn from_budget_amount(budget_amount: &BudgetAmount) -> BudgetAllowance {
-        match budget_amount {
-            BudgetAmount::Weekly { amount } => BudgetAllowance::Weekly(to_cents(*amount)),
-            BudgetAmount::Monthly { amount } => BudgetAllowance::Monthly(to_cents(*amount)),
-            BudgetAmount::Yearly { amount } => BudgetAllowance::Yearly(to_cents(*amount)),
-            BudgetAmount::EveryXYears { x, amount } => {
-                BudgetAllowance::Yearly(to_cents(amount / f64::from(*x)))
-            }
-        }
-    }
-}
-
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetItemFields {
     pub category_id: ID,
     pub fund_id: Option<ID>,
     pub name: String,
-    pub amount: Option<BudgetAmount>,
-    pub budget_only: bool,
     pub allowance: Option<BudgetAllowance>,
+    pub budget_only: bool,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
@@ -66,7 +42,7 @@ pub struct BudgetItem {
 #[ts(export_to = "Budget.ts")]
 pub struct BudgetItemWithSpend {
     pub year: i32, // computed, inherited from Category
-    pub spend: DollarAmount,
+    pub spend: CentAmount,
 
     #[serde(flatten)]
     #[sqlx(flatten)]
@@ -74,38 +50,21 @@ pub struct BudgetItemWithSpend {
     pub item: BudgetItem,
 }
 
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
-pub enum BudgetAmount {
-    Weekly { amount: DollarAmount },
-    Monthly { amount: DollarAmount },
-    Yearly { amount: DollarAmount },
-    EveryXYears { x: i32, amount: DollarAmount },
-}
-
 impl BudgetItem {
-    pub async fn create(db: &Database, mut fields: BudgetItemFields) -> anyhow::Result<ID> {
+    pub async fn create(db: &Database, fields: BudgetItemFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
-
-        if fields.allowance.is_none() {
-            if let Some(amount) = &fields.amount {
-                fields.allowance = Some(BudgetAllowance::from_budget_amount(amount));
-            }
-        }
 
         let id: ID = sqlx::query_scalar!(
             "INSERT INTO budget_items (
               category_id,
               fund_id,
               name,
-              amount,
               allowance,
               budget_only
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
+            ) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING id",
             fields.category_id,
             fields.fund_id,
             fields.name,
-            fields.amount,
             fields.allowance,
             fields.budget_only,
         )
@@ -125,14 +84,12 @@ impl BudgetItem {
                 category_id = ?1,
                 fund_id = ?2,
                 name = ?3,
-                amount = ?4,
-                allowance = ?5,
-                budget_only = ?6
-            WHERE id = ?7",
+                allowance = ?4,
+                budget_only = ?5
+            WHERE id = ?6",
             fields.category_id,
             fields.fund_id,
             fields.name,
-            fields.amount,
             fields.allowance,
             fields.budget_only,
             id,
@@ -208,16 +165,5 @@ impl BudgetItem {
             Some(_) => Ok(true),
             None => Ok(false),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_to_cents() {
-        assert_eq!(to_cents(23.4567), 2346);
-        assert_eq!(to_cents(-23.4567), -2346);
     }
 }

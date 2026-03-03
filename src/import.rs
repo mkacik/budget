@@ -142,7 +142,7 @@ mod tests {
     use super::*;
     use crate::schema::expense::{ExpenseCategory, ExpenseNotes};
 
-    fn get_expense_fields(amount: f64) -> ExpenseFields {
+    fn get_expense_fields(amount: i32) -> ExpenseFields {
         ExpenseFields {
             account_id: 8,
             transaction_date: "2025-01-25".to_string(),
@@ -153,7 +153,7 @@ mod tests {
         }
     }
 
-    fn get_expense(amount: f64) -> Expense {
+    fn get_expense(amount: i32) -> Expense {
         Expense {
             id: 2,
             fields: get_expense_fields(amount),
@@ -168,9 +168,9 @@ mod tests {
 
     #[test]
     fn test_remove_duplicates_only_dupes() {
-        let new = vec![get_expense_fields(13.00), get_expense_fields(5.00)];
+        let new = vec![get_expense_fields(1300), get_expense_fields(500)];
 
-        let old = vec![get_expense(5.00), get_expense(13.00)];
+        let old = vec![get_expense(500), get_expense(1300)];
 
         assert_eq!(remove_duplicates(new, old).len(), 0);
     }
@@ -178,15 +178,15 @@ mod tests {
     #[test]
     fn test_remove_duplicates_removes_first_matching_dupe_only() {
         let new = vec![
-            get_expense_fields(13.00),
-            get_expense_fields(13.00),
-            get_expense_fields(5.00),
+            get_expense_fields(1300),
+            get_expense_fields(1300),
+            get_expense_fields(500),
         ];
 
-        let old = vec![get_expense(5.00), get_expense(13.00)];
+        let old = vec![get_expense(500), get_expense(1300)];
 
         let result = remove_duplicates(new, old);
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0].amount, 13.00);
+        assert_eq!(result[0].amount, 1300);
     }
 }

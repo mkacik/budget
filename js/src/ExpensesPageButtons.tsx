@@ -321,8 +321,9 @@ function AddExpenseForm({
   };
 
   const setAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number.parseFloat(e.currentTarget.value);
-    setFields({ ...fields, amount: value });
+    const value = Number(e.currentTarget.value);
+    const valueCents = Math.round(value * 100);
+    setFields({ ...fields, amount: valueCents });
   };
 
   return (
@@ -339,7 +340,7 @@ function AddExpenseForm({
           label="Amount"
           type="number"
           step="0.01"
-          value={fields.amount}
+          value={fields.amount / 100}
           onChange={setAmount}
         />
         <LabeledDatePicker

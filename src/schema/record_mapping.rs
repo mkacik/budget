@@ -124,7 +124,7 @@ impl TimeField {
 }
 
 impl AmountField {
-    fn from_record(&self, record: &StringRecord) -> Result<f64, ImportResult> {
+    fn from_record(&self, record: &StringRecord) -> Result<i32, ImportResult> {
         match self {
             AmountField::FromColumn {
                 col,
@@ -161,22 +161,21 @@ impl AmountField {
         }
     }
 
-    fn parse_from_str(field: &str, invert: bool) -> Result<f64, ImportResult> {
-        let value = match strip_thousands_separator(field).parse::<f64>() {
-            Ok(value) => {
-                if invert {
-                    -value
-                } else {
-                    value
-                }
-            }
+    fn parse_from_str(field: &str, invert: bool) -> Result<i32, ImportResult> {
+        let value_float: f64 = match strip_thousands_separator(field).parse::<f64>() {
+            Ok(value) => value,
             Err(_) => {
                 let message = format!("Could not parse '{}' into f64", field);
                 return Err(ImportResult::Error { message: message });
             }
         };
 
-        Ok(value)
+        let value: i32 = (value_float * 100.).round() as i32;
+
+        match invert {
+            true => Ok(-value),
+            false => Ok(value),
+        }
     }
 }
 
@@ -267,7 +266,7 @@ mod tests {
         }
         .from_record(&record);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), 0.69);
+        assert_eq!(result.unwrap(), 69);
     }
 
     #[test]
@@ -280,7 +279,7 @@ mod tests {
         }
         .from_record(&record);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), 12345.67);
+        assert_eq!(result.unwrap(), 1234567);
     }
 
     #[test]
@@ -293,7 +292,7 @@ mod tests {
         }
         .from_record(&record);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), -0.69);
+        assert_eq!(result.unwrap(), -69);
     }
 
     #[test]

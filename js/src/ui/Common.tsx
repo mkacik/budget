@@ -206,3 +206,41 @@ export function LoadingBanner({ isLoading }: { isLoading: boolean }) {
     </span>
   );
 }
+
+export function formatCurrency(value: number) {
+  return (value / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+export function CurrencyCell({
+  value,
+  onClick,
+  tooltip,
+  className,
+  softNegatives = true,
+}: {
+  value: number;
+  onClick?: () => void;
+  tooltip?: string;
+  className?: string;
+  softNegatives?: boolean;
+}) {
+  let classNames = "number r-align";
+  if (softNegatives && value <= 0) {
+    classNames += " soft";
+  }
+  if (onClick) {
+    classNames += " td-button";
+  }
+  if (tooltip) {
+    classNames += " tooltip-cell";
+  }
+  if (className) {
+    classNames += " " + className;
+  }
+
+  return (
+    <td className={classNames} onClick={onClick} data-tooltip={tooltip}>
+      {formatCurrency(value)}
+    </td>
+  );
+}

@@ -134,7 +134,7 @@ function ExpenseRow({
         <td>{budgetItemName}</td>
       )}
 
-      <td className="number r-align">{expense.amount.toFixed(2)}</td>
+      <UI.CurrencyCell value={expense.amount} softNegatives={false} />
 
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 

@@ -2,7 +2,7 @@
 
 export type Budget = { year: number, categories: Array<BudgetCategory>, items: Array<BudgetItem>, };
 
-export type BudgetAmount = { "Weekly": { amount: number, } } | { "Monthly": { amount: number, } } | { "Yearly": { amount: number, } } | { "EveryXYears": { x: number, amount: number, } };
+export type BudgetAllowance = { "variant": "Weekly", "amount": number } | { "variant": "Monthly", "amount": number } | { "variant": "Yearly", "amount": number };
 
 export type BudgetCategory = { id: number, year: number, name: string, ignored: boolean, };
 
@@ -10,8 +10,8 @@ export type BudgetCategoryFields = { name: string, ignored: boolean, };
 
 export type BudgetCloneRequest = { from_year: number, to_year: number, };
 
-export type BudgetItem = { id: number, ignored: boolean, display_name: string, category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
+export type BudgetItem = { id: number, ignored: boolean, display_name: string, category_id: number, fund_id: number | null, name: string, allowance: BudgetAllowance | null, budget_only: boolean, };
 
-export type BudgetItemFields = { category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
+export type BudgetItemFields = { category_id: number, fund_id: number | null, name: string, allowance: BudgetAllowance | null, budget_only: boolean, };
 
-export type BudgetItemWithSpend = { year: number, spend: number, id: number, ignored: boolean, display_name: string, category_id: number, fund_id: number | null, name: string, amount: BudgetAmount | null, budget_only: boolean, };
+export type BudgetItemWithSpend = { year: number, spend: number, id: number, ignored: boolean, display_name: string, category_id: number, fund_id: number | null, name: string, allowance: BudgetAllowance | null, budget_only: boolean, };

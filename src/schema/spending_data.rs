@@ -9,7 +9,7 @@ use crate::database::{Database, ID};
 pub struct SpendingDataPoint {
     pub budget_item_id: Option<ID>,
     pub month: String,
-    pub amount: f64,
+    pub amount: i32,
 }
 
 impl SpendingDataPoint {
