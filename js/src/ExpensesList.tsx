@@ -1,18 +1,10 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import {
-  ExpensesQueryRequest,
-  ExpensesQueryRequestCategorySelector,
-  ExpensesQueryResponse,
-} from "./types/Expense";
+import { Expense, Expenses, ExpensesQuery } from "./types/Expense";
 
-import {
-  AccountView,
-  AccountsView,
-  useAccountsViewContext,
-} from "./AccountsView";
-import { BudgetView, BudgetItemView, BudgetCategoryView } from "./BudgetView";
+import { AccountsView, useAccountsViewContext } from "./AccountsView";
+import { BudgetView } from "./BudgetView";
 import {
   getSortComparator,
   SortBy,
@@ -26,95 +18,24 @@ import { FetchHelper, JSON_HEADERS } from "./Common";
 
 import * as UI from "./ui/Common";
 
-export type ExpensesQueryCategorySelector =
-  | BudgetItemView
-  | BudgetCategoryView
-  | "all-not-ignored"
-  | "uncategorized";
-export type ExpensesQuery =
-  | { variant: "account"; account: AccountView; year: number }
-  | {
-      variant: "period";
-      period: string;
-      categorySelector: ExpensesQueryCategorySelector;
-    };
-
-function getExpensesQueryRequestCategorySelector(
-  selector: ExpensesQueryCategorySelector,
-): ExpensesQueryRequestCategorySelector {
-  if (selector === "uncategorized") {
-    return { variant: "Uncategorized" } as ExpensesQueryRequestCategorySelector;
+function getSettings(query: ExpensesQuery): ExpensesTableSettings {
+  if (query.selector.variant === "Account") {
+    return { autoadvance: true, showAccount: false } as ExpensesTableSettings;
   }
-  if (selector === "all-not-ignored") {
-    return { variant: "All" } as ExpensesQueryRequestCategorySelector;
-  }
-  if (selector instanceof BudgetItemView) {
-    return {
-      variant: "BudgetItem",
-      params: { id: selector.id },
-    } as ExpensesQueryRequestCategorySelector;
-  }
-  if (selector instanceof BudgetCategoryView) {
-    return {
-      variant: "BudgetCategory",
-      params: { id: selector.id },
-    } as ExpensesQueryRequestCategorySelector;
-  }
-  throw Error("malformed expenses query!");
+  return { autoadvance: false, showAccount: true } as ExpensesTableSettings;
 }
 
-function getExpensesQueryRequest(query: ExpensesQuery): ExpensesQueryRequest {
-  switch (query.variant) {
-    case "account":
-      return {
-        variant: "ByAccount",
-        params: {
-          id: query.account.id,
-          year: query.year,
-        },
-      } as ExpensesQueryRequest;
-    case "period": {
-      return {
-        variant: "ByPeriod",
-        params: {
-          period: query.period,
-          category: getExpensesQueryRequestCategorySelector(
-            query.categorySelector,
-          ),
-        },
-      } as ExpensesQueryRequest;
-    }
-    default:
-      throw Error("malformed expenses query!");
-  }
-}
-
-function getExpensesTableSettings(query: ExpensesQuery): ExpensesTableSettings {
-  switch (query.variant) {
-    case "account":
-      return { autoadvance: true, showAccount: false } as ExpensesTableSettings;
-    case "period":
-      return { autoadvance: false, showAccount: true } as ExpensesTableSettings;
-    default:
-      throw Error("malformed expenses query!");
-  }
-}
-
-function parseExpensesQueryResponse(
-  response: ExpensesQueryResponse,
+function parseExpenses(
+  expenses: Array<Expense>,
   accounts: AccountsView,
-  sortBy: SortBy,
 ): Array<ExpenseView> {
-  const expenses = response.expenses.map((expense) => {
+  return expenses.map((expense) => {
     const account = accounts.getAccount(expense.account_id);
     return {
       ...expense,
       account: account,
     } as ExpenseView;
   });
-  const sortComparator = getSortComparator(sortBy);
-  expenses.sort(sortComparator);
-  return expenses;
 }
 
 const DEFAULT_SORT_BY = {
@@ -143,15 +64,14 @@ export function ExpensesList({
       const request = new Request("/api/expenses/query", {
         method: "POST",
         headers: JSON_HEADERS,
-        body: JSON.stringify(getExpensesQueryRequest(query)),
+        body: JSON.stringify(query),
       });
 
       fetchHelper.fetch(request, (json) => {
-        const sortedExpenses = parseExpensesQueryResponse(
-          json as ExpensesQueryResponse,
-          accounts,
-          sortBy,
-        );
+        const result = json as Expenses;
+        const expenses = parseExpenses(result.expenses, accounts);
+        const sortComparator = getSortComparator(sortBy);
+        const sortedExpenses = expenses.toSorted(sortComparator);
         setExpenses(sortedExpenses);
       });
     } catch (error) {
@@ -188,7 +108,7 @@ export function ExpensesList({
         onExpenseNotesChange={fetchExpenses}
         onExpenseDelete={handleExpenseCategoryChange}
         updateSortBy={updateSortBy}
-        settings={getExpensesTableSettings(query)}
+        settings={getSettings(query)}
       />
       <ExpensesPivotTable expenses={expenses} />
     </>

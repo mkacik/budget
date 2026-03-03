@@ -1,9 +1,10 @@
 import React from "react";
 import { useState } from "react";
 
+import { ExpensesQuery } from "./types/Expense";
 import { AccountView, AccountsView } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
-import { ExpensesQuery, ExpensesList } from "./ExpensesList";
+import { ExpensesList } from "./ExpensesList";
 import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
 import {
   AddExpenseButton,
@@ -61,10 +62,9 @@ function ExpensesSection({
   const [_, setLastUpdate] = useState<string>(Date());
   const markUpdated = () => setLastUpdate(Date());
 
-  const expensesQuery = {
-    variant: "account",
-    account: account,
-    year: budget.year,
+  const query = {
+    period: budget.year.toString(),
+    selector: { variant: "Account", id: account.id },
   } as ExpensesQuery;
 
   const importButton =
@@ -85,7 +85,7 @@ function ExpensesSection({
         {importButton}
         <DeleteExpensesButton account={account} onSuccess={markUpdated} />
       </UI.Flex>
-      <ExpensesList budget={budget} query={expensesQuery} />
+      <ExpensesList budget={budget} query={query} />
     </UI.Section>
   );
 }

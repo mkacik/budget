@@ -288,75 +288,59 @@ pub async fn update_expense_notes(
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(tag = "variant", content = "params")]
-#[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
-pub enum ExpensesQueryRequestCategorySelector {
-    All,
+#[serde(tag = "variant")]
+#[ts(export_to = "Expense.ts", tag = "variant")]
+pub enum ExpensesQuerySelector {
+    AllNotIgnored,
     Uncategorized,
+    Account { id: ID },
     BudgetItem { id: ID },
     BudgetCategory { id: ID },
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(tag = "variant", content = "params")]
-#[ts(export_to = "Expense.ts", tag = "variant", content = "params")]
-pub enum ExpensesQueryRequest {
-    // used on Expenses tab
-    ByAccount {
-        id: ID,
-        year: i32,
-    },
-
-    // used on Analyze tab
-    ByPeriod {
-        period: String, // expected format YYYY or YYYY-mm
-        category: ExpensesQueryRequestCategorySelector,
-    },
+#[ts(export_to = "Expense.ts")]
+pub struct ExpensesQuery {
+    period: String, // expected format YYYY or YYYY-mm
+    selector: ExpensesQuerySelector,
 }
 
-fn is_valid_period(period: &str) -> bool {
-    if period.len() > 7 {
-        return false;
-    }
-
+fn looks_like_valid_period(period: &str) -> bool {
     let re = Regex::new(r"^20\d\d(-(0\d|1[012]))?$").unwrap();
 
     re.is_match(period)
 }
 
 #[post("/expenses/query", format = "json", data = "<json>")]
-pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQueryRequest>) -> ApiResponse {
-    let request = json.into_inner();
-    let result = match request {
-        ExpensesQueryRequest::ByAccount { id, year } => {
-            Expense::fetch_by_account_id_and_year(&db, id, year).await
-        }
-        ExpensesQueryRequest::ByPeriod { period, category } => {
-            if !is_valid_period(&period) {
-                return ApiResponse::BadRequest {
-                    message: format!(
-                        "Incorrect period '{}', expected 'YYYY' or 'YYYY-mm'",
-                        period
-                    ),
-                };
-            }
+pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQuery>) -> ApiResponse {
+    let query = json.into_inner();
+    if !looks_like_valid_period(&query.period) {
+        return ApiResponse::BadRequest {
+            message: format!("Incorrect period: '{}'. Expected 'YYYY[-mm]'", query.period),
+        };
+    }
 
-            match category {
-                ExpensesQueryRequestCategorySelector::BudgetCategory { id } => {
-                    Expense::fetch_by_budget_category_id_and_period(&db, id, period).await
-                }
-                ExpensesQueryRequestCategorySelector::BudgetItem { id } => {
-                    Expense::fetch_by_budget_item_id_and_period(&db, id, period).await
-                }
-                ExpensesQueryRequestCategorySelector::Uncategorized => {
-                    Expense::fetch_uncategorized_by_period(&db, period).await
-                }
-                ExpensesQueryRequestCategorySelector::All => {
-                    Expense::fetch_all_non_ignored_by_period(&db, period).await
-                }
-            }
+    let period = query.period;
+    let result = match query.selector {
+        ExpensesQuerySelector::AllNotIgnored => {
+            Expense::fetch_all_not_ignored_by_period(&db, period).await
+        }
+        ExpensesQuerySelector::Uncategorized => {
+            Expense::fetch_uncategorized_by_period(&db, period).await
+        }
+        ExpensesQuerySelector::Account { id } => {
+            Expense::fetch_by_account_id_and_period(&db, id, period).await
+        }
+        ExpensesQuerySelector::BudgetItem { id } => {
+            Expense::fetch_by_budget_item_id_and_period(&db, id, period).await
+        }
+        ExpensesQuerySelector::BudgetCategory { id } => {
+            Expense::fetch_by_budget_category_id_and_period(&db, id, period).await
         }
     };
 
-    ApiResponse::from_serializable_result(result)
+    match result {
+        Ok(expenses) => ApiResponse::from_object(expenses),
+        Err(e) => ApiResponse::from_error(e),
+    }
 }

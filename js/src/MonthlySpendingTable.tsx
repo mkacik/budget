@@ -1,11 +1,16 @@
 import React from "react";
 
+import { ExpensesQuery } from "./types/Expense";
+
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
-import { ExpensesQuery } from "./ExpensesList";
 
 import * as UI from "./ui/Common";
+
+export interface TitledExpensesQuery extends ExpensesQuery {
+  title: string;
+}
 
 function getMonths(year: number): Array<string> {
   return [...Array(12).keys()].map((m) => {
@@ -60,16 +65,16 @@ function SpendingTableHeaderRow({
 }: {
   year: number;
   hasFunds: boolean;
-  updateExpensesQuery: (ExpensesQuery) => void;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
     const onClick = () => {
       updateExpensesQuery({
-        variant: "period",
+        title: `${month} :: all (excluding expenses in ignored categories)`,
         period: month,
-        categorySelector: "all-not-ignored",
-      } as ExpensesQuery);
+        selector: { variant: "AllNotIgnored" },
+      });
     };
     const cell = (
       <th key={month} className="r-align nowrap td-button" onClick={onClick}>
@@ -99,17 +104,17 @@ function SpendingTableFooterRow({
   year: number;
   data: MonthlySpendingData;
   hasFunds: boolean;
-  updateExpensesQuery: (ExpensesQuery) => void;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
   yearlyBudget: number;
 }) {
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
     const onClick = () => {
       updateExpensesQuery({
-        variant: "period",
+        title: `${month} :: all (excluding expenses in ignored categories)`,
         period: month,
-        categorySelector: "all-not-ignored",
-      } as ExpensesQuery);
+        selector: { variant: "AllNotIgnored" },
+      });
     };
     const cell = (
       <SpendingTableCell
@@ -143,14 +148,14 @@ function SpendingTableUncategorizedRow({
   year: number;
   data: MonthlySpendingData;
   hasFunds: boolean;
-  updateExpensesQuery: (ExpensesQuery) => void;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const headerCellOnClick = () => {
     updateExpensesQuery({
-      variant: "period",
+      title: `${year} :: uncategorized`,
       period: year.toString(),
-      categorySelector: "uncategorized",
-    } as ExpensesQuery);
+      selector: { variant: "Uncategorized" },
+    });
   };
   const headerCell = (
     <td className="td-button" onClick={headerCellOnClick}>
@@ -163,10 +168,10 @@ function SpendingTableUncategorizedRow({
     const spend = data.getUncategorizedSpend(month);
     const onClick = () => {
       updateExpensesQuery({
-        variant: "period",
+        title: `${month} :: uncategorized`,
         period: month,
-        categorySelector: "uncategorized",
-      } as ExpensesQuery);
+        selector: { variant: "Uncategorized" },
+      });
     };
     const cell = (
       <SpendingTableCell
@@ -204,16 +209,19 @@ function SpendingTableRow({
   year: number;
   data: MonthlySpendingData;
   hasFunds: boolean;
-  updateExpensesQuery: (ExpensesQuery) => void;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const isCategory = obj instanceof BudgetCategoryView;
 
   const headerCellOnClick = () => {
     updateExpensesQuery({
-      variant: "period",
+      title: `${year} :: ${obj.displayName}`,
       period: year.toString(),
-      categorySelector: obj,
-    } as ExpensesQuery);
+      selector: {
+        variant: isCategory ? "BudgetCategory" : "BudgetItem",
+        id: obj.id,
+      },
+    });
   };
   const headerCell = (
     <td className="v-center td-button" onClick={headerCellOnClick}>
@@ -229,10 +237,13 @@ function SpendingTableRow({
       : data.getItemSpend(obj.id, month);
     const onClick = () => {
       updateExpensesQuery({
-        variant: "period",
+        title: `${month} :: ${obj.displayName}`,
         period: month,
-        categorySelector: obj,
-      } as ExpensesQuery);
+        selector: {
+          variant: isCategory ? "BudgetCategory" : "BudgetItem",
+          id: obj.id,
+        },
+      });
     };
     const cell = (
       <SpendingTableCell
@@ -276,7 +287,7 @@ export function MonthlySpendingTable({
 }: {
   data: MonthlySpendingData;
   budget: BudgetView;
-  updateExpensesQuery: (ExpensesQuery) => void;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const year = budget.year;
   const hasFunds = budget.hasFunds;

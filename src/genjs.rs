@@ -5,7 +5,7 @@ use ts_rs::{ExportError, TS};
 
 use crate::routes::api::budget::BudgetCloneRequest;
 use crate::routes::api::budget::SpendingData;
-use crate::routes::api::expense::ExpensesQueryRequest;
+use crate::routes::api::expense::ExpensesQuery;
 use crate::routes::api::fund::{FundItems, Funds};
 
 use crate::schema::account::{AccountFields, Accounts};
@@ -38,7 +38,7 @@ fn export() -> Result<(), ExportError> {
 
     BudgetCloneRequest::export_all()?;
 
-    ExpensesQueryRequest::export_all()?;
+    ExpensesQuery::export_all()?;
 
     Funds::export_all()?;
     FundItems::export_all()?;

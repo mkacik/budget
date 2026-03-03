@@ -1,45 +1,21 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { SpendingData } from "./types/SpendingData";
 
+import { SpendingData } from "./types/SpendingData";
+import { ExpensesQuery } from "./types/Expense";
 import { BudgetFund } from "./types/Fund";
+
 import { FundsView } from "./FundsView";
 import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
-import { MonthlySpendingTable } from "./MonthlySpendingTable";
-import { ExpensesQuery, ExpensesList } from "./ExpensesList";
+import {
+  TitledExpensesQuery,
+  MonthlySpendingTable,
+} from "./MonthlySpendingTable";
+import { ExpensesList } from "./ExpensesList";
 import { FetchHelper } from "./Common";
 
 import * as UI from "./ui/Common";
-
-function ExpensesSectionTitle({ query }: { query: ExpensesQuery | null }) {
-  if (query === null) {
-    return (
-      <span className="soft">
-        Click on any table cell to select relevant expenses
-      </span>
-    );
-  }
-
-  if (query.variant !== "period") {
-    throw Error("Only period query accepted in this context!");
-  }
-
-  const titleParts: Array<React.ReactNode> = [`[${query.period}]`, " "];
-
-  const categorySelector = query.categorySelector;
-  if (categorySelector === "uncategorized") {
-    titleParts.push(<i key={categorySelector}>uncategorized</i>);
-  } else if (categorySelector === "all-not-ignored") {
-    titleParts.push(
-      <i key={categorySelector}>all (excluding ignored categories)</i>,
-    );
-  } else if ("displayName" in categorySelector) {
-    titleParts.push(categorySelector.displayName);
-  }
-
-  return titleParts;
-}
 
 export function AnalyzePage({
   budget,
@@ -49,9 +25,9 @@ export function AnalyzePage({
   funds: Array<BudgetFund>;
 }) {
   const [data, setData] = useState<MonthlySpendingData | null>(null);
-  const [expensesQuery, setExpensesQuery] = useState<ExpensesQuery | null>(
-    null,
-  );
+
+  const [expensesQuery, setExpensesQuery] =
+    useState<TitledExpensesQuery | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -77,19 +53,17 @@ export function AnalyzePage({
           <MonthlySpendingTable
             data={data}
             budget={budget}
-            updateExpensesQuery={(query) => setExpensesQuery(query)}
+            updateExpensesQuery={setExpensesQuery}
           />
         )}
       </UI.Section>
-      {data && (
-        <UI.Section title={<ExpensesSectionTitle query={expensesQuery} />}>
-          {expensesQuery && (
-            <ExpensesList
-              query={expensesQuery}
-              budget={budget}
-              onExpenseCategoryChange={fetchData}
-            />
-          )}
+      {data && expensesQuery && (
+        <UI.Section title={expensesQuery.title}>
+          <ExpensesList
+            query={expensesQuery as ExpensesQuery}
+            budget={budget}
+            onExpenseCategoryChange={fetchData}
+          />
         </UI.Section>
       )}
 

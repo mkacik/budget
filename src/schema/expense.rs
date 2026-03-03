@@ -47,7 +47,7 @@ pub struct Expense {
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Expense.ts", rename = "ExpensesQueryResponse")]
+#[ts(export_to = "Expense.ts")]
 pub struct Expenses {
     pub expenses: Vec<Expense>,
 }
@@ -136,10 +136,10 @@ impl Expense {
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_by_account_id_and_year(
+    pub async fn fetch_by_account_id_and_period(
         db: &Database,
         account_id: ID,
-        year: i32,
+        period: String,
     ) -> anyhow::Result<Expenses> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, Expense>(
@@ -149,7 +149,7 @@ impl Expense {
             ORDER BY transaction_date DESC, transaction_time DESC",
         )
         .bind(account_id)
-        .bind(format!("{}-%", year))
+        .bind(format!("{}-%", period))
         .fetch_all(&mut *conn)
         .await?;
 
@@ -222,7 +222,7 @@ impl Expense {
         Ok(Expenses { expenses: results })
     }
 
-    pub async fn fetch_all_non_ignored_by_period(
+    pub async fn fetch_all_not_ignored_by_period(
         db: &Database,
         period: String,
     ) -> anyhow::Result<Expenses> {
@@ -231,12 +231,10 @@ impl Expense {
             "SELECT
               expenses.*
             FROM expenses
-            JOIN budget_items
-              ON (expenses.budget_item_id = budget_items.id)
-            JOIN budget_categories
-              ON (budget_items.category_id = budget_categories.id)
+            JOIN view_budget_items
+              ON (expenses.budget_item_id = view_budget_items.id)
             WHERE
-              budget_categories.ignored = 0
+              view_budget_items.ignored = 0
               AND expenses.transaction_date LIKE ?1
             ORDER BY
               expenses.transaction_date DESC,

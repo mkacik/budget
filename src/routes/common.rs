@@ -57,15 +57,6 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
 }
 
 impl ApiResponse {
-    pub fn from_serializable_result<T: Serialize + TS>(result: anyhow::Result<T>) -> ApiResponse {
-        match serialize_result(result) {
-            Ok(serialized) => ApiResponse::SuccessWithData { data: serialized },
-            Err(error) => ApiResponse::ServerErrorWithMessage {
-                message: format!("{}", error),
-            },
-        }
-    }
-
     pub fn from_object<T: Serialize + TS>(object: T) -> ApiResponse {
         let serialized = match to_string(&object) {
             Ok(value) => value,
