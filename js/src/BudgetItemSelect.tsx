@@ -9,17 +9,18 @@ type KeyMap = Map<string, BudgetItemView | null>;
 
 function getKeyMap(budget: BudgetView): KeyMap {
   const keyMap: KeyMap = new Map();
+  let assigned = 0;
 
   const items = [budget.items, budget.ignoredItems].flat();
-  for (const [idx, item] of items.entries()) {
+  for (const item of items) {
     if (item.isBudgetOnly) {
       continue;
     }
-    if (idx < CHARS.length) {
-      keyMap.set(CHARS[idx], item);
-    } else {
+    if (assigned >= CHARS.length) {
       break;
     }
+    keyMap.set(CHARS[assigned], item);
+    assigned += 1;
   }
   keyMap.set("Backspace", null);
 
