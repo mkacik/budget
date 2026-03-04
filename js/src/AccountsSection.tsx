@@ -171,6 +171,7 @@ function AccountsTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   const rows = accounts.map((account) => {
+    const schema = account.statementSchema?.name;
     return (
       <tr key={account.id}>
         <td className="v-center">
@@ -181,7 +182,7 @@ function AccountsTable({
           />
         </td>
         <td>{account.account_type}</td>
-        <td>{account.statementSchema?.name}</td>
+        {schema ? <td>{schema}</td> : <td className="soft">—</td>}
       </tr>
     );
   });

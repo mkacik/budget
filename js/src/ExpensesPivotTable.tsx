@@ -31,7 +31,10 @@ export function ExpensesPivotTable({
           .map((accountName) => (
             <tr key={accountName}>
               <td>{accountName}</td>
-              <UI.CurrencyCell value={sumByAccount.get(accountName) || 0} />
+              <UI.CurrencyCell
+                value={sumByAccount.get(accountName) || 0}
+                softNegatives={false}
+              />
             </tr>
           ))}
       </tbody>

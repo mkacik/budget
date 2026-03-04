@@ -8,7 +8,7 @@
   --color-card-background: #ffffff;
   --color-card-border: #cdcdcd;
   --color-table-border: #d0d0d0;
-  --color-glyph: #555555;
+  --color-glyph: #666666;
 
   --color-tooltip: #2d3436;
   --color-text-tooltip: var(--color-table-row);
@@ -86,11 +86,12 @@ pre {
 }
 
 .header {
-  display: flex;
   flex-grow: 0;
+
+  padding: var(--padding-medium);
+  display: flex;
   flex-direction: row;
   gap: 1rem;
-  padding: var(--padding-medium);
 
   background-color: var(--color-main);
   font-size: var(--font-header-medium);
@@ -301,11 +302,6 @@ table {
 
   td {
     padding: var(--padding-medium);
-    vertical-align: top;
-
-    .material-symbols-outlined {
-      color: var(--color-glyph);
-    }
   }
 
   .number {
@@ -371,6 +367,10 @@ table {
     select {
       width: 100%;
     }
+  }
+
+  td {
+    vertical-align: top;
   }
 
   .active-row {
@@ -444,6 +444,7 @@ table {
 
 .material-symbols-outlined {
   font-variation-settings: "opsz" 24;
+  color: var(--color-glyph);
 }
 
 .button {
@@ -462,15 +463,10 @@ table {
     background-color: var(--color-hover);
     cursor: pointer;
   }
-
-  .material-symbols-outlined {
-    color: var(--color-glyph);
-  }
 }
 
 .button-small {
   padding: var(--padding-small) !important;
-
 }
 
 .pill {
