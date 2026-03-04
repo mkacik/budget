@@ -4,7 +4,7 @@
 ### Database
 ```
 # Setup the schema
-cat db/init.sql db/delta.*.sql | sqlite3 db/budget.db
+cat db/current.sql | sqlite3 db/budget.db
 # Load some dummy test data
 cargo run --bin db seed
 # Create a test user
