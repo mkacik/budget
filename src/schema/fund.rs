@@ -66,17 +66,4 @@ impl BudgetFund {
 
         Ok(results)
     }
-
-    pub async fn has_items(db: &Database, id: ID) -> anyhow::Result<bool> {
-        let mut conn = db.acquire_db_conn().await?;
-        let result =
-            sqlx::query_scalar!("SELECT 1 FROM budget_items WHERE fund_id = ?1 LIMIT 1", id,)
-                .fetch_optional(&mut *conn)
-                .await?;
-
-        match result {
-            Some(_) => Ok(true),
-            None => Ok(false),
-        }
-    }
 }

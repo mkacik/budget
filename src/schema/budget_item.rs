@@ -168,4 +168,20 @@ impl BudgetItem {
 
         Ok(true)
     }
+
+    pub async fn any_has_fund_id(db: &Database, id: ID) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT EXISTS (SELECT 1 FROM budget_items WHERE fund_id = ?1)",
+            id,
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+
+        if result == 0 {
+            return Ok(false);
+        }
+
+        Ok(true)
+    }
 }

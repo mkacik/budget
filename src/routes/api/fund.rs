@@ -78,11 +78,9 @@ pub async fn update_fund(
 
 #[delete("/funds/<id>")]
 pub async fn delete_fund(db: &State<Database>, _log_entry: &WriteLogEntry, id: ID) -> ApiResponse {
-    match BudgetFund::has_items(db, id).await {
-        Ok(true) => {
-            return ApiResponse::bad("Can't delete fund that has items attached.");
-        }
+    match BudgetItem::any_has_fund_id(db, id).await {
         Ok(false) => (),
+        Ok(true) => return ApiResponse::bad("Can't delete fund that has items attached."),
         Err(e) => return ApiResponse::error(e),
     };
 
