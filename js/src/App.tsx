@@ -179,7 +179,11 @@ function App() {
           />
         );
       case Tab.Funds:
-        return <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />;
+        return (
+          <AccountsViewContext value={accountsView}>
+            <FundsPage funds={funds.funds} refreshFunds={fetchFunds} />
+          </AccountsViewContext>
+        );
       default:
         return "404";
     }

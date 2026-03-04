@@ -1,14 +1,17 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
+import { Budget, BudgetItemWithSpend } from "./types/Budget";
 import { BudgetFund, FundItems } from "./types/Fund";
-import { BudgetItemWithSpend } from "./types/Budget";
+import { ExpensesQuery } from "./types/Expense";
 
-import { getAmountPerYear } from "./BudgetView";
+import { getAmountPerYear, BudgetView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetFundForm } from "./BudgetFundForm";
 import { FetchHelper } from "./Common";
 import { FundsView } from "./FundsView";
+import { ExpensesList } from "./ExpensesList";
+import { TitledExpensesQuery } from "./MonthlySpendingTable";
 
 import * as UI from "./ui/Common";
 
@@ -17,14 +20,16 @@ type ModalState = {
   target: BudgetFund | null;
 };
 
-export function FundsTable({
+function FundsTable({
   funds,
   items,
   editFund,
+  setExpensesQuery,
 }: {
   funds: Array<BudgetFund>;
   items: Array<BudgetItemWithSpend>;
   editFund: (fund: BudgetFund | null) => void;
+  setExpensesQuery: (query: TitledExpensesQuery) => void;
 }) {
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
@@ -46,14 +51,22 @@ export function FundsTable({
 
     const fundItems = fundsView.getItems(fund.id);
     for (const item of fundItems) {
+      const displayName = `${item.year} :: ${item.display_name}`;
+      const showItemExpenses = () => {
+        setExpensesQuery({
+          title: displayName,
+          period: item.year.toString(),
+          selector: { variant: "BudgetItem", id: item.id },
+        });
+      };
       const row = (
         <tr key={`item:${item.id}`}>
           <td className="v-center">
             <UI.InlineGlyph glyph="chevron_right" />
-            {item.year} :: {item.display_name}
+            {displayName}
           </td>
           <UI.CurrencyCell value={getAmountPerYear(item.allowance)} />
-          <UI.CurrencyCell value={item.spend} />
+          <UI.CurrencyCell onClick={showItemExpenses} value={item.spend} />
         </tr>
       );
       rows.push(row);
@@ -82,6 +95,9 @@ export function FundsPage({
   refreshFunds: () => void;
 }) {
   const [items, setItems] = useState<FundItems | null>(null);
+  const [expensesQuery, setExpensesQuery] =
+    useState<TitledExpensesQuery | null>(null);
+  const [budget, setBudget] = useState<BudgetView | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -105,17 +121,47 @@ export function FundsPage({
     fetchItems();
   }, []);
 
+  const updateExpensesQuery = (query: TitledExpensesQuery) => {
+    // Period for expenses must match budget, otherwise table will crash trying to get
+    // item names from wrong year budget;  Only once correct budget year is fetched
+    // update the query to trigger expenses table refresh. Keying ExpenseList with id
+    // of year will prevent new budget and lingering data clashing inside ExpensesList
+    const year = query.period.slice(0, 4);
+    fetchHelper.fetch(new Request(`/api/budget/${year}`), (json) => {
+      const budget = new BudgetView(json as Budget);
+      setBudget(budget);
+      setExpensesQuery(query);
+    });
+  };
+
   return (
-    <UI.Section>
-      <UI.SectionHeader>Funds</UI.SectionHeader>
-      <UI.ErrorCard message={errorMessage} />
-      <UI.GlyphButton
-        glyph="add"
-        text="add fund"
-        onClick={() => editFund(null)}
-      />
-      {items && (
-        <FundsTable funds={funds} items={items.items} editFund={editFund} />
+    <>
+      <UI.Section title="Funds">
+        <UI.ErrorCard message={errorMessage} />
+        <UI.GlyphButton
+          glyph="add"
+          text="add fund"
+          onClick={() => editFund(null)}
+        />
+        {items && (
+          <FundsTable
+            funds={funds}
+            items={items.items}
+            editFund={editFund}
+            setExpensesQuery={updateExpensesQuery}
+          />
+        )}
+      </UI.Section>
+
+      {budget && expensesQuery && (
+        <UI.Section title={expensesQuery.title}>
+          <ExpensesList
+            key={expensesQuery.period}
+            query={expensesQuery as ExpensesQuery}
+            budget={budget}
+            onExpenseCategoryChange={fetchItems}
+          />
+        </UI.Section>
       )}
 
       <UI.ModalCard
@@ -133,6 +179,6 @@ export function FundsPage({
       </UI.ModalCard>
 
       <UI.LoadingBanner isLoading={loading} />
-    </UI.Section>
+    </>
   );
 }
