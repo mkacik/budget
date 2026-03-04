@@ -179,6 +179,9 @@ pub async fn delete_expense(
     _log_entry: &WriteLogEntry,
     id: ID,
 ) -> ApiResponse {
+    // The extra validation here is to prevent manually deleting imported expenses,
+    // which will later be impossible to import through normal flow if surrounded by
+    // existing expenses
     let expense = match Expense::fetch_by_id(&db, id).await {
         Ok(value) => value,
         Err(_) => {

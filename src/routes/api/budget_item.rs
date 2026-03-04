@@ -5,6 +5,7 @@ use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::response::ApiResponse;
 use crate::schema::budget_item::{BudgetItem, BudgetItemFields};
+use crate::schema::expense::Expense;
 
 #[post("/budget_items", format = "json", data = "<request>")]
 pub async fn create_budget_item(
@@ -32,12 +33,12 @@ pub async fn update_budget_item(
     log_entry.set_content(&fields);
 
     if fields.budget_only {
-        match BudgetItem::has_expenses(db, id).await {
+        match Expense::any_has_budget_item_id(db, id).await {
+            Ok(false) => (),
             Ok(true) => {
                 let message = "Can't make item budget-only, already has expenses attached";
                 return ApiResponse::bad(message);
             }
-            Ok(false) => (),
             Err(e) => return ApiResponse::error(e),
         };
     }
@@ -54,11 +55,12 @@ pub async fn delete_budget_item(
     _log_entry: &WriteLogEntry,
     id: ID,
 ) -> ApiResponse {
-    match BudgetItem::has_expenses(db, id).await {
-        Ok(true) => {
-            return ApiResponse::bad("Can't delete budget item attached to expenses.");
-        }
+    match Expense::any_has_budget_item_id(db, id).await {
         Ok(false) => (),
+        Ok(true) => {
+            let message = "Can't delete budget item attached to expenses.";
+            return ApiResponse::bad(message);
+        }
         Err(e) => return ApiResponse::error(e),
     };
 

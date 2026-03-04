@@ -65,8 +65,8 @@ impl Budget {
             .id;
 
             sqlx::query!(
-                "INSERT INTO budget_items (category_id, name, budget_only, amount)
-                SELECT ?1 as category_id, name, budget_only, amount
+                "INSERT INTO budget_items (category_id, name, budget_only, allowance)
+                SELECT ?1 as category_id, name, budget_only, allowance
                 FROM budget_items WHERE category_id = ?2",
                 new_category_id,
                 cat.id

@@ -87,19 +87,6 @@ impl Account {
         Ok(result)
     }
 
-    pub async fn fetch_by_schema_id(db: &Database, id: ID) -> anyhow::Result<Accounts> {
-        let mut conn = db.acquire_db_conn().await?;
-        let results = sqlx::query_as::<_, Account>(
-            "SELECT id, name, account_type, statement_schema_id FROM accounts
-            WHERE statement_schema_id = ?1",
-        )
-        .bind(id)
-        .fetch_all(&mut *conn)
-        .await?;
-
-        Ok(Accounts { accounts: results })
-    }
-
     pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
@@ -118,5 +105,21 @@ impl Account {
         .await?;
 
         Ok(())
+    }
+
+    pub async fn any_has_statement_schema_id(db: &Database, id: ID) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT EXISTS (SELECT 1 FROM accounts WHERE statement_schema_id = ?1)",
+            id,
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+
+        if result == 0 {
+            return Ok(false);
+        }
+
+        Ok(true)
     }
 }

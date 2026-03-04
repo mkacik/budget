@@ -5,6 +5,7 @@ use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::routes::response::ApiResponse;
 use crate::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
+use crate::schema::budget_item::BudgetItem;
 
 #[post("/budget_categories/<year>", format = "json", data = "<request>")]
 pub async fn create_budget_category(
@@ -44,12 +45,9 @@ pub async fn delete_budget_category(
     _log_entry: &WriteLogEntry,
     id: ID,
 ) -> ApiResponse {
-    match BudgetCategory::has_items(db, id).await {
-        Ok(true) => {
-            let message = "Can't delete category that has items attached.";
-            return ApiResponse::bad(message);
-        }
+    match BudgetItem::any_has_category_id(db, id).await {
         Ok(false) => (),
+        Ok(true) => return ApiResponse::bad("Can't delete category that has items attached."),
         Err(e) => return ApiResponse::error(e),
     };
 

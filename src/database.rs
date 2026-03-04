@@ -1,7 +1,8 @@
 use sqlx::pool::PoolConnection;
-use sqlx::sqlite::SqlitePool;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use sqlx::Sqlite;
 use std::env;
+use std::str::FromStr;
 
 const DATABASE_URL_ENV_VAR: &str = "DATABASE_URL";
 
@@ -14,7 +15,7 @@ fn get_fallback_database_url() -> String {
     format!("sqlite:{}/budget.db", current_dir.display())
 }
 
-pub async fn get_db_pool() -> SqlitePool {
+async fn get_db_pool() -> SqlitePool {
     let database_url = match env::var(DATABASE_URL_ENV_VAR) {
         Ok(value) => value,
         Err(_) => {
@@ -28,7 +29,11 @@ pub async fn get_db_pool() -> SqlitePool {
         }
     };
 
-    match SqlitePool::connect(&database_url).await {
+    let opts = SqliteConnectOptions::from_str(&database_url)
+        .expect("Could not create db connection options, aborting!")
+        .foreign_keys(true);
+
+    match SqlitePool::connect_with(opts).await {
         Ok(pool) => pool,
         Err(_) => panic!(
             "Could not create db connection to {}, aborting!",

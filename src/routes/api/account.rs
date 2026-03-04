@@ -56,13 +56,14 @@ pub async fn delete_account(
     _log_entry: &WriteLogEntry,
     account_id: ID,
 ) -> ApiResponse {
-    let expenses = match Expense::fetch_by_account_id(db, account_id).await {
-        Ok(value) => value,
+    match Expense::any_has_account_id(db, account_id).await {
+        Ok(false) => (),
+        Ok(true) => {
+            let message = "Can't delete account that has expenses attached.";
+            return ApiResponse::bad(message);
+        }
         Err(e) => return ApiResponse::error(e),
     };
-    if expenses.expenses.len() > 0 {
-        return ApiResponse::bad("Can't delete account that has expenses attached.");
-    }
 
     match Account::delete_by_id(db, account_id).await {
         Ok(_) => ApiResponse::ok(),

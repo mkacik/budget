@@ -57,13 +57,11 @@ pub async fn delete_schema(
     _log_entry: &WriteLogEntry,
     schema_id: ID,
 ) -> ApiResponse {
-    let accounts = match Account::fetch_by_schema_id(db, schema_id).await {
-        Ok(value) => value,
+    match Account::any_has_statement_schema_id(db, schema_id).await {
+        Ok(false) => (),
+        Ok(true) => return ApiResponse::bad("Can't delete schema attached to an account."),
         Err(e) => return ApiResponse::error(e),
     };
-    if accounts.accounts.len() > 0 {
-        return ApiResponse::bad("Can't delete schema attached to an account.");
-    }
 
     match StatementSchema::delete_by_id(db, schema_id).await {
         Ok(_) => ApiResponse::ok(),

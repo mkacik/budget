@@ -79,6 +79,7 @@ impl Expense {
         )
         .fetch_one(&mut *conn)
         .await?
+        .expect("INSERT failed, likely FOREIGN KEY constraint")
         .try_into()
         .unwrap();
 
@@ -120,20 +121,6 @@ impl Expense {
             .await?;
 
         Ok(result)
-    }
-
-    pub async fn fetch_by_account_id(db: &Database, account_id: ID) -> anyhow::Result<Expenses> {
-        let mut conn = db.acquire_db_conn().await?;
-        let results = sqlx::query_as::<_, Expense>(
-            "SELECT * FROM expenses
-            WHERE account_id = ?1
-            ORDER BY transaction_date DESC, transaction_time DESC",
-        )
-        .bind(account_id)
-        .fetch_all(&mut *conn)
-        .await?;
-
-        Ok(Expenses { expenses: results })
     }
 
     pub async fn fetch_by_account_id_and_period(
@@ -315,5 +302,37 @@ impl Expense {
         self.notes.notes = notes;
 
         Ok(())
+    }
+
+    pub async fn any_has_account_id(db: &Database, id: ID) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT EXISTS (SELECT 1 FROM expenses WHERE account_id = ?1)",
+            id,
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+
+        if result == 0 {
+            return Ok(false);
+        }
+
+        Ok(true)
+    }
+
+    pub async fn any_has_budget_item_id(db: &Database, id: ID) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT EXISTS (SELECT 1 FROM expenses WHERE budget_item_id = ?1)",
+            id,
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+
+        if result == 0 {
+            return Ok(false);
+        }
+
+        Ok(true)
     }
 }

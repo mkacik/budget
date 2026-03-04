@@ -70,6 +70,7 @@ impl BudgetItem {
         )
         .fetch_one(&mut *conn)
         .await?
+        .expect("INSERT failed, likely FOREIGN KEY constraint")
         .try_into()
         .unwrap();
 
@@ -152,18 +153,19 @@ impl BudgetItem {
         Ok(result)
     }
 
-    pub async fn has_expenses(db: &Database, budget_item_id: ID) -> anyhow::Result<bool> {
+    pub async fn any_has_category_id(db: &Database, id: ID) -> anyhow::Result<bool> {
         let mut conn = db.acquire_db_conn().await?;
         let result = sqlx::query_scalar!(
-            "SELECT 1 FROM expenses WHERE budget_item_id = ?1 LIMIT 1",
-            budget_item_id,
+            "SELECT EXISTS (SELECT 1 FROM budget_items WHERE category_id = ?1)",
+            id,
         )
-        .fetch_optional(&mut *conn)
+        .fetch_one(&mut *conn)
         .await?;
 
-        match result {
-            Some(_) => Ok(true),
-            None => Ok(false),
+        if result == 0 {
+            return Ok(false);
         }
+
+        Ok(true)
     }
 }
