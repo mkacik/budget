@@ -306,6 +306,9 @@ export function MonthlySpendingTable({
     );
 
     for (const item of category.items) {
+      if (item.isBudgetOnly) {
+        continue;
+      }
       rows.push(
         <SpendingTableRow
           key={`${category.id}-${item.id}`}
