@@ -3,7 +3,7 @@ use rocket::{delete, post, put, State};
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::common::ApiResponse;
+use crate::routes::response::ApiResponse;
 use crate::schema::budget_item::{BudgetItem, BudgetItemFields};
 
 #[post("/budget_items", format = "json", data = "<request>")]
@@ -16,8 +16,8 @@ pub async fn create_budget_item(
     log_entry.set_content(&fields);
 
     match BudgetItem::create(db, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -35,18 +35,16 @@ pub async fn update_budget_item(
         match BudgetItem::has_expenses(db, id).await {
             Ok(true) => {
                 let message = "Can't make item budget-only, already has expenses attached";
-                return ApiResponse::BadRequest {
-                    message: message.to_string(),
-                };
+                return ApiResponse::bad(message);
             }
             Ok(false) => (),
-            Err(e) => return ApiResponse::from_error(e),
+            Err(e) => return ApiResponse::error(e),
         };
     }
 
     match BudgetItem::update(db, id, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -58,17 +56,14 @@ pub async fn delete_budget_item(
 ) -> ApiResponse {
     match BudgetItem::has_expenses(db, id).await {
         Ok(true) => {
-            let message = "Can't delete budget item attached to expenses.";
-            return ApiResponse::BadRequest {
-                message: message.to_string(),
-            };
+            return ApiResponse::bad("Can't delete budget item attached to expenses.");
         }
         Ok(false) => (),
-        Err(e) => return ApiResponse::from_error(e),
+        Err(e) => return ApiResponse::error(e),
     };
 
     match BudgetItem::delete(db, id).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }

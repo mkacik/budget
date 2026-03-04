@@ -3,17 +3,15 @@ use rocket::{delete, get, post, State};
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::common::{serialize_result, ApiResponse};
+use crate::routes::response::ApiResponse;
 use crate::schema::account::{Account, AccountFields};
 use crate::schema::expense::Expense;
 
 #[get("/accounts")]
 pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
-    let result = Account::fetch_all(&db).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
+    match Account::fetch_all(&db).await {
+        Ok(value) => ApiResponse::data(value),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -27,8 +25,8 @@ pub async fn add_account(
     log_entry.set_content(&fields);
 
     match Account::create(&db, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -43,14 +41,12 @@ pub async fn update_account(
     log_entry.set_content(&account);
 
     if account_id != account.id {
-        return ApiResponse::BadRequest {
-            message: String::from("IDs for update don't match"),
-        };
+        return ApiResponse::bad("IDs for update don't match");
     }
 
     match account.update(&db).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -62,16 +58,14 @@ pub async fn delete_account(
 ) -> ApiResponse {
     let expenses = match Expense::fetch_by_account_id(db, account_id).await {
         Ok(value) => value,
-        Err(_) => return ApiResponse::ServerError,
+        Err(e) => return ApiResponse::error(e),
     };
     if expenses.expenses.len() > 0 {
-        return ApiResponse::BadRequest {
-            message: String::from("Can't delete account that has expenses attached."),
-        };
+        return ApiResponse::bad("Can't delete account that has expenses attached.");
     }
 
     match Account::delete_by_id(db, account_id).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }

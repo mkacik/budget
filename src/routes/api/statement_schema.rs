@@ -3,18 +3,16 @@ use rocket::{delete, get, post, State};
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::common::{serialize_result, ApiResponse};
+use crate::routes::response::ApiResponse;
 use crate::schema::account::Account;
 use crate::schema::statement_schema::{StatementSchema, StatementSchemaFields};
 use crate::schema::statement_schema_test::TestSchemaRequest;
 
 #[get("/schemas")]
 pub async fn get_schemas(db: &State<Database>) -> ApiResponse {
-    let result = StatementSchema::fetch_all(&db).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
+    match StatementSchema::fetch_all(&db).await {
+        Ok(value) => ApiResponse::data(value),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -28,8 +26,8 @@ pub async fn add_schema(
     log_entry.set_content(&fields);
 
     match StatementSchema::create(&db, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -44,14 +42,12 @@ pub async fn update_schema(
     log_entry.set_content(&schema);
 
     if schema_id != schema.id {
-        return ApiResponse::BadRequest {
-            message: String::from("IDs for update don't match"),
-        };
+        return ApiResponse::bad("IDs for update don't match");
     }
 
     match schema.update(&db).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -63,27 +59,22 @@ pub async fn delete_schema(
 ) -> ApiResponse {
     let accounts = match Account::fetch_by_schema_id(db, schema_id).await {
         Ok(value) => value,
-        Err(_) => return ApiResponse::ServerError,
+        Err(e) => return ApiResponse::error(e),
     };
     if accounts.accounts.len() > 0 {
-        return ApiResponse::BadRequest {
-            message: String::from("Can't delete schema attached to an account."),
-        };
+        return ApiResponse::bad("Can't delete schema attached to an account.");
     }
 
     match StatementSchema::delete_by_id(db, schema_id).await {
-        Ok(_) => ApiResponse::Success,
-        Err(_) => ApiResponse::ServerError,
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
 #[post("/schemas/test", format = "json", data = "<request>")]
 pub async fn test_schema(request: Json<TestSchemaRequest>) -> ApiResponse {
     let test_schema_request = request.into_inner();
-    let result = test_schema_request.process();
+    let test_schema_response = test_schema_request.process();
 
-    match serialize_result(Ok(result)) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(_) => ApiResponse::ServerError,
-    }
+    ApiResponse::data(test_schema_response)
 }

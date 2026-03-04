@@ -3,7 +3,7 @@ use rocket::{delete, post, put, State};
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::common::ApiResponse;
+use crate::routes::response::ApiResponse;
 use crate::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
 
 #[post("/budget_categories/<year>", format = "json", data = "<request>")]
@@ -17,8 +17,8 @@ pub async fn create_budget_category(
     log_entry.set_content(&fields);
 
     match BudgetCategory::create(&db, year, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -33,8 +33,8 @@ pub async fn update_budget_category(
     log_entry.set_content(&fields);
 
     match BudgetCategory::update(&db, id, fields).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -47,16 +47,14 @@ pub async fn delete_budget_category(
     match BudgetCategory::has_items(db, id).await {
         Ok(true) => {
             let message = "Can't delete category that has items attached.";
-            return ApiResponse::BadRequest {
-                message: message.to_string(),
-            };
+            return ApiResponse::bad(message);
         }
         Ok(false) => (),
-        Err(e) => return ApiResponse::from_error(e),
+        Err(e) => return ApiResponse::error(e),
     };
 
     match BudgetCategory::delete(db, id).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::from_error(e),
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }

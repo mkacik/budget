@@ -4,20 +4,16 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::database::Database;
-use crate::routes::common::{serialize_result, ApiResponse};
+use crate::routes::response::ApiResponse;
 use crate::schema::budget::Budget;
 use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::spending_data::SpendingDataPoint;
 
 #[get("/budget/<year>")]
 pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
-    let result = Budget::fetch(&db, year).await;
-
-    match serialize_result(result) {
-        Ok(value) => ApiResponse::SuccessWithData { data: value },
-        Err(e) => ApiResponse::ServerErrorWithMessage {
-            message: format!("{}", e),
-        },
+    match Budget::fetch(&db, year).await {
+        Ok(value) => ApiResponse::data(value),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -33,10 +29,8 @@ pub async fn clone_budget(db: &State<Database>, json: Json<BudgetCloneRequest>) 
     let request = json.into_inner();
 
     match Budget::clone(&db, request.from_year, request.to_year).await {
-        Ok(_) => ApiResponse::Success,
-        Err(e) => ApiResponse::BadRequest {
-            message: format!("{}", e),
-        },
+        Ok(_) => ApiResponse::ok(),
+        Err(e) => ApiResponse::error(e),
     }
 }
 
@@ -51,11 +45,11 @@ pub struct SpendingData {
 pub async fn get_spending(db: &State<Database>, year: i32) -> ApiResponse {
     let data = match SpendingDataPoint::fetch_by_year(&db, year).await {
         Ok(result) => result,
-        Err(e) => return ApiResponse::from_error(e),
+        Err(e) => return ApiResponse::error(e),
     };
     let fund_items = match BudgetItem::fetch_all_fund_items(db).await {
         Ok(result) => result,
-        Err(e) => return ApiResponse::from_error(e),
+        Err(e) => return ApiResponse::error(e),
     };
 
     let result = SpendingData {
@@ -63,5 +57,5 @@ pub async fn get_spending(db: &State<Database>, year: i32) -> ApiResponse {
         fund_items: fund_items,
     };
 
-    ApiResponse::from_object(result)
+    ApiResponse::data(result)
 }
