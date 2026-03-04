@@ -6,6 +6,7 @@ use ts_rs::TS;
 use crate::database::Database;
 use crate::routes::response::ApiResponse;
 use crate::schema::budget::Budget;
+use crate::schema::budget_category::BudgetCategory;
 use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::spending_data::SpendingDataPoint;
 
@@ -28,7 +29,19 @@ pub struct BudgetCloneRequest {
 pub async fn clone_budget(db: &State<Database>, json: Json<BudgetCloneRequest>) -> ApiResponse {
     let request = json.into_inner();
 
-    match Budget::clone(&db, request.from_year, request.to_year).await {
+    let from_year = request.from_year;
+    let to_year = request.to_year;
+
+    match BudgetCategory::any_has_year(db, to_year).await {
+        Ok(false) => (),
+        Ok(true) => {
+            let message = format!("Target year {} already has data!", to_year);
+            return ApiResponse::bad(&message);
+        }
+        Err(e) => return ApiResponse::error(e),
+    }
+
+    match Budget::clone(db, from_year, to_year).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
@@ -43,7 +56,7 @@ pub struct SpendingData {
 
 #[get("/spending/<year>")]
 pub async fn get_spending(db: &State<Database>, year: i32) -> ApiResponse {
-    let data = match SpendingDataPoint::fetch_by_year(&db, year).await {
+    let data = match SpendingDataPoint::fetch_by_year(db, year).await {
         Ok(result) => result,
         Err(e) => return ApiResponse::error(e),
     };

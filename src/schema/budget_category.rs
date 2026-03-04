@@ -81,4 +81,20 @@ impl BudgetCategory {
 
         Ok(results)
     }
+
+    pub async fn any_has_year(db: &Database, year: i32) -> anyhow::Result<bool> {
+        let mut conn = db.acquire_db_conn().await?;
+        let result = sqlx::query_scalar!(
+            "SELECT EXISTS (SELECT 1 FROM budget_categories WHERE year = ?1)",
+            year,
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+
+        if result == 0 {
+            return Ok(false);
+        }
+
+        Ok(true)
+    }
 }

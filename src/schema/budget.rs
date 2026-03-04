@@ -29,19 +29,7 @@ impl Budget {
     pub async fn clone(db: &Database, from_year: i32, to_year: i32) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
-        // 1. Abort if the target year already have categories?
-        let target_exists = sqlx::query_scalar!(
-            "SELECT EXISTS(SELECT 1 FROM budget_categories WHERE year = ?1)",
-            to_year
-        )
-        .fetch_one(&mut *conn)
-        .await?;
-
-        if target_exists == 1 {
-            return Err(anyhow::anyhow!("Target year {} already has data!", to_year));
-        }
-
-        // 2. Start the transaction ON this specific connection
+        // Start the transaction on this specific connection
         // Note: This borrows the connection for the duration of the transaction
         let mut tx = conn.begin().await?;
 
