@@ -38,7 +38,7 @@ function updateStatementSchemaRequest(
 ): Request {
   const updated = { ...schema, ...fields };
   return new Request(`/api/schemas/${schema.id}`, {
-    method: "POST",
+    method: "PUT",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });

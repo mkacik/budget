@@ -17,7 +17,7 @@ pub async fn get_schemas(db: &State<Database>) -> ApiResponse {
 }
 
 #[post("/schemas", format = "json", data = "<request>")]
-pub async fn add_schema(
+pub async fn create_schema(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
     request: Json<StatementSchemaFields>,
@@ -31,39 +31,35 @@ pub async fn add_schema(
     }
 }
 
-#[post("/schemas/<schema_id>", format = "json", data = "<request>")]
+#[put("/schemas/<id>", format = "json", data = "<request>")]
 pub async fn update_schema(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    schema_id: ID,
-    request: Json<StatementSchema>,
+    id: ID,
+    request: Json<StatementSchemaFields>,
 ) -> ApiResponse {
-    let schema = request.into_inner();
-    log_entry.set_content(&schema);
+    let fields = request.into_inner();
+    log_entry.set_content(&fields);
 
-    if schema_id != schema.id {
-        return ApiResponse::bad("IDs for update don't match");
-    }
-
-    match schema.update(&db).await {
+    match StatementSchema::update(&db, id, fields).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
 }
 
-#[delete("/schemas/<schema_id>", rank = 2)]
+#[delete("/schemas/<id>")]
 pub async fn delete_schema(
     db: &State<Database>,
     _log_entry: &WriteLogEntry,
-    schema_id: ID,
+    id: ID,
 ) -> ApiResponse {
-    match Account::any_has_statement_schema_id(db, schema_id).await {
+    match Account::any_has_statement_schema_id(db, id).await {
         Ok(false) => (),
         Ok(true) => return ApiResponse::bad("Can't delete schema attached to an account."),
         Err(e) => return ApiResponse::error(e),
     };
 
-    match StatementSchema::delete_by_id(db, schema_id).await {
+    match StatementSchema::delete(db, id).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }

@@ -71,7 +71,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
             "/api",
             routes![
                 routes::api::account::get_accounts,
-                routes::api::account::add_account,
+                routes::api::account::create_account,
                 routes::api::account::update_account,
                 routes::api::account::delete_account,
                 routes::api::budget::get_budget,
@@ -96,7 +96,7 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::fund::delete_fund,
                 routes::api::import::import_expenses,
                 routes::api::statement_schema::get_schemas,
-                routes::api::statement_schema::add_schema,
+                routes::api::statement_schema::create_schema,
                 routes::api::statement_schema::update_schema,
                 routes::api::statement_schema::delete_schema,
                 routes::api::statement_schema::test_schema,

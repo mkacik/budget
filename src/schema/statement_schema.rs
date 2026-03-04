@@ -47,7 +47,31 @@ impl StatementSchema {
         Ok(id)
     }
 
-    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+    pub async fn update(
+        db: &Database,
+        id: ID,
+        fields: StatementSchemaFields,
+    ) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE statement_schemas SET
+                name = ?2,
+                notes = ?3,
+                record_mapping = ?4
+            WHERE id = ?1",
+            id,
+            fields.name,
+            fields.notes,
+            fields.record_mapping,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!("DELETE FROM statement_schemas WHERE id = ?1", id,)
             .execute(&mut *conn)
@@ -75,25 +99,5 @@ impl StatementSchema {
                 .await?;
 
         Ok(result)
-    }
-
-    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
-        let mut conn = db.acquire_db_conn().await?;
-
-        sqlx::query!(
-            "UPDATE statement_schemas SET
-                name = ?2,
-                notes = ?3,
-                record_mapping = ?4
-            WHERE id = ?1",
-            self.id,
-            self.fields.name,
-            self.fields.notes,
-            self.fields.record_mapping,
-        )
-        .execute(&mut *conn)
-        .await?;
-
-        Ok(())
     }
 }

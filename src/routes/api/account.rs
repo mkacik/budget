@@ -16,7 +16,7 @@ pub async fn get_accounts(db: &State<Database>) -> ApiResponse {
 }
 
 #[post("/accounts", format = "json", data = "<request>")]
-pub async fn add_account(
+pub async fn create_account(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
     request: Json<AccountFields>,
