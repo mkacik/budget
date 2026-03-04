@@ -30,33 +30,29 @@ pub async fn add_account(
     }
 }
 
-#[post("/accounts/<account_id>", format = "json", data = "<request>")]
+#[put("/accounts/<id>", format = "json", data = "<request>")]
 pub async fn update_account(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    account_id: ID,
-    request: Json<Account>,
+    id: ID,
+    request: Json<AccountFields>,
 ) -> ApiResponse {
-    let account = request.into_inner();
-    log_entry.set_content(&account);
+    let fields = request.into_inner();
+    log_entry.set_content(&fields);
 
-    if account_id != account.id {
-        return ApiResponse::bad("IDs for update don't match");
-    }
-
-    match account.update(&db).await {
+    match Account::update(&db, id, fields).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
 }
 
-#[delete("/accounts/<account_id>")]
+#[delete("/accounts/<id>")]
 pub async fn delete_account(
     db: &State<Database>,
     _log_entry: &WriteLogEntry,
-    account_id: ID,
+    id: ID,
 ) -> ApiResponse {
-    match Expense::any_has_account_id(db, account_id).await {
+    match Expense::any_has_account_id(db, id).await {
         Ok(false) => (),
         Ok(true) => {
             let message = "Can't delete account that has expenses attached.";
@@ -65,7 +61,7 @@ pub async fn delete_account(
         Err(e) => return ApiResponse::error(e),
     };
 
-    match Account::delete_by_id(db, account_id).await {
+    match Account::delete(db, id).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }

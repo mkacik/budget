@@ -39,7 +39,7 @@ function updateAccountRequest(
 ): Request {
   const updated = { ...account, ...fields };
   return new Request(`/api/accounts/${account.id}`, {
-    method: "POST",
+    method: "PUT",
     headers: JSON_HEADERS,
     body: JSON.stringify(updated),
   });

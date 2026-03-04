@@ -55,7 +55,27 @@ impl Account {
         Ok(id)
     }
 
-    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+    pub async fn update(db: &Database, id: ID, fields: AccountFields) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE accounts SET
+                name = ?2,
+                account_type = ?3,
+                statement_schema_id = ?4
+            WHERE id = ?1",
+            id,
+            fields.name,
+            fields.account_type,
+            fields.statement_schema_id
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!("DELETE FROM accounts WHERE id = ?1", id,)
             .execute(&mut *conn)
@@ -85,26 +105,6 @@ impl Account {
         .await?;
 
         Ok(result)
-    }
-
-    pub async fn update(&self, db: &Database) -> anyhow::Result<()> {
-        let mut conn = db.acquire_db_conn().await?;
-
-        sqlx::query!(
-            "UPDATE accounts SET
-                name = ?2,
-                account_type = ?3,
-                statement_schema_id = ?4
-            WHERE id = ?1",
-            self.id,
-            self.fields.name,
-            self.fields.account_type,
-            self.fields.statement_schema_id
-        )
-        .execute(&mut *conn)
-        .await?;
-
-        Ok(())
     }
 
     pub async fn any_has_statement_schema_id(db: &Database, id: ID) -> anyhow::Result<bool> {

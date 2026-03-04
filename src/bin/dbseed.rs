@@ -110,26 +110,22 @@ fn get_shop_record_mapping() -> RecordMapping {
 }
 
 async fn add_accounts(db: &Database) -> anyhow::Result<()> {
-    let bank_account_id = Account::create(
+    Account::create(
         db,
         AccountFields {
             name: String::from("big bank"),
             account_type: AccountType::Bank,
-            statement_schema_id: None,
+            statement_schema_id: Some(1),
         },
     )
     .await?;
-
-    let mut bank_account = Account::fetch_by_id(&db, bank_account_id).await?;
-    bank_account.fields.statement_schema_id = Some(StatementSchema::fetch_by_id(&db, 1).await?.id);
-    bank_account.update(db).await?;
 
     Account::create(
         db,
         AccountFields {
             name: String::from("some shop"),
             account_type: AccountType::Shop,
-            statement_schema_id: Some(StatementSchema::fetch_by_id(&db, 2).await?.id),
+            statement_schema_id: Some(2),
         },
     )
     .await?;
