@@ -1,125 +1,15 @@
 use regex::Regex;
-use rocket::form::{Form, FromForm};
-use rocket::fs::TempFile;
 use rocket::serde::json::Json;
 use rocket::{delete, post, State};
 use serde::{Deserialize, Serialize};
-use tokio::fs::remove_file;
 use ts_rs::TS;
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
 use crate::routes::response::ApiResponse;
 
 use crate::schema::account::{Account, AccountType};
-use crate::schema::budget_item::BudgetItem;
 use crate::schema::expense::{Expense, ExpenseCategory, ExpenseFields, ExpenseNotes};
-use crate::schema::statement_schema::StatementSchema;
-
-#[derive(FromForm)]
-pub struct UploadStatementForm<'f> {
-    file: TempFile<'f>,
-}
-
-#[post("/accounts/<account_id>/expenses", data = "<form>")]
-pub async fn import_expenses(
-    db: &State<Database>,
-    log_entry: &WriteLogEntry,
-    account_id: ID,
-    mut form: Form<UploadStatementForm<'_>>,
-) -> ApiResponse {
-    log_entry.set_content(format!("File of length {}", form.file.len()));
-
-    if form.file.len() == 0 {
-        return ApiResponse::bad("Can't process empty file.");
-    }
-
-    let account = match Account::fetch_by_id(db, account_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("Account with id {} could not be found.", account_id);
-            return ApiResponse::bad(&message);
-        }
-    };
-
-    let statement_schema_id = match account.fields.statement_schema_id {
-        Some(value) => value,
-        None => {
-            let message = format!(
-                "Account '{}' does not have import schema attached.",
-                account.fields.name
-            );
-            return ApiResponse::bad(&message);
-        }
-    };
-
-    let statement_schema = match StatementSchema::fetch_by_id(&db, statement_schema_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("StatementSchema with id {} could not be found.", account_id);
-            return ApiResponse::bad(&message);
-        }
-    };
-
-    if let Err(e) = form.file.persist_to(STATEMENT_UPLOAD_PATH).await {
-        // std::io::Error -> anyhow::Error
-        return ApiResponse::error(anyhow::anyhow!(e));
-    };
-
-    let expenses_or_import_error = read_expenses(
-        account_id,
-        String::from(STATEMENT_UPLOAD_PATH),
-        &statement_schema.fields.record_mapping,
-    )
-    .await;
-
-    // clean up the temp file before return, regardless of whether import succeeded
-    let _ = remove_file(STATEMENT_UPLOAD_PATH).await;
-
-    // ImportError is always user error and contains a message to display in UI
-    let expenses = match expenses_or_import_error {
-        Ok(value) => value,
-        Err(e) => return ApiResponse::bad(&e.message),
-    };
-
-    match save_expenses(account_id, expenses, &db).await {
-        Ok(_) => ApiResponse::ok(),
-        Err(e) => ApiResponse::error(e),
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct DeleteExpensesRequest {
-    newer_than_date: String,
-}
-
-#[post(
-    "/accounts/<account_id>/expenses/delete",
-    format = "json",
-    data = "<json>"
-)]
-pub async fn delete_expenses(
-    db: &State<Database>,
-    log_entry: &WriteLogEntry,
-    account_id: ID,
-    json: Json<DeleteExpensesRequest>,
-) -> ApiResponse {
-    let request = json.into_inner();
-    log_entry.set_content(&request);
-
-    let date = request.newer_than_date;
-    let re = Regex::new(r"^20\d\d-[01]\d-[0123]\d$").unwrap();
-    if !re.is_match(&date) {
-        let message = format!("Incorrect date '{}', expected 'yyyy-MM-dd' format", date);
-        return ApiResponse::bad(&message);
-    }
-
-    match Expense::delete_by_account_id_and_date(&db, account_id, &date).await {
-        Ok(_) => ApiResponse::ok(),
-        Err(e) => ApiResponse::error(e),
-    }
-}
 
 fn to_simple_csv_row(
     transaction_date: &str,
@@ -136,7 +26,13 @@ fn to_simple_csv_row(
     Ok(string.trim().to_string())
 }
 
-#[post("/expenses/create", format = "json", data = "<json>")]
+async fn is_cash_account(db: &Database, account_id: ID) -> anyhow::Result<bool> {
+    let account = Account::fetch_by_id(db, account_id).await?;
+
+    Ok(account.fields.account_type == AccountType::Cash)
+}
+
+#[post("/expenses", format = "json", data = "<json>")]
 pub async fn create_expense(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
@@ -145,17 +41,14 @@ pub async fn create_expense(
     let mut request = json.into_inner();
     log_entry.set_content(&request);
 
-    let account = match Account::fetch_by_id(db, request.account_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("Account with id {} could not be found.", request.account_id);
+    match is_cash_account(&db, request.account_id).await {
+        Ok(true) => (),
+        Ok(false) => {
+            let message = "Manually deleting expenses only allowed for Cash accounts.";
             return ApiResponse::bad(&message);
         }
+        Err(e) => return ApiResponse::error(e),
     };
-
-    if account.fields.account_type != AccountType::Cash {
-        return ApiResponse::bad("Manually adding expenses only allowed for Cash accounts.");
-    }
 
     let raw_csv = match to_simple_csv_row(
         &request.transaction_date,
@@ -181,86 +74,55 @@ pub async fn delete_expense(
 ) -> ApiResponse {
     // The extra validation here is to prevent manually deleting imported expenses,
     // which will later be impossible to import through normal flow if surrounded by
-    // existing expenses
+    // existing expenses; UI will only allow for triggering this operation for existing
+    // expense and account, so depending on sl errors is fine.
     let expense = match Expense::fetch_by_id(&db, id).await {
         Ok(value) => value,
-        Err(_) => {
-            let message = format!("Expense with id {} could not be found.", id);
-            return ApiResponse::bad(&message);
-        }
+        Err(e) => return ApiResponse::error(e),
     };
 
-    let account_id = expense.fields.account_id;
-    let account = match Account::fetch_by_id(&db, account_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("Account with id {} could not be found.", account_id);
+    match is_cash_account(&db, expense.fields.account_id).await {
+        Ok(true) => (),
+        Ok(false) => {
+            let message = "Manually deleting expenses only allowed for Cash accounts.";
             return ApiResponse::bad(&message);
         }
+        Err(e) => return ApiResponse::error(e),
     };
 
-    if account.fields.account_type != AccountType::Cash {
-        return ApiResponse::bad("Manually deleting expenses only allowed for Cash accounts.");
-    }
-
-    match Expense::delete_by_id(&db, id).await {
+    match Expense::delete(&db, id).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
 }
 
-#[post("/expenses/<expense_id>/category", format = "json", data = "<json>")]
+#[put("/expenses/<id>/category", format = "json", data = "<json>")]
 pub async fn update_expense_category(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    expense_id: ID,
+    id: ID,
     json: Json<ExpenseCategory>,
 ) -> ApiResponse {
     let request = json.into_inner();
     log_entry.set_content(&request);
 
-    let mut expense = match Expense::fetch_by_id(&db, expense_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("Expense with id {} could not be found.", expense_id);
-            return ApiResponse::bad(&message);
-        }
-    };
-
-    let budget_item_id = request.budget_item_id;
-    // If new value of budget item is not None, validate that the id exists in db
-    if let Some(id) = budget_item_id {
-        if BudgetItem::fetch_by_id(&db, id).await.is_err() {
-            let message = format!("BudgetItem with id {} could not be found.", id);
-            return ApiResponse::bad(&message);
-        }
-    }
-
-    match expense.set_budget_item_id(&db, budget_item_id).await {
+    match Expense::update_budget_item_id(&db, id, request.budget_item_id).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
 }
 
-#[post("/expenses/<expense_id>/notes", format = "json", data = "<json>")]
+#[put("/expenses/<id>/notes", format = "json", data = "<json>")]
 pub async fn update_expense_notes(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    expense_id: ID,
+    id: ID,
     json: Json<ExpenseNotes>,
 ) -> ApiResponse {
     let request = json.into_inner();
     log_entry.set_content(&request);
 
-    let mut expense = match Expense::fetch_by_id(&db, expense_id).await {
-        Ok(value) => value,
-        Err(_) => {
-            let message = format!("Expense with id {} could not be found.", expense_id);
-            return ApiResponse::bad(&message);
-        }
-    };
-
-    match expense.set_notes(&db, request.notes).await {
+    match Expense::update_notes(&db, id, request.notes).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
@@ -319,6 +181,34 @@ pub async fn query_expenses(db: &State<Database>, json: Json<ExpensesQuery>) -> 
 
     match expenses {
         Ok(value) => ApiResponse::data(value),
+        Err(e) => ApiResponse::error(e),
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeleteExpensesRequest {
+    account_id: ID,
+    newer_than_date: String,
+}
+
+#[post("/expenses/bulk_delete", format = "json", data = "<json>")]
+pub async fn delete_expenses(
+    db: &State<Database>,
+    log_entry: &WriteLogEntry,
+    json: Json<DeleteExpensesRequest>,
+) -> ApiResponse {
+    let request = json.into_inner();
+    log_entry.set_content(&request);
+
+    let date = request.newer_than_date;
+    let re = Regex::new(r"^20\d\d-[01]\d-[0123]\d$").unwrap();
+    if !re.is_match(&date) {
+        let message = format!("Incorrect date '{}', expected 'yyyy-MM-dd' format", date);
+        return ApiResponse::bad(&message);
+    }
+
+    match Expense::delete_by_account_id_and_date(&db, request.account_id, &date).await {
+        Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
 }

@@ -86,17 +86,17 @@ impl Expense {
         Ok(id)
     }
 
-    // TODO: rename to delete newer than
-    pub async fn delete_by_account_id_and_date(
+    pub async fn update_budget_item_id(
         db: &Database,
-        account_id: ID,
-        date: &str,
+        id: ID,
+        budget_item_id: Option<ID>,
     ) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
+
         sqlx::query!(
-            "DELETE FROM expenses WHERE account_id = ?1 AND transaction_date > ?2",
-            account_id,
-            date,
+            "UPDATE expenses SET budget_item_id = ?1 WHERE id = ?2",
+            budget_item_id,
+            id
         )
         .execute(&mut *conn)
         .await?;
@@ -104,11 +104,38 @@ impl Expense {
         Ok(())
     }
 
-    pub async fn delete_by_id(db: &Database, id: ID) -> anyhow::Result<()> {
+    pub async fn update_notes(db: &Database, id: ID, notes: Option<String>) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!("UPDATE expenses SET notes = ?1 WHERE id = ?2", notes, id)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!("DELETE FROM expenses WHERE id = ?1", id)
             .execute(&mut *conn)
             .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete_by_account_id_and_date(
+        db: &Database,
+        account_id: ID,
+        newer_than_date: &str,
+    ) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!(
+            "DELETE FROM expenses WHERE account_id = ?1 AND transaction_date > ?2",
+            account_id,
+            newer_than_date,
+        )
+        .execute(&mut *conn)
+        .await?;
 
         Ok(())
     }
@@ -266,42 +293,6 @@ impl Expense {
         };
 
         Ok(Some(latest_transactions))
-    }
-
-    pub async fn set_budget_item_id(
-        &mut self,
-        db: &Database,
-        budget_item_id: Option<ID>,
-    ) -> anyhow::Result<()> {
-        let mut conn = db.acquire_db_conn().await?;
-
-        sqlx::query!(
-            "UPDATE expenses SET budget_item_id = ?1 WHERE id = ?2",
-            budget_item_id,
-            self.id
-        )
-        .execute(&mut *conn)
-        .await?;
-
-        self.category.budget_item_id = budget_item_id;
-
-        Ok(())
-    }
-
-    pub async fn set_notes(&mut self, db: &Database, notes: Option<String>) -> anyhow::Result<()> {
-        let mut conn = db.acquire_db_conn().await?;
-
-        sqlx::query!(
-            "UPDATE expenses SET notes = ?1 WHERE id = ?2",
-            notes,
-            self.id
-        )
-        .execute(&mut *conn)
-        .await?;
-
-        self.notes.notes = notes;
-
-        Ok(())
     }
 
     pub async fn any_has_account_id(db: &Database, id: ID) -> anyhow::Result<bool> {

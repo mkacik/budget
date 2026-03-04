@@ -110,17 +110,6 @@ impl BudgetItem {
         Ok(())
     }
 
-    pub async fn fetch_by_id(db: &Database, id: ID) -> anyhow::Result<BudgetItem> {
-        let mut conn = db.acquire_db_conn().await?;
-        let result =
-            sqlx::query_as::<_, BudgetItem>("SELECT * FROM view_budget_items WHERE id = ?1")
-                .bind(id)
-                .fetch_one(&mut *conn)
-                .await?;
-
-        Ok(result)
-    }
-
     pub async fn fetch_by_year(db: &Database, year: i32) -> anyhow::Result<Vec<BudgetItem>> {
         let mut conn = db.acquire_db_conn().await?;
         let results = sqlx::query_as::<_, BudgetItem>(

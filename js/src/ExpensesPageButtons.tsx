@@ -59,7 +59,7 @@ function ImportExpensesForm({
         throw Error("File must be selected.");
       }
 
-      const request = new Request(`api/accounts/${account.id}/expenses`, {
+      const request = new Request("/api/expenses/import", {
         method: "POST",
         body: formData,
       });
@@ -84,6 +84,12 @@ function ImportExpensesForm({
       <UI.ErrorCard message={errorMessage} />
       <SchemaNotes schema={schema} />
       <Form onSubmit={onSubmit}>
+        <input
+          type="hidden"
+          id="account_id"
+          name="account_id"
+          value={account.id}
+        />
         <LabeledInput
           label="Statement to upload (.csv,.txt)"
           name="file"
@@ -123,14 +129,15 @@ function DeleteExpensesForm({
         return;
       }
 
-      const request = new Request(
-        `api/accounts/${account.id}/expenses/delete`,
-        {
-          method: "POST",
-          headers: JSON_HEADERS,
-          body: JSON.stringify({ newer_than_date: formatDate(date) }),
-        },
-      );
+      const body = {
+        account_id: account.id,
+        newer_than_date: formatDate(date),
+      };
+      const request = new Request("/api/expenses/bulk_delete", {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify(body),
+      });
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
@@ -304,7 +311,7 @@ function AddExpenseForm({
         amount: fields.amount,
         description: description,
       } as ExpenseFields;
-      const request = new Request(`api/expenses/create`, {
+      const request = new Request("/api/expenses", {
         method: "POST",
         headers: JSON_HEADERS,
         body: JSON.stringify(requestBody),

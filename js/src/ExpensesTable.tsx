@@ -77,7 +77,7 @@ function ExpenseRow({
 
   const updateBudgetItemID = (newBudgetItemID: number | null) => {
     const request = new Request(`/api/expenses/${expense.id}/category`, {
-      method: "POST",
+      method: "PUT",
       headers: JSON_HEADERS,
       body: JSON.stringify({ budget_item_id: newBudgetItemID }),
     });
@@ -86,7 +86,7 @@ function ExpenseRow({
 
   const updateNotes = (newNotes: string | null) => {
     const request = new Request(`/api/expenses/${expense.id}/notes`, {
-      method: "POST",
+      method: "PUT",
       headers: JSON_HEADERS,
       body: JSON.stringify({ notes: newNotes }),
     });
