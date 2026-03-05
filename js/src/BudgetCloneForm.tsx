@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetCloneRequest } from "./types/Budget";
+import { BudgetCloneRequest } from "./generated/types";
+
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 

@@ -1,6 +1,7 @@
 import React from "react";
 
-import { AmountField } from "../types/RecordMapping";
+import { AmountField } from "../generated/types";
+
 import {
   FromColumnWithInvert,
   FromColumnWithInvertForm,

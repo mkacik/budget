@@ -2,10 +2,11 @@ use serde::Serialize;
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 #[derive(Debug, FromRow, Serialize, TS)]
-#[ts(export_to = "SpendingData.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct SpendingDataPoint {
     pub budget_item_id: Option<ID>,
     pub month: String,

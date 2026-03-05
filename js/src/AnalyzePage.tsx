@@ -1,9 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { SpendingData } from "./types/SpendingData";
-import { ExpensesQuery } from "./types/Expense";
-import { BudgetFund } from "./types/Fund";
+import { BudgetFund, ExpensesQuery, SpendingData } from "./generated/types";
 
 import { FundsView } from "./FundsView";
 import { BudgetView } from "./BudgetView";

@@ -1,7 +1,11 @@
 import { createContext, useContext } from "react";
 
-import { Account, Accounts } from "./types/Account";
-import { StatementSchema, StatementSchemas } from "./types/StatementSchema";
+import {
+  Account,
+  Accounts,
+  StatementSchema,
+  StatementSchemas,
+} from "./generated/types";
 
 export interface AccountView extends Account {
   statementSchema: StatementSchema | null;

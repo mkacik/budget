@@ -1,9 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { Budget, BudgetItemWithSpend } from "./types/Budget";
-import { BudgetFund, FundItems } from "./types/Fund";
-import { ExpensesQuery } from "./types/Expense";
+import {
+  Budget,
+  BudgetItemWithSpend,
+  BudgetFund,
+  FundItems,
+  ExpensesQuery,
+} from "./generated/types";
 
 import { getAmountPerYear, BudgetView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";

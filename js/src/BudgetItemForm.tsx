@@ -1,8 +1,12 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetItem, BudgetItemFields, BudgetAllowance } from "./types/Budget";
-import { BudgetFund } from "./types/Fund";
+import {
+  BudgetItem,
+  BudgetItemFields,
+  BudgetAllowance,
+  BudgetFund,
+} from "./generated/types";
 
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
 import { BudgetAllowanceForm } from "./BudgetAllowanceForm";

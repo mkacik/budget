@@ -1,8 +1,12 @@
 import React from "react";
 import { useState } from "react";
 
-import { Account, AccountFields, AccountType } from "./types/Account";
-import { StatementSchema } from "./types/StatementSchema";
+import {
+  Account,
+  AccountFields,
+  AccountType,
+  StatementSchema,
+} from "./generated/types";
 
 import { AccountView, AccountsView } from "./AccountsView";
 import { useAppSettingsContext } from "./AppSettings";

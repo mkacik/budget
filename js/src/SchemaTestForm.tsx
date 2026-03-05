@@ -1,8 +1,12 @@
 import React from "react";
 import { useState } from "react";
 
-import { StatementSchemaFields } from "./types/StatementSchema";
-import { TestSchemaRequest, TestSchemaResponse } from "./types/SchemaTest";
+import {
+  StatementSchemaFields,
+  TestSchemaRequest,
+  TestSchemaResponse,
+} from "./generated/types";
+
 import { Form, FormButtons, FormFieldWide, FormSubmitButton } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
 

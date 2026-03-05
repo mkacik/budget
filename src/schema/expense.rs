@@ -2,10 +2,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS, PartialEq)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct ExpenseFields {
     pub account_id: ID,
     pub transaction_date: String,
@@ -17,19 +18,19 @@ pub struct ExpenseFields {
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct ExpenseCategory {
     pub budget_item_id: Option<ID>,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct ExpenseNotes {
     pub notes: Option<String>,
 }
 
 #[derive(Debug, FromRow, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Expense {
     pub id: ID,
     #[serde(flatten)]
@@ -47,7 +48,7 @@ pub struct Expense {
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Expenses {
     pub expenses: Vec<Expense>,
 }

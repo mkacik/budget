@@ -1,9 +1,9 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetCategory, BudgetCategoryFields } from "./types/Budget";
-import { BudgetView } from "./BudgetView";
+import { BudgetCategory, BudgetCategoryFields } from "./generated/types";
 
+import { BudgetView } from "./BudgetView";
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 

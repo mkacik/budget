@@ -1,4 +1,5 @@
-import { SpendingDataPoint } from "./types/SpendingData";
+import { SpendingDataPoint } from "./generated/types";
+
 import { BudgetItemView, BudgetView } from "./BudgetView";
 import { FundsView } from "./FundsView";
 

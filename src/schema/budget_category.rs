@@ -2,17 +2,18 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetCategoryFields {
     pub name: String,
     pub ignored: bool,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetCategory {
     pub id: ID,
     pub year: i32, // immutable after creation

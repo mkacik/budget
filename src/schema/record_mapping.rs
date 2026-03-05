@@ -3,6 +3,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::ID;
 
 use crate::schema::datetime::{to_local_date, to_local_time, TZ};
@@ -20,14 +21,14 @@ pub enum ImportResult {
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(tag = "variant", content = "params")]
-#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
+#[ts(export_to = TS_FILE, tag = "variant", content = "params")]
 pub enum DateField {
     FromColumn { col: ColID, tz: TZ },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(tag = "variant", content = "params")]
-#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
+#[ts(export_to = TS_FILE, tag = "variant", content = "params")]
 pub enum TimeField {
     FromColumn { col: ColID, tz: TZ },
     Empty,
@@ -35,7 +36,7 @@ pub enum TimeField {
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(tag = "variant", content = "params")]
-#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
+#[ts(export_to = TS_FILE, tag = "variant", content = "params")]
 pub enum AmountField {
     FromColumn {
         col: ColID,
@@ -52,13 +53,13 @@ pub enum AmountField {
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(tag = "variant", content = "params")]
-#[ts(export_to = "RecordMapping.ts", tag = "variant", content = "params")]
+#[ts(export_to = TS_FILE, tag = "variant", content = "params")]
 pub enum TextField {
     FromColumn { col: ColID },
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct RecordMapping {
     pub transaction_date: DateField,
     pub transaction_time: TimeField,

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ExpensesQuery } from "./types/Expense";
+import { ExpensesQuery } from "./generated/types";
 
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";

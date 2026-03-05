@@ -4,6 +4,7 @@ use rocket::{delete, post, State};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
@@ -130,7 +131,7 @@ pub async fn update_expense_notes(
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(tag = "variant")]
-#[ts(export_to = "Expense.ts", tag = "variant")]
+#[ts(export_to = TS_FILE, tag = "variant")]
 pub enum ExpensesQuerySelector {
     AllNotIgnored,
     Uncategorized,
@@ -140,7 +141,7 @@ pub enum ExpensesQuerySelector {
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export_to = "Expense.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct ExpensesQuery {
     period: String, // expected format YYYY or YYYY-mm
     selector: ExpensesQuerySelector,

@@ -1,6 +1,7 @@
 import React from "react";
 
-import { TimeField } from "../types/RecordMapping";
+import { TimeField } from "../generated/types";
+
 import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
 import { LabeledSelect } from "../ui/Form";
 

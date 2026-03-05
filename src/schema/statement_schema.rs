@@ -2,11 +2,12 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 use crate::schema::record_mapping::RecordMapping;
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
-#[ts(export_to = "StatementSchema.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct StatementSchemaFields {
     pub name: String,
     pub notes: String,
@@ -14,7 +15,7 @@ pub struct StatementSchemaFields {
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
-#[ts(export_to = "StatementSchema.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct StatementSchema {
     pub id: ID,
     #[serde(flatten)]
@@ -24,7 +25,7 @@ pub struct StatementSchema {
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "StatementSchema.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct StatementSchemas {
     pub schemas: Vec<StatementSchema>,
 }

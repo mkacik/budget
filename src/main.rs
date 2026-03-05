@@ -5,6 +5,7 @@ use rocket::{Error as RocketError, Ignite, Rocket};
 
 use clap::{Parser, Subcommand};
 
+mod common;
 mod controllers;
 mod credentials;
 mod crypto;

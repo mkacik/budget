@@ -1,6 +1,7 @@
 import React from "react";
 
-import { DateField } from "../types/RecordMapping";
+import { DateField } from "../generated/types";
+
 import { FromColumnWithTZ, FromColumnWithTZForm } from "./FromColumn";
 import { LabeledSelect } from "../ui/Form";
 

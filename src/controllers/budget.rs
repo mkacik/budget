@@ -3,6 +3,7 @@ use rocket::{get, post, State};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::Database;
 use crate::response::ApiResponse;
 use crate::schema::budget::Budget;
@@ -19,7 +20,7 @@ pub async fn get_budget(db: &State<Database>, year: i32) -> ApiResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetCloneRequest {
     from_year: i32,
     to_year: i32,
@@ -48,7 +49,7 @@ pub async fn clone_budget(db: &State<Database>, json: Json<BudgetCloneRequest>) 
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "SpendingData.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct SpendingData {
     data: Vec<SpendingDataPoint>,
     fund_items: Vec<BudgetItemWithSpend>,

@@ -2,10 +2,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 #[derive(Debug, Serialize, Deserialize, TS, PartialEq)]
-#[ts(export_to = "Account.ts")]
+#[ts(export_to = TS_FILE)]
 pub enum AccountType {
     Bank,
     CreditCard,
@@ -14,7 +15,7 @@ pub enum AccountType {
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
-#[ts(export_to = "Account.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct AccountFields {
     pub name: String,
     pub account_type: AccountType,
@@ -22,7 +23,7 @@ pub struct AccountFields {
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, TS)]
-#[ts(export_to = "Account.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Account {
     pub id: ID,
     #[serde(flatten)]
@@ -32,7 +33,7 @@ pub struct Account {
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Account.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Accounts {
     pub accounts: Vec<Account>,
 }

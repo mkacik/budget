@@ -2,19 +2,20 @@ use csv::ReaderBuilder;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::schema::expense::ExpenseFields;
 use crate::schema::record_mapping::ImportResult;
 use crate::schema::statement_schema::StatementSchemaFields;
 
 #[derive(Debug, Deserialize, TS)]
-#[ts(export_to = "SchemaTest.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct TestSchemaRequest {
     pub schema: StatementSchemaFields,
     pub row: String,
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "SchemaTest.ts")]
+#[ts(export_to = TS_FILE)]
 pub enum TestSchemaResult {
     Skip,
     Error,
@@ -22,7 +23,7 @@ pub enum TestSchemaResult {
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "SchemaTest.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct TestSchemaResponse {
     pub result: TestSchemaResult,
     pub error: Option<String>,

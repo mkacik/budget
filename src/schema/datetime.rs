@@ -6,8 +6,10 @@ use dateparser::parse_with;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
+
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export_to = "RecordMapping.ts")]
+#[ts(export_to = TS_FILE)]
 pub enum TZ {
     Local,
     UTC,

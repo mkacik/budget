@@ -2,10 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 
-import { Accounts } from "./types/Account";
-import { Budget } from "./types/Budget";
-import { Funds } from "./types/Fund";
-import { StatementSchemas } from "./types/StatementSchema";
+import { Accounts, Budget, Funds, StatementSchemas } from "./generated/types";
 
 import {
   getDefaultAppSettings,

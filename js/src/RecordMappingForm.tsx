@@ -6,7 +6,7 @@ import {
   TextField,
   TimeField,
   RecordMapping,
-} from "./types/RecordMapping";
+} from "./generated/types";
 
 import { AmountFieldForm } from "./schema/AmountFieldForm";
 import { DateFieldForm } from "./schema/DateFieldForm";

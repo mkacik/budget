@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetFund } from "./types/Fund";
+import { BudgetFund } from "./generated/types";
+
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";
 import { BudgetCloneForm } from "./BudgetCloneForm";

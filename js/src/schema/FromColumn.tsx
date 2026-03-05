@@ -1,6 +1,7 @@
 import React from "react";
 
-import { TZ } from "../types/RecordMapping";
+import { TZ } from "../generated/types";
+
 import { LabeledInput, LabeledSelect } from "../ui/Form";
 
 const EMPTY = "";

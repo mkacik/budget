@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
 
-import { ExpensesQuery } from "./types/Expense";
+import { ExpensesQuery } from "./generated/types";
+
 import { AccountView, AccountsView } from "./AccountsView";
 import { BudgetView } from "./BudgetView";
 import { ExpensesList } from "./ExpensesList";

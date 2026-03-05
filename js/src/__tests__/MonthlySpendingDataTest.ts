@@ -1,7 +1,11 @@
 import { expect, test } from "@jest/globals";
 
-import { Budget, BudgetCategory, BudgetItem } from "../types/Budget";
-import { SpendingDataPoint } from "../types/SpendingData";
+import {
+  Budget,
+  BudgetCategory,
+  BudgetItem,
+  SpendingDataPoint,
+} from "../generated/types";
 
 import { BudgetView } from "../BudgetView";
 import { FundsView } from "../FundsView";

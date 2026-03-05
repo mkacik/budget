@@ -2,12 +2,13 @@ use serde::Serialize;
 use sqlx::Acquire;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::Database;
 use crate::schema::budget_category::BudgetCategory;
 use crate::schema::budget_item::BudgetItem;
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Budget {
     pub year: i32,
     pub categories: Vec<BudgetCategory>,

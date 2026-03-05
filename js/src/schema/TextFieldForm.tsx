@@ -1,6 +1,7 @@
 import React from "react";
 
-import { TextField } from "../types/RecordMapping";
+import { TextField } from "../generated/types";
+
 import { FromColumn, FromColumnForm } from "./FromColumn";
 import { LabeledSelect } from "../ui/Form";
 

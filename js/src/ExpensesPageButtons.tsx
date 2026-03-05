@@ -1,9 +1,9 @@
 import React from "react";
 import { useState } from "react";
 
+import { ExpenseFields, StatementSchema } from "./generated/types";
+
 import { AccountView } from "./AccountsView";
-import { StatementSchema } from "./types/StatementSchema";
-import { ExpenseFields } from "./types/Expense";
 
 import {
   Form,

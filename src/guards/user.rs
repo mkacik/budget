@@ -4,12 +4,13 @@ use rocket::State;
 use serde::Serialize;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::credentials::Credentials;
 use crate::database::Database;
 
 // returned by /me and /login, don't just add shit here without thinking about those
 #[derive(Serialize, TS, Debug)]
-#[ts(export_to = "User.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct User {
     pub username: String,
 }

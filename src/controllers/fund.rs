@@ -3,6 +3,7 @@ use rocket::{delete, post, put, State};
 use serde::Serialize;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
@@ -10,13 +11,13 @@ use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::fund::{BudgetFund, BudgetFundFields};
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Fund.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct Funds {
     funds: Vec<BudgetFund>,
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export_to = "Fund.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct FundItems {
     items: Vec<BudgetItemWithSpend>,
 }

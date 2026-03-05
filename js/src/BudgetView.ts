@@ -3,7 +3,7 @@ import {
   BudgetAllowance,
   BudgetCategory,
   BudgetItem,
-} from "./types/Budget";
+} from "./generated/types";
 
 export function getAmountPerYear(allowance: BudgetAllowance | null) {
   if (allowance === null) {

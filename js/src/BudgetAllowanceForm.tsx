@@ -1,6 +1,6 @@
 import React from "react";
 
-import { BudgetAllowance } from "./types/Budget";
+import { BudgetAllowance } from "./generated/types";
 
 import { FormSection, LabeledInput, LabeledSelect } from "./ui/Form";
 

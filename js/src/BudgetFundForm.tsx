@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetFund, BudgetFundFields } from "./types/Fund";
+import { BudgetFund, BudgetFundFields } from "./generated/types";
 
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";

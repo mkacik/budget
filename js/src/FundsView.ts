@@ -1,5 +1,4 @@
-import { BudgetFund } from "./types/Fund";
-import { BudgetItemWithSpend } from "./types/Budget";
+import { BudgetFund, BudgetItemWithSpend } from "./generated/types";
 
 import { getAmountPerYear } from "./BudgetView";
 

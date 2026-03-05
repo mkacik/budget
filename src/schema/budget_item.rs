@@ -2,13 +2,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 type CentAmount = i32;
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(tag = "variant", content = "amount")]
-#[ts(export_to = "Budget.ts", tag = "variant", content = "amount")]
+#[ts(export_to = TS_FILE, tag = "variant", content = "amount")]
 pub enum BudgetAllowance {
     Weekly(CentAmount),
     Monthly(CentAmount),
@@ -16,7 +17,7 @@ pub enum BudgetAllowance {
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetItemFields {
     pub category_id: ID,
     pub fund_id: Option<ID>,
@@ -26,7 +27,7 @@ pub struct BudgetItemFields {
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetItem {
     pub id: ID,
     pub ignored: bool,        // computed, inherited from Category
@@ -39,7 +40,7 @@ pub struct BudgetItem {
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Budget.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetItemWithSpend {
     pub year: i32, // computed, inherited from Category
     pub spend: CentAmount,

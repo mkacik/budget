@@ -1,11 +1,11 @@
 import React from "react";
 import { useState } from "react";
 
-import { RecordMapping } from "./types/RecordMapping";
 import {
+  RecordMapping,
   StatementSchema,
   StatementSchemaFields,
-} from "./types/StatementSchema";
+} from "./generated/types";
 
 import {
   getDefaultRecordMapping,

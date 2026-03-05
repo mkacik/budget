@@ -2,16 +2,17 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Fund.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetFundFields {
     pub name: String,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
-#[ts(export_to = "Fund.ts")]
+#[ts(export_to = TS_FILE)]
 pub struct BudgetFund {
     pub id: ID,
 
