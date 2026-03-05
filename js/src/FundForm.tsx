@@ -1,14 +1,14 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetFund, BudgetFundFields } from "./generated/types";
+import { Fund, FundFields } from "./generated/types";
 
 import { Form, FormButtons, FormSubmitButton, LabeledInput } from "./ui/Form";
 import { FetchHelper, FormHelper, JSON_HEADERS } from "./Common";
 
 import * as UI from "./ui/Common";
 
-function createBudgetFundRequest(fields: BudgetFundFields): Request {
+function createFundRequest(fields: FundFields): Request {
   return new Request("/api/funds", {
     method: "POST",
     headers: JSON_HEADERS,
@@ -16,10 +16,7 @@ function createBudgetFundRequest(fields: BudgetFundFields): Request {
   });
 }
 
-function updateBudgetFundRequest(
-  id: number,
-  fields: BudgetFundFields,
-): Request {
+function updateFundRequest(id: number, fields: FundFields): Request {
   return new Request(`/api/funds/${id}`, {
     method: "PUT",
     headers: JSON_HEADERS,
@@ -27,18 +24,18 @@ function updateBudgetFundRequest(
   });
 }
 
-function deleteBudgetFundRequest(id: number): Request {
+function deleteFundRequest(id: number): Request {
   return new Request(`/api/funds/${id}`, {
     method: "DELETE",
     headers: JSON_HEADERS,
   });
 }
 
-export function BudgetFundForm({
+export function FundForm({
   fund,
   onSuccess,
 }: {
-  fund: BudgetFund | null;
+  fund: Fund | null;
   onSuccess: () => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -51,14 +48,14 @@ export function BudgetFundForm({
       const form = e.target as HTMLFormElement;
       const formHelper = new FormHelper(form);
 
-      const fundFields: BudgetFundFields = {
+      const fundFields: FundFields = {
         name: formHelper.getString("name"),
-      } as BudgetFundFields;
+      } as FundFields;
 
       const request =
         fund === null
-          ? createBudgetFundRequest(fundFields)
-          : updateBudgetFundRequest(fund.id, fundFields);
+          ? createFundRequest(fundFields)
+          : updateFundRequest(fund.id, fundFields);
       fetchHelper.fetch(request, (_json) => onSuccess());
     } catch (error) {
       fetchHelper.handleError(error);
@@ -69,9 +66,7 @@ export function BudgetFundForm({
     <UI.GlyphButton
       glyph="delete"
       onClick={() =>
-        fetchHelper.fetch(deleteBudgetFundRequest(fund.id), (_json) =>
-          onSuccess(),
-        )
+        fetchHelper.fetch(deleteFundRequest(fund.id), (_json) => onSuccess())
       }
     />
   );

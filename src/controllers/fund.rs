@@ -7,13 +7,13 @@ use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
-use crate::schema::fund::{BudgetFund, BudgetFundFields};
+use crate::schema::fund::{Fund, FundFields};
 use crate::schema::item::{BudgetItem, BudgetItemWithSpend};
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = TS_FILE)]
 pub struct Funds {
-    funds: Vec<BudgetFund>,
+    funds: Vec<Fund>,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -24,7 +24,7 @@ pub struct FundItems {
 
 #[get("/funds")]
 pub async fn get_funds(db: &State<Database>) -> ApiResponse {
-    let funds = match BudgetFund::fetch_all(db).await {
+    let funds = match Fund::fetch_all(db).await {
         Ok(result) => result,
         Err(e) => return ApiResponse::error(e),
     };
@@ -50,12 +50,12 @@ pub async fn get_items(db: &State<Database>) -> ApiResponse {
 pub async fn create_fund(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
-    request: Json<BudgetFundFields>,
+    request: Json<FundFields>,
 ) -> ApiResponse {
     let fields = request.into_inner();
     log_entry.set_content(&fields);
 
-    match BudgetFund::create(&db, fields).await {
+    match Fund::create(&db, fields).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
@@ -66,12 +66,12 @@ pub async fn update_fund(
     db: &State<Database>,
     log_entry: &WriteLogEntry,
     id: ID,
-    request: Json<BudgetFundFields>,
+    request: Json<FundFields>,
 ) -> ApiResponse {
     let fields = request.into_inner();
     log_entry.set_content(&fields);
 
-    match BudgetFund::update(&db, id, fields).await {
+    match Fund::update(&db, id, fields).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }
@@ -85,7 +85,7 @@ pub async fn delete_fund(db: &State<Database>, _log_entry: &WriteLogEntry, id: I
         Err(e) => return ApiResponse::error(e),
     };
 
-    match BudgetFund::delete(db, id).await {
+    match Fund::delete(db, id).await {
         Ok(_) => ApiResponse::ok(),
         Err(e) => ApiResponse::error(e),
     }

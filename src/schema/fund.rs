@@ -7,26 +7,26 @@ use crate::database::{Database, ID};
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = TS_FILE)]
-pub struct BudgetFundFields {
+pub struct FundFields {
     pub name: String,
 }
 
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = TS_FILE)]
-pub struct BudgetFund {
+pub struct Fund {
     pub id: ID,
 
     #[serde(flatten)]
     #[sqlx(flatten)]
     #[ts(flatten)]
-    pub fields: BudgetFundFields,
+    pub fields: FundFields,
 }
 
-impl BudgetFund {
-    pub async fn create(db: &Database, fields: BudgetFundFields) -> anyhow::Result<ID> {
+impl Fund {
+    pub async fn create(db: &Database, fields: FundFields) -> anyhow::Result<ID> {
         let mut conn = db.acquire_db_conn().await?;
         let id: ID = sqlx::query_scalar!(
-            "INSERT INTO budget_funds (name) VALUES (?1) RETURNING id",
+            "INSERT INTO funds (name) VALUES (?1) RETURNING id",
             fields.name,
         )
         .fetch_one(&mut *conn)
@@ -37,31 +37,27 @@ impl BudgetFund {
         Ok(id)
     }
 
-    pub async fn update(db: &Database, id: ID, fields: BudgetFundFields) -> anyhow::Result<()> {
+    pub async fn update(db: &Database, id: ID, fields: FundFields) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
-        sqlx::query!(
-            "UPDATE budget_funds SET name = ?1 WHERE id = ?2",
-            fields.name,
-            id,
-        )
-        .execute(&mut *conn)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
-        let mut conn = db.acquire_db_conn().await?;
-        sqlx::query!("DELETE FROM budget_funds WHERE id = ?1", id)
+        sqlx::query!("UPDATE funds SET name = ?1 WHERE id = ?2", fields.name, id,)
             .execute(&mut *conn)
             .await?;
 
         Ok(())
     }
 
-    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<BudgetFund>> {
+    pub async fn delete(db: &Database, id: ID) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
-        let results = sqlx::query_as::<_, BudgetFund>("SELECT * FROM budget_funds ORDER BY name")
+        sqlx::query!("DELETE FROM funds WHERE id = ?1", id)
+            .execute(&mut *conn)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn fetch_all(db: &Database) -> anyhow::Result<Vec<Fund>> {
+        let mut conn = db.acquire_db_conn().await?;
+        let results = sqlx::query_as::<_, Fund>("SELECT * FROM funds ORDER BY name")
             .fetch_all(&mut *conn)
             .await?;
 

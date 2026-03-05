@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import {
   Budget,
   BudgetItemWithSpend,
-  BudgetFund,
+  Fund,
   FundItems,
   ExpensesQuery,
 } from "./generated/types";
 
 import { getAmountPerYear, BudgetView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";
-import { BudgetFundForm } from "./BudgetFundForm";
+import { FundForm } from "./FundForm";
 import { FetchHelper } from "./Common";
 import { FundsView } from "./FundsView";
 import { ExpensesList } from "./ExpensesList";
@@ -21,7 +21,7 @@ import * as UI from "./ui/Common";
 
 type ModalState = {
   visible: boolean;
-  target: BudgetFund | null;
+  target: Fund | null;
 };
 
 function FundsTable({
@@ -30,9 +30,9 @@ function FundsTable({
   editFund,
   setExpensesQuery,
 }: {
-  funds: Array<BudgetFund>;
+  funds: Array<Fund>;
   items: Array<BudgetItemWithSpend>;
-  editFund: (fund: BudgetFund | null) => void;
+  editFund: (fund: Fund | null) => void;
   setExpensesQuery: (query: TitledExpensesQuery) => void;
 }) {
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
@@ -95,7 +95,7 @@ export function FundsPage({
   funds,
   refreshFunds,
 }: {
-  funds: Array<BudgetFund>;
+  funds: Array<Fund>;
   refreshFunds: () => void;
 }) {
   const [items, setItems] = useState<FundItems | null>(null);
@@ -111,7 +111,7 @@ export function FundsPage({
     target: null,
   });
   const hideModal = () => setModalState({ visible: false, target: null });
-  const editFund = (fund: BudgetFund | null) =>
+  const editFund = (fund: Fund | null) =>
     setModalState({ visible: true, target: fund });
 
   const fetchHelper = new FetchHelper(setErrorMessage, setLoading);
@@ -173,7 +173,7 @@ export function FundsPage({
         visible={modalState.visible}
         hideModal={hideModal}
       >
-        <BudgetFundForm
+        <FundForm
           fund={modalState.target}
           onSuccess={() => {
             refreshFunds();

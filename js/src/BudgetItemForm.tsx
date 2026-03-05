@@ -5,7 +5,7 @@ import {
   BudgetItem,
   BudgetItemFields,
   Allowance,
-  BudgetFund,
+  Fund,
 } from "./generated/types";
 
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
@@ -100,7 +100,7 @@ function CategoryOptions({
   );
 }
 
-function FundOptions({ funds }: { funds: Array<BudgetFund> }) {
+function FundOptions({ funds }: { funds: Array<Fund> }) {
   return (
     <>
       <option value={0}>-</option>
@@ -157,7 +157,7 @@ export function BudgetItemForm({
   categoryID: number | null;
   onSuccess: () => void;
   budget: BudgetView;
-  funds: Array<BudgetFund>;
+  funds: Array<Fund>;
 }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fields, setFields] = useState<BudgetItemFields>(

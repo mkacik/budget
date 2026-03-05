@@ -12,7 +12,7 @@ use crate::schema::account::{AccountFields, Accounts};
 use crate::schema::budget::Budget;
 use crate::schema::category::BudgetCategoryFields;
 use crate::schema::expense::Expenses;
-use crate::schema::fund::BudgetFundFields;
+use crate::schema::fund::FundFields;
 use crate::schema::item::BudgetItemFields;
 use crate::schema::statement_schema::{StatementSchemaFields, StatementSchemas};
 use crate::schema::statement_schema_test::{TestSchemaRequest, TestSchemaResponse};
@@ -42,7 +42,7 @@ fn export() -> Result<(), ExportError> {
 
     Funds::export_all()?;
     FundItems::export_all()?;
-    BudgetFundFields::export_all()?;
+    FundFields::export_all()?;
 
     Ok(())
 }

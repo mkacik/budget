@@ -54,10 +54,6 @@ export type BudgetCategoryFields = { name: string; ignored: boolean };
 
 export type BudgetCloneRequest = { from_year: number; to_year: number };
 
-export type BudgetFund = { id: number; name: string };
-
-export type BudgetFundFields = { name: string };
-
 export type BudgetItem = {
   id: number;
   ignored: boolean;
@@ -125,9 +121,13 @@ export type ExpensesQuerySelector =
   | { variant: "BudgetItem"; id: number }
   | { variant: "BudgetCategory"; id: number };
 
+export type Fund = { id: number; name: string };
+
+export type FundFields = { name: string };
+
 export type FundItems = { items: Array<BudgetItemWithSpend> };
 
-export type Funds = { funds: Array<BudgetFund> };
+export type Funds = { funds: Array<Fund> };
 
 export type RecordMapping = {
   transaction_date: DateField;

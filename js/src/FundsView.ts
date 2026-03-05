@@ -1,4 +1,4 @@
-import { BudgetFund, BudgetItemWithSpend } from "./generated/types";
+import { Fund, BudgetItemWithSpend } from "./generated/types";
 
 import { getAmountPerYear } from "./BudgetView";
 
@@ -6,7 +6,7 @@ function cmp(a: BudgetItemWithSpend, b: BudgetItemWithSpend) {
   return b.year - a.year;
 }
 
-interface FundWithSpend extends BudgetFund {
+interface FundWithSpend extends Fund {
   allowance: number;
   spend: number;
 }
@@ -16,7 +16,7 @@ export class FundsView {
   fundsByID: Map<number, FundWithSpend>;
   itemsByFundID: Map<number, Array<BudgetItemWithSpend>>;
 
-  constructor(funds: Array<BudgetFund>, items: Array<BudgetItemWithSpend>) {
+  constructor(funds: Array<Fund>, items: Array<BudgetItemWithSpend>) {
     const itemsMap: Map<number, Array<BudgetItemWithSpend>> = new Map();
     for (const item of items) {
       const fundID = item.fund_id!;

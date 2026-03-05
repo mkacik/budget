@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-import { BudgetFund } from "./generated/types";
+import { Fund } from "./generated/types";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { useAppSettingsContext } from "./AppSettings";
@@ -163,7 +163,7 @@ export function BudgetPage({
   setYear,
 }: {
   budget: BudgetView;
-  funds: Array<BudgetFund>;
+  funds: Array<Fund>;
   refreshBudget: () => void;
   setYear: (number) => void; // after cloning
 }) {

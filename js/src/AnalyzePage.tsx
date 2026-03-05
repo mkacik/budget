@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-import { BudgetFund, ExpensesQuery, SpendingData } from "./generated/types";
+import { Fund, ExpensesQuery, SpendingData } from "./generated/types";
 
 import { FundsView } from "./FundsView";
 import { BudgetView } from "./BudgetView";
@@ -20,7 +20,7 @@ export function AnalyzePage({
   funds,
 }: {
   budget: BudgetView;
-  funds: Array<BudgetFund>;
+  funds: Array<Fund>;
 }) {
   const [data, setData] = useState<MonthlySpendingData | null>(null);
 
