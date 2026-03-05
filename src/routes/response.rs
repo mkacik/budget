@@ -10,6 +10,7 @@ use ts_rs::TS;
 enum ApiResponseKind {
     Success,
     Data { data: String },
+    NotFound,
     BadRequest { message: String },
     ServerError { message: String },
 }
@@ -33,6 +34,12 @@ impl ApiResponse {
 
         ApiResponse {
             kind: ApiResponseKind::Data { data: serialized },
+        }
+    }
+
+    pub fn not_found() -> ApiResponse {
+        ApiResponse {
+            kind: ApiResponseKind::NotFound,
         }
     }
 
@@ -63,6 +70,11 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
 
             ApiResponseKind::Data { data } => Response::build_from(data.respond_to(req)?)
                 .status(Status::Ok)
+                .header(ContentType::JSON)
+                .ok(),
+
+            ApiResponseKind::NotFound => Response::build_from("{}".respond_to(req)?)
+                .status(Status::NotFound)
                 .header(ContentType::JSON)
                 .ok(),
 

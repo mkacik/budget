@@ -1,10 +1,15 @@
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::State;
+use serde::Serialize;
+use ts_rs::TS;
 
 use crate::credentials::Credentials;
 use crate::database::Database;
 
+// returned by /me and /login, don't just add shit here without thinking about those
+#[derive(Serialize, TS, Debug)]
+#[ts(export_to = "User.ts")]
 pub struct User {
     pub username: String,
 }

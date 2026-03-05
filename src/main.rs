@@ -8,6 +8,7 @@ use clap::{Parser, Subcommand};
 mod credentials;
 mod crypto;
 mod database;
+mod fairings;
 mod genjs;
 mod guards;
 mod import;
@@ -18,8 +19,9 @@ mod schema;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
+use crate::fairings::gatekeeper::GateKeeper;
+use crate::fairings::logger::WriteLogger;
 use crate::passwords::Command as PasswordsCommand;
-use crate::routes::fairings::{GateKeeper, RouteMatcher};
 
 #[derive(Parser)]
 #[command(about)]
@@ -48,24 +50,11 @@ enum Command {
 
 async fn run() -> Result<Rocket<Ignite>, RocketError> {
     let db = Database::init().await;
-    let gk = GateKeeper {
-        allow_logged_out_access: vec![
-            RouteMatcher::Exact("/"),
-            RouteMatcher::Exact("/login"),
-            RouteMatcher::Prefix("/static"),
-        ],
-    };
 
     rocket::build()
         .mount(
             "/",
-            routes![
-                routes::index::index_logged_in,
-                routes::index::index_logged_out,
-                routes::index::js,
-                routes::login::login,
-                routes::login::logout,
-            ],
+            routes![routes::index::index, routes::index::not_found,],
         )
         .mount(
             "/api",
@@ -95,6 +84,9 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
                 routes::api::fund::update_fund,
                 routes::api::fund::delete_fund,
                 routes::api::import::import_expenses,
+                routes::login::me,
+                routes::login::login,
+                routes::login::logout,
                 routes::api::statement_schema::get_schemas,
                 routes::api::statement_schema::create_schema,
                 routes::api::statement_schema::update_schema,
@@ -104,7 +96,8 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
         )
         .mount("/static", FileServer::from(relative!("www/static")))
         .manage(db)
-        .attach(gk)
+        .attach(GateKeeper {})
+        .attach(WriteLogger {})
         .launch()
         .await
 }

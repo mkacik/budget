@@ -22,6 +22,7 @@ import { BudgetView } from "./BudgetView";
 import { ExpensesPage } from "./ExpensesPage";
 import { SettingsProvider } from "./SettingsProvider";
 import { FetchHelper } from "./Common";
+import { LoginPage } from "./LoginPage";
 
 import * as UI from "./ui/Common";
 
@@ -39,7 +40,7 @@ function HeaderItem({
   );
 }
 
-function App() {
+function AppWrapper() {
   // *** Bootstrap settings
 
   const settingsProvider = new SettingsProvider<AppSettings>(
@@ -56,11 +57,53 @@ function App() {
     setSettings(settings);
   };
 
-  const tab = settings.tab;
-  const year = settings.year;
+  // *** Fetch currently logged int user
 
+  const [user, setUser] = useState<string | null>(null);
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch("/api/me");
+      if (!response.ok) {
+        throw Error();
+      }
+      const result = await response.json();
+      const user = result as { username: string };
+      setUser(user.username);
+    } catch (_error) {
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  return user ? (
+    <App
+      settings={settings}
+      updateSettings={updateSettings}
+      refreshUser={fetchUser}
+    />
+  ) : (
+    <LoginPage setUser={setUser} />
+  );
+}
+
+function App({
+  settings,
+  updateSettings,
+  refreshUser,
+}: {
+  settings: AppSettings;
+  updateSettings: (AppSettings) => void;
+  refreshUser: () => void;
+}) {
   const setTab = (tab: Tab) => updateSettings({ ...settings, tab: tab });
   const setYear = (year: number) => updateSettings({ ...settings, year: year });
+
+  const tab = settings.tab;
+  const year = settings.year;
 
   // *** Fetch data
 
@@ -124,6 +167,11 @@ function App() {
       setIsLoading(false);
     }
   }, [budget, accounts, schemas, funds, errorMessage]);
+
+  const logout = async () => {
+    await fetch("/api/logout");
+    refreshUser();
+  };
 
   const getPageContent = () => {
     if (
@@ -219,11 +267,7 @@ function App() {
 
         <span className="header-filler" />
 
-        <HeaderItem>
-          <form action="logout" method="post">
-            <input type="submit" value="Logout" />
-          </form>
-        </HeaderItem>
+        <HeaderItem onClick={logout}>Logout</HeaderItem>
       </div>
 
       <div className="main">
@@ -240,4 +284,4 @@ function App() {
 
 const domContainer = document.querySelector("#root")!;
 const root = createRoot(domContainer);
-root.render(<App />);
+root.render(<AppWrapper />);

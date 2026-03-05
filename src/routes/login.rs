@@ -1,11 +1,20 @@
 use rocket::form::{Form, FromForm};
 use rocket::http::{Cookie, CookieJar};
-use rocket::response::Redirect;
 use rocket::{post, State};
 
 use crate::credentials::Credentials;
 use crate::crypto::verify_password;
 use crate::database::Database;
+use crate::guards::user::User;
+use crate::routes::response::ApiResponse;
+
+#[get("/me")]
+pub async fn me(user: Option<&User>) -> ApiResponse {
+    match user {
+        Some(user) => ApiResponse::data(user),
+        None => ApiResponse::not_found(),
+    }
+}
 
 #[derive(FromForm)]
 pub struct LoginForm {
@@ -18,25 +27,29 @@ pub async fn login(
     cookies: &CookieJar<'_>,
     db: &State<Database>,
     form: Form<LoginForm>,
-) -> Redirect {
+) -> ApiResponse {
     let creds = match Credentials::fetch_by_username(db, &form.username).await {
         Ok(Some(value)) => value,
-        _ => return Redirect::to("/"),
+        _ => return ApiResponse::not_found(),
     };
 
     if verify_password(&creds.pwhash, &form.password).is_err() {
-        return Redirect::to("/");
+        return ApiResponse::not_found();
     }
 
-    let cookie = Cookie::new("user", creds.username);
+    let cookie = Cookie::new("user", creds.username.clone());
     cookies.add_private(cookie);
 
-    Redirect::to("/")
+    let user = User {
+        username: creds.username,
+    };
+
+    ApiResponse::data(user)
 }
 
-#[post("/logout")]
-pub async fn logout(cookies: &CookieJar<'_>) -> Redirect {
+#[get("/logout")]
+pub async fn logout(cookies: &CookieJar<'_>) -> ApiResponse {
     cookies.remove_private("user");
 
-    Redirect::to("/")
+    ApiResponse::ok()
 }

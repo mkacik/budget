@@ -118,13 +118,6 @@ pre {
   .header-filler {
     width: 100%;
   }
-
-  input[type="submit"] {
-    border: none;
-    padding: 0;
-    margin: 0;
-    background-color: inherit;
-  }
 }
 
 .main {
