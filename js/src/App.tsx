@@ -241,7 +241,7 @@ function App({
         className="header"
         style={isDev ? { backgroundColor: "pink" } : undefined}
       >
-        <span className="flexrow">
+        <UI.Flex>
           <UI.InlineGlyphButton
             glyph="chevron_left"
             onClick={() => setYear(year - 1)}
@@ -251,13 +251,13 @@ function App({
             glyph="chevron_right"
             onClick={() => setYear(year + 1)}
           />
-        </span>
+        </UI.Flex>
 
         <HeaderItem onClick={() => setTab(Tab.Budget)}>Budget</HeaderItem>
         <HeaderItem onClick={() => setTab(Tab.Expenses)}>Expenses</HeaderItem>
         <HeaderItem onClick={() => setTab(Tab.Analyze)}>Analyze</HeaderItem>
 
-        <span className="header-spacer flexrow">︱</span>
+        <span className="header-spacer">︱</span>
 
         <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
         <HeaderItem onClick={() => setTab(Tab.Funds)}>Funds</HeaderItem>

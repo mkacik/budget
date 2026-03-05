@@ -175,8 +175,18 @@ export function SectionHeader({ children }: { children: React.ReactNode }) {
   return <span className="title">{children}</span>;
 }
 
-export function Flex({ children }: { children: React.ReactNode }) {
-  return <span className="flexrow">{children}</span>;
+export function Flex({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  let classNames = "flexrow";
+  if (className) {
+    classNames += " " + className;
+  }
+  return <span className={classNames}>{children}</span>;
 }
 
 export function Col({ widthPct }: { widthPct?: number }) {

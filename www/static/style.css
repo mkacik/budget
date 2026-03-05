@@ -108,6 +108,7 @@ pre {
 
   .header-spacer {
     color: var(--color-glyph);
+    align-self: center;
   }
 
   .header-year {
@@ -325,13 +326,6 @@ table {
     text-align: right;
   }
 
-  .v-center {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-medium);
-    align-items: center;
-  }
-
   .td-button {
     cursor: pointer;
 
@@ -356,10 +350,6 @@ table {
 
   .category {
     padding: var(--padding-small);
-
-    select {
-      width: 100%;
-    }
   }
 
   td {

@@ -351,27 +351,25 @@ function HeaderCell({
   sortByField: ((SortOrder) => void) | null;
   alignRight?: boolean;
 }) {
-  const className = alignRight ? "r-align flexrow" : "flexrow";
-  const sortButtonss =
-    sortByField === null ? null : (
-      <>
-        <UI.InlineGlyphButton
-          glyph="arrow_downward"
-          onClick={() => sortByField(SortOrder.Desc)}
-        />
-        <UI.InlineGlyphButton
-          glyph="arrow_upward"
-          onClick={() => sortByField(SortOrder.Asc)}
-        />
-      </>
-    );
+  const sortButtons = sortByField && (
+    <>
+      <UI.InlineGlyphButton
+        glyph="arrow_downward"
+        onClick={() => sortByField(SortOrder.Desc)}
+      />
+      <UI.InlineGlyphButton
+        glyph="arrow_upward"
+        onClick={() => sortByField(SortOrder.Asc)}
+      />
+    </>
+  );
 
   return (
     <th>
-      <div className={className}>
+      <UI.Flex className={alignRight ? "r-align" : undefined}>
         {title}
-        {sortButtonss}
-      </div>
+        {sortButtons}
+      </UI.Flex>
     </th>
   );
 }

@@ -50,13 +50,15 @@ function BudgetItemRow({
 
   return (
     <tr>
-      <td className="v-center">
-        <UI.Indent />
-        {item.name}
-        {item.isBudgetOnly && <UI.Pill>hidden in categorization</UI.Pill>}
-        {item.isCategorizationOnly && <UI.Pill>categorization only</UI.Pill>}
-        {item.fundID && <UI.Pill>fund</UI.Pill>}
-        <UI.InlineGlyphButton glyph="edit" onClick={editItem} />
+      <td>
+        <UI.Flex>
+          <UI.Indent />
+          {item.name}
+          {item.isBudgetOnly && <UI.Pill>hidden in categorization</UI.Pill>}
+          {item.isCategorizationOnly && <UI.Pill>categorization only</UI.Pill>}
+          {item.fundID && <UI.Pill>fund</UI.Pill>}
+          <UI.InlineGlyphButton glyph="edit" onClick={editItem} />
+        </UI.Flex>
       </td>
       {getAmountColumns()}
     </tr>
@@ -74,10 +76,12 @@ function BudgetCategoryRow({
 }) {
   return (
     <tr className="bold highlight">
-      <td className="v-center">
-        {category.name}
-        <UI.InlineGlyphButton glyph="edit" onClick={editCategory} />
-        <UI.InlineGlyphButton glyph="add" onClick={addItem} />
+      <td>
+        <UI.Flex>
+          {category.name}
+          <UI.InlineGlyphButton glyph="edit" onClick={editCategory} />
+          <UI.InlineGlyphButton glyph="add" onClick={addItem} />
+        </UI.Flex>
       </td>
       {!category.ignored && (
         <>

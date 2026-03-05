@@ -43,9 +43,11 @@ function FundsTable({
   for (const fund of fundsView.funds) {
     const row = (
       <tr className="bold highlight" key={`fund:${fund.id}`}>
-        <td className="v-center">
-          {fund.name}
-          <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
+        <td>
+          <UI.Flex>
+            {fund.name}
+            <UI.InlineGlyphButton glyph="edit" onClick={() => editFund(fund)} />
+          </UI.Flex>
         </td>
         <UI.CurrencyCell value={fund.allowance} />
         <UI.CurrencyCell value={fund.spend} />
@@ -65,9 +67,11 @@ function FundsTable({
       };
       const row = (
         <tr key={`item:${item.id}`}>
-          <td className="v-center">
-            <UI.Indent />
-            {displayName}
+          <td>
+            <UI.Flex>
+              <UI.Indent />
+              {displayName}
+            </UI.Flex>
           </td>
           <UI.CurrencyCell value={getAmountPerYear(item.allowance)} />
           <UI.CurrencyCell onClick={showItemExpenses} value={item.spend} />

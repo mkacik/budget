@@ -166,12 +166,14 @@ function StatementSchemasTable({
   const rows = schemas.map((schema) => {
     return (
       <tr key={schema.id}>
-        <td className="v-center">
-          {schema.name}
-          <UI.InlineGlyphButton
-            glyph="edit"
-            onClick={() => editSchema(schema)}
-          />
+        <td>
+          <UI.Flex>
+            {schema.name}
+            <UI.InlineGlyphButton
+              glyph="edit"
+              onClick={() => editSchema(schema)}
+            />
+          </UI.Flex>
         </td>
       </tr>
     );

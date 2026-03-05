@@ -178,12 +178,14 @@ function AccountsTable({
     const schema = account.statementSchema?.name;
     return (
       <tr key={account.id}>
-        <td className="v-center">
-          {account.name}
-          <UI.InlineGlyphButton
-            glyph="edit"
-            onClick={() => editAccount(account)}
-          />
+        <td>
+          <UI.Flex>
+            {account.name}
+            <UI.InlineGlyphButton
+              glyph="edit"
+              onClick={() => editAccount(account)}
+            />
+          </UI.Flex>
         </td>
         <td>{account.account_type}</td>
         {schema ? <td>{schema}</td> : <td className="soft">—</td>}
