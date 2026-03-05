@@ -3,7 +3,7 @@ use rocket::{delete, get, post, State};
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 use crate::schema::account::{Account, AccountFields};
 use crate::schema::expense::Expense;
 

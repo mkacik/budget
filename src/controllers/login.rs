@@ -6,7 +6,7 @@ use crate::credentials::Credentials;
 use crate::crypto::verify_password;
 use crate::database::Database;
 use crate::guards::user::User;
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 
 #[get("/me")]
 pub async fn me(user: Option<&User>) -> ApiResponse {

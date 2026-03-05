@@ -5,6 +5,7 @@ use rocket::{Error as RocketError, Ignite, Rocket};
 
 use clap::{Parser, Subcommand};
 
+mod controllers;
 mod credentials;
 mod crypto;
 mod database;
@@ -14,7 +15,7 @@ mod guards;
 mod import;
 mod migration;
 mod passwords;
-mod routes;
+mod response;
 mod schema;
 
 use crate::crypto::init_crypto;
@@ -54,44 +55,44 @@ async fn run() -> Result<Rocket<Ignite>, RocketError> {
     rocket::build()
         .mount(
             "/",
-            routes![routes::index::index, routes::index::not_found,],
+            routes![controllers::index::index, controllers::index::not_found,],
         )
         .mount(
             "/api",
             routes![
-                routes::api::account::get_accounts,
-                routes::api::account::create_account,
-                routes::api::account::update_account,
-                routes::api::account::delete_account,
-                routes::api::budget::get_budget,
-                routes::api::budget::clone_budget,
-                routes::api::budget::get_spending,
-                routes::api::budget_category::create_budget_category,
-                routes::api::budget_category::update_budget_category,
-                routes::api::budget_category::delete_budget_category,
-                routes::api::budget_item::create_budget_item,
-                routes::api::budget_item::update_budget_item,
-                routes::api::budget_item::delete_budget_item,
-                routes::api::expense::delete_expenses,
-                routes::api::expense::create_expense,
-                routes::api::expense::delete_expense,
-                routes::api::expense::update_expense_category,
-                routes::api::expense::update_expense_notes,
-                routes::api::expense::query_expenses,
-                routes::api::fund::get_funds,
-                routes::api::fund::get_items,
-                routes::api::fund::create_fund,
-                routes::api::fund::update_fund,
-                routes::api::fund::delete_fund,
-                routes::api::import::import_expenses,
-                routes::login::me,
-                routes::login::login,
-                routes::login::logout,
-                routes::api::statement_schema::get_schemas,
-                routes::api::statement_schema::create_schema,
-                routes::api::statement_schema::update_schema,
-                routes::api::statement_schema::delete_schema,
-                routes::api::statement_schema::test_schema,
+                controllers::account::get_accounts,
+                controllers::account::create_account,
+                controllers::account::update_account,
+                controllers::account::delete_account,
+                controllers::budget::get_budget,
+                controllers::budget::clone_budget,
+                controllers::budget::get_spending,
+                controllers::budget_category::create_budget_category,
+                controllers::budget_category::update_budget_category,
+                controllers::budget_category::delete_budget_category,
+                controllers::budget_item::create_budget_item,
+                controllers::budget_item::update_budget_item,
+                controllers::budget_item::delete_budget_item,
+                controllers::expense::delete_expenses,
+                controllers::expense::create_expense,
+                controllers::expense::delete_expense,
+                controllers::expense::update_expense_category,
+                controllers::expense::update_expense_notes,
+                controllers::expense::query_expenses,
+                controllers::fund::get_funds,
+                controllers::fund::get_items,
+                controllers::fund::create_fund,
+                controllers::fund::update_fund,
+                controllers::fund::delete_fund,
+                controllers::import::import_expenses,
+                controllers::login::me,
+                controllers::login::login,
+                controllers::login::logout,
+                controllers::statement_schema::get_schemas,
+                controllers::statement_schema::create_schema,
+                controllers::statement_schema::update_schema,
+                controllers::statement_schema::delete_schema,
+                controllers::statement_schema::test_schema,
             ],
         )
         .mount("/static", FileServer::from(relative!("www/static")))

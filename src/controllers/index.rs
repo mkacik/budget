@@ -1,7 +1,7 @@
 use rocket::fs::NamedFile;
 use rocket::get;
 
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 
 #[get("/")]
 pub async fn index() -> Result<NamedFile, std::io::Error> {

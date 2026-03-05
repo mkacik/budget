@@ -5,4 +5,6 @@ pub mod budget_item;
 pub mod expense;
 pub mod fund;
 pub mod import;
+pub mod index;
+pub mod login;
 pub mod statement_schema;

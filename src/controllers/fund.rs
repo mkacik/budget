@@ -5,7 +5,7 @@ use ts_rs::TS;
 
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::fund::{BudgetFund, BudgetFundFields};
 

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::database::Database;
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 use crate::schema::budget::Budget;
 use crate::schema::budget_category::BudgetCategory;
 use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};

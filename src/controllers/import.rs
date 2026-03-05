@@ -6,7 +6,7 @@ use tokio::fs::remove_file;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::import::{read_expenses, save_expenses, STATEMENT_UPLOAD_PATH};
-use crate::routes::response::ApiResponse;
+use crate::response::ApiResponse;
 
 use crate::schema::account::Account;
 use crate::schema::statement_schema::StatementSchema;
