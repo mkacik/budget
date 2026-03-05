@@ -21,21 +21,8 @@ import { SettingsProvider } from "./SettingsProvider";
 import { FetchHelper } from "./Common";
 import { LoginPage } from "./LoginPage";
 
+import { Header } from "./ui/Header";
 import * as UI from "./ui/Common";
-
-function HeaderItem({
-  onClick,
-  children,
-}: {
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <span className="header-item" onClick={onClick}>
-      {children}
-    </span>
-  );
-}
 
 function AppWrapper() {
   // *** Bootstrap settings
@@ -96,8 +83,10 @@ function App({
   updateSettings: (AppSettings) => void;
   refreshUser: () => void;
 }) {
-  const setTab = (tab: Tab) => updateSettings({ ...settings, tab: tab });
-  const setYear = (year: number) => updateSettings({ ...settings, year: year });
+  // parametrizable onClick handlers
+  const setTab = (tab: Tab) => () => updateSettings({ ...settings, tab: tab });
+  const setYear = (year: number) => () =>
+    updateSettings({ ...settings, year: year });
 
   const tab = settings.tab;
   const year = settings.year;
@@ -234,38 +223,34 @@ function App({
     }
   };
 
-  const isDev = process.env.NODE_ENV !== "production";
   return (
     <>
-      <div
-        className="header"
-        style={isDev ? { backgroundColor: "pink" } : undefined}
-      >
+      <Header>
         <UI.Flex>
           <UI.InlineGlyphButton
             glyph="chevron_left"
-            onClick={() => setYear(year - 1)}
+            onClick={setYear(year - 1)}
           />
-          <span className="header-year">{year}</span>
+          <Header.Main>{year}</Header.Main>
           <UI.InlineGlyphButton
             glyph="chevron_right"
-            onClick={() => setYear(year + 1)}
+            onClick={setYear(year + 1)}
           />
         </UI.Flex>
 
-        <HeaderItem onClick={() => setTab(Tab.Budget)}>Budget</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Expenses)}>Expenses</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Analyze)}>Analyze</HeaderItem>
+        <Header.Link onClick={setTab(Tab.Budget)}>Budget</Header.Link>
+        <Header.Link onClick={setTab(Tab.Expenses)}>Expenses</Header.Link>
+        <Header.Link onClick={setTab(Tab.Analyze)}>Analyze</Header.Link>
 
-        <span className="header-spacer">︱</span>
+        <Header.Divider />
 
-        <HeaderItem onClick={() => setTab(Tab.Accounts)}>Accounts</HeaderItem>
-        <HeaderItem onClick={() => setTab(Tab.Funds)}>Funds</HeaderItem>
+        <Header.Link onClick={setTab(Tab.Accounts)}>Accounts</Header.Link>
+        <Header.Link onClick={setTab(Tab.Funds)}>Funds</Header.Link>
 
-        <span className="header-filler" />
-
-        <HeaderItem onClick={logout}>Logout</HeaderItem>
-      </div>
+        <Header.Link onClick={logout} rightAligned>
+          Logout
+        </Header.Link>
+      </Header>
 
       <div className="main">
         <UI.ErrorCard message={errorMessage} />

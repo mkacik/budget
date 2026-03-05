@@ -86,9 +86,10 @@ pre {
 }
 
 .header {
-  flex-grow: 0;
-
   padding: var(--padding-medium);
+  padding-left: 1rem;
+  padding-right: 1rem;
+
   display: flex;
   flex-direction: row;
   gap: 1rem;
@@ -96,9 +97,9 @@ pre {
   background-color: var(--color-main);
   font-size: var(--font-header-medium);
 
-  .header-item {
-    border-radius: var(--border-radius);
+  .header-button {
     padding: var(--padding-medium);
+    border-radius: var(--border-radius);
 
     &:hover {
       background-color: var(--color-hover-dark);
@@ -106,19 +107,20 @@ pre {
     }
   }
 
-  .header-spacer {
+  .header-divider {
     color: var(--color-glyph);
     align-self: center;
   }
 
-  .header-year {
+  .header-main {
     font-weight: bolder;
     font-size: var(--font-header-large);
   }
+}
 
-  .header-filler {
-    width: 100%;
-  }
+.noselect {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .main {
