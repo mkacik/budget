@@ -66,7 +66,7 @@ function FundsTable({
       const row = (
         <tr key={`item:${item.id}`}>
           <td className="v-center">
-            <UI.InlineGlyph glyph="chevron_right" />
+            <UI.Indent />
             {displayName}
           </td>
           <UI.CurrencyCell value={getAmountPerYear(item.allowance)} />

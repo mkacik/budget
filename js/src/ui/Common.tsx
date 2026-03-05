@@ -207,6 +207,10 @@ export function LoadingBanner({ isLoading }: { isLoading: boolean }) {
   );
 }
 
+export function Indent() {
+  return <span className="soft">{" :: "}</span>;
+}
+
 export function formatCurrency(value: number) {
   return (value / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

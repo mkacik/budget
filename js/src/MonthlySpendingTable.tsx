@@ -225,7 +225,7 @@ function SpendingTableRow({
   };
   const headerCell = (
     <td className="v-center td-button" onClick={headerCellOnClick}>
-      {!isCategory && <UI.SmallInlineGlyph glyph="chevron_right" />}
+      {!isCategory && <UI.Indent />}
       {obj.name}
     </td>
   );

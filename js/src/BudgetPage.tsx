@@ -51,7 +51,7 @@ function BudgetItemRow({
   return (
     <tr>
       <td className="v-center">
-        <UI.InlineGlyph glyph="chevron_right" />
+        <UI.Indent />
         {item.name}
         {item.isBudgetOnly && <UI.Pill>hidden in categorization</UI.Pill>}
         {item.isCategorizationOnly && <UI.Pill>categorization only</UI.Pill>}
