@@ -1,10 +1,10 @@
 pub mod account;
 pub mod budget;
-pub mod budget_category;
-pub mod budget_item;
+pub mod category;
 pub mod datetime;
 pub mod expense;
 pub mod fund;
+pub mod item;
 pub mod record_mapping;
 pub mod spending_data;
 pub mod sqlx_enum;

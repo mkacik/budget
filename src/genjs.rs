@@ -10,10 +10,10 @@ use crate::controllers::fund::{FundItems, Funds};
 
 use crate::schema::account::{AccountFields, Accounts};
 use crate::schema::budget::Budget;
-use crate::schema::budget_category::BudgetCategoryFields;
-use crate::schema::budget_item::BudgetItemFields;
+use crate::schema::category::BudgetCategoryFields;
 use crate::schema::expense::Expenses;
 use crate::schema::fund::BudgetFundFields;
+use crate::schema::item::BudgetItemFields;
 use crate::schema::statement_schema::{StatementSchemaFields, StatementSchemas};
 use crate::schema::statement_schema_test::{TestSchemaRequest, TestSchemaResponse};
 

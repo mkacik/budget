@@ -4,8 +4,8 @@ use ts_rs::TS;
 
 use crate::common::TS_FILE;
 use crate::database::Database;
-use crate::schema::budget_category::BudgetCategory;
-use crate::schema::budget_item::BudgetItem;
+use crate::schema::category::BudgetCategory;
+use crate::schema::item::BudgetItem;
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = TS_FILE)]

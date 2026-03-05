@@ -2,9 +2,9 @@ use clap::{Parser, Subcommand};
 
 use budget::schema::account::{Account, AccountFields, AccountType};
 use budget::schema::budget::Budget;
-use budget::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
-use budget::schema::budget_item::{BudgetAllowance, BudgetItem, BudgetItemFields};
+use budget::schema::category::{BudgetCategory, BudgetCategoryFields};
 use budget::schema::datetime::TZ;
+use budget::schema::item::{Allowance, BudgetItem, BudgetItemFields};
 use budget::schema::record_mapping::{AmountField, DateField, RecordMapping, TextField, TimeField};
 use budget::schema::statement_schema::{StatementSchema, StatementSchemaFields};
 
@@ -206,7 +206,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Fuel"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Weekly(50 * 100)),
+            allowance: Some(Allowance::Weekly(50 * 100)),
         },
     )
     .await?;
@@ -218,7 +218,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Loan"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Monthly(300 * 100)),
+            allowance: Some(Allowance::Monthly(300 * 100)),
         },
     )
     .await?;
@@ -230,7 +230,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Insurance"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Yearly(1000 * 100)),
+            allowance: Some(Allowance::Yearly(1000 * 100)),
         },
     )
     .await?;
@@ -242,7 +242,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Downpayment"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Yearly(1000 * 100)),
+            allowance: Some(Allowance::Yearly(1000 * 100)),
         },
     )
     .await?;
@@ -254,7 +254,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Groceries"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Weekly(100 * 100)),
+            allowance: Some(Allowance::Weekly(100 * 100)),
         },
     )
     .await?;
@@ -266,7 +266,7 @@ async fn add_budget(db: &Database) -> anyhow::Result<()> {
             name: String::from("Clothing"),
             budget_only: false,
             fund_id: None,
-            allowance: Some(BudgetAllowance::Monthly(200 * 100)),
+            allowance: Some(Allowance::Monthly(200 * 100)),
         },
     )
     .await?;

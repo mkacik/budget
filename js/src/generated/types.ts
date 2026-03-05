@@ -17,6 +17,11 @@ export type AccountType = "Bank" | "CreditCard" | "Shop" | "Cash";
 
 export type Accounts = { accounts: Array<Account> };
 
+export type Allowance =
+  | { variant: "Weekly"; amount: number }
+  | { variant: "Monthly"; amount: number }
+  | { variant: "Yearly"; amount: number };
+
 export type AmountField =
   | {
       variant: "FromColumn";
@@ -37,11 +42,6 @@ export type Budget = {
   categories: Array<BudgetCategory>;
   items: Array<BudgetItem>;
 };
-
-export type BudgetAllowance =
-  | { variant: "Weekly"; amount: number }
-  | { variant: "Monthly"; amount: number }
-  | { variant: "Yearly"; amount: number };
 
 export type BudgetCategory = {
   id: number;
@@ -65,7 +65,7 @@ export type BudgetItem = {
   category_id: number;
   fund_id: number | null;
   name: string;
-  allowance: BudgetAllowance | null;
+  allowance: Allowance | null;
   budget_only: boolean;
 };
 
@@ -73,7 +73,7 @@ export type BudgetItemFields = {
   category_id: number;
   fund_id: number | null;
   name: string;
-  allowance: BudgetAllowance | null;
+  allowance: Allowance | null;
   budget_only: boolean;
 };
 
@@ -86,7 +86,7 @@ export type BudgetItemWithSpend = {
   category_id: number;
   fund_id: number | null;
   name: string;
-  allowance: BudgetAllowance | null;
+  allowance: Allowance | null;
   budget_only: boolean;
 };
 

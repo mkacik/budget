@@ -1,10 +1,10 @@
 pub mod account;
 pub mod budget;
-pub mod budget_category;
-pub mod budget_item;
+pub mod category;
 pub mod expense;
 pub mod fund;
 pub mod import;
 pub mod index;
+pub mod item;
 pub mod login;
 pub mod statement_schema;

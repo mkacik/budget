@@ -4,8 +4,8 @@ use rocket::{delete, post, put, State};
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
-use crate::schema::budget_item::{BudgetItem, BudgetItemFields};
 use crate::schema::expense::Expense;
+use crate::schema::item::{BudgetItem, BudgetItemFields};
 
 #[post("/budget_items", format = "json", data = "<request>")]
 pub async fn create_budget_item(

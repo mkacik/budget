@@ -10,7 +10,7 @@ type CentAmount = i32;
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(tag = "variant", content = "amount")]
 #[ts(export_to = TS_FILE, tag = "variant", content = "amount")]
-pub enum BudgetAllowance {
+pub enum Allowance {
     Weekly(CentAmount),
     Monthly(CentAmount),
     Yearly(CentAmount),
@@ -22,7 +22,7 @@ pub struct BudgetItemFields {
     pub category_id: ID,
     pub fund_id: Option<ID>,
     pub name: String,
-    pub allowance: Option<BudgetAllowance>,
+    pub allowance: Option<Allowance>,
     pub budget_only: bool,
 }
 

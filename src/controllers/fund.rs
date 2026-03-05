@@ -7,8 +7,8 @@ use crate::common::TS_FILE;
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
-use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::fund::{BudgetFund, BudgetFundFields};
+use crate::schema::item::{BudgetItem, BudgetItemWithSpend};
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export_to = TS_FILE)]

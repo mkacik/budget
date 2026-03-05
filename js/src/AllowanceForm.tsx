@@ -1,6 +1,6 @@
 import React from "react";
 
-import { BudgetAllowance } from "./generated/types";
+import { Allowance } from "./generated/types";
 
 import { FormSection, LabeledInput, LabeledSelect } from "./ui/Form";
 
@@ -14,12 +14,12 @@ function FrequencyOptions() {
   ));
 }
 
-export function BudgetAllowanceForm({
+export function AllowanceForm({
   allowance,
   updateAllowance,
 }: {
-  allowance: BudgetAllowance;
-  updateAllowance: (BudgetAllowance) => void;
+  allowance: Allowance;
+  updateAllowance: (Allowance) => void;
 }) {
   const setVariant = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLSelectElement;

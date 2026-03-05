@@ -1,11 +1,11 @@
 import {
   Budget,
-  BudgetAllowance,
+  Allowance,
   BudgetCategory,
   BudgetItem,
 } from "./generated/types";
 
-export function getAmountPerYear(allowance: BudgetAllowance | null) {
+export function getAmountPerYear(allowance: Allowance | null) {
   if (allowance === null) {
     return 0;
   }
@@ -19,7 +19,7 @@ export function getAmountPerYear(allowance: BudgetAllowance | null) {
     case "Yearly":
       return amount;
     default:
-      throw Error("Incorrect BudgetAllowance variant!");
+      throw Error("Incorrect Allowance variant!");
   }
 }
 

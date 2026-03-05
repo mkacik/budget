@@ -4,8 +4,8 @@ use rocket::{delete, post, put, State};
 use crate::database::{Database, ID};
 use crate::guards::write_log::WriteLogEntry;
 use crate::response::ApiResponse;
-use crate::schema::budget_category::{BudgetCategory, BudgetCategoryFields};
-use crate::schema::budget_item::BudgetItem;
+use crate::schema::category::{BudgetCategory, BudgetCategoryFields};
+use crate::schema::item::BudgetItem;
 
 #[post("/budget_categories/<year>", format = "json", data = "<request>")]
 pub async fn create_budget_category(

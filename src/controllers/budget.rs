@@ -7,8 +7,8 @@ use crate::common::TS_FILE;
 use crate::database::Database;
 use crate::response::ApiResponse;
 use crate::schema::budget::Budget;
-use crate::schema::budget_category::BudgetCategory;
-use crate::schema::budget_item::{BudgetItem, BudgetItemWithSpend};
+use crate::schema::category::BudgetCategory;
+use crate::schema::item::{BudgetItem, BudgetItemWithSpend};
 use crate::schema::spending_data::SpendingDataPoint;
 
 #[get("/budget/<year>")]

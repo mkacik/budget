@@ -4,12 +4,12 @@ import { useState } from "react";
 import {
   BudgetItem,
   BudgetItemFields,
-  BudgetAllowance,
+  Allowance,
   BudgetFund,
 } from "./generated/types";
 
 import { BudgetView, BudgetCategoryView } from "./BudgetView";
-import { BudgetAllowanceForm } from "./BudgetAllowanceForm";
+import { AllowanceForm } from "./AllowanceForm";
 
 import {
   Form,
@@ -22,7 +22,7 @@ import { FetchHelper, JSON_HEADERS } from "./Common";
 
 import * as UI from "./ui/Common";
 
-const DEFAULT_ALLOWANCE: BudgetAllowance = { variant: "Weekly", amount: 10000 };
+const DEFAULT_ALLOWANCE: Allowance = { variant: "Weekly", amount: 10000 };
 
 function createBudgetItemRequest(fields: BudgetItemFields): Request {
   return new Request("/api/budget_items", {
@@ -209,7 +209,7 @@ export function BudgetItemForm({
     setFields({ ...fields, fund_id: newFundID === 0 ? null : newFundID });
   };
 
-  const setAllowance = (allowance: BudgetAllowance) => {
+  const setAllowance = (allowance: Allowance) => {
     setFields({ ...fields, allowance: allowance });
   };
 
@@ -323,7 +323,7 @@ export function BudgetItemForm({
         )}
 
         {showAllowanceSelector && (
-          <BudgetAllowanceForm
+          <AllowanceForm
             allowance={fields.allowance!}
             updateAllowance={setAllowance}
           />
