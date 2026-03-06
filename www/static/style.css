@@ -113,8 +113,8 @@ pre {
   }
 
   .header-main {
-    font-weight: bolder;
     font-size: var(--font-header-large);
+    font-weight: bold;
   }
 }
 
@@ -138,6 +138,15 @@ pre {
   display: flex;
   flex-direction: column;
   gap: var(--gap-medium);
+
+  .section-title {
+    display: flex;
+    flex-direction: row;
+    gap: var(--gap-medium);
+
+    font-size: var(--font-header-large);
+    font-weight: bold;
+  }
 }
 
 .card {
@@ -162,18 +171,30 @@ pre {
   color: var(--color-text-error);
   border-color: var(--color-card-error-border);
   background-color: var(--color-card-error-background);
+
+  .glyph {
+    color: var(--color-text-error);
+  }
 }
 
 .info {
   color: var(--color-text-info);
   border-color: var(--color-card-info-border);
   background-color: var(--color-card-info-background);
+
+  .glyph {
+    color: var(--color-text-info);
+  }
 }
 
 .success {
   color: var(--color-text-success);
   border-color: var(--color-card-success-border);
   background-color: var(--color-card-success-background);
+
+  .glyph {
+    color: var(--color-text-success);
+  }
 }
 
 .modal-container {
@@ -230,31 +251,17 @@ pre {
   position: fixed;
   bottom: 1rem;
   right: 1rem;
-}
 
-.legend {
-  box-shadow: 0 0 5px var(--color-card-border);
-  padding: 0;
-}
-
-.legend-table {
-  td {
-    padding: var(--padding-small);
-    border-radius: var(--border-radius);
+  .legend {
+    box-shadow: 0 0 5px var(--color-card-border);
+    padding: 0;
   }
 
-  tr {
-    border-radius: var(--border-radius);
+  .legend-table {
+    td {
+      padding: var(--padding-small);
+    }
   }
-}
-
-.title {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-medium);
-
-  font-size: var(--font-header-large);
-  font-weight: bold;
 }
 
 .large {
@@ -437,11 +444,6 @@ table {
   }
 }
 
-.material-symbols-outlined {
-  font-variation-settings: "opsz" 24;
-  color: var(--color-glyph);
-}
-
 .button {
   border: none;
   border-radius: var(--border-radius);
@@ -474,6 +476,13 @@ table {
   background-color: var(--color-table-header);
 }
 
+.flexrow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--gap-medium);
+}
+
 .loading-container {
   z-index: 2;
   position: fixed;
@@ -490,18 +499,6 @@ table {
 
   transition-property: opacity;
   transition-duration: 0.5s;
-}
-
-
-.flexrow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--gap-medium);
-
-  select {
-    width: 100%;
-  }
 }
 
 .tooltip-cell {

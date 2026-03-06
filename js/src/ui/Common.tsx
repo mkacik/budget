@@ -195,14 +195,10 @@ export function Section({
 }) {
   return (
     <div className="section">
-      {title && <SectionHeader>{title}</SectionHeader>}
+      {title && <span className="section-title">{title}</span>}
       {children}
     </div>
   );
-}
-
-export function SectionHeader({ children }: { children: React.ReactNode }) {
-  return <span className="title">{children}</span>;
 }
 
 export function Flex({
