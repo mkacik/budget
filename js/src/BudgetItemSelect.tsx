@@ -1,7 +1,11 @@
 import React from "react";
 import { useEffect } from "react";
 
+import { ExpenseView } from "./ExpenseView";
 import { BudgetView, BudgetItemView } from "./BudgetView";
+import { JSON_HEADERS, FetchHelper } from "./Common";
+
+import * as UI from "./ui/Common";
 
 const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 
@@ -48,19 +52,15 @@ function KeyMapLegend({
   }
 
   return (
-    <div className="legend-container">
-      <div className="card legend">
-        <table className="legend-table">
-          <thead>
-            <tr>
-              <td>Key</td>
-              <td>Category</td>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
-      </div>
-    </div>
+    <table className="legend-table">
+      <thead>
+        <tr>
+          <td>Key</td>
+          <td>Category</td>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
   );
 }
 
@@ -90,18 +90,67 @@ function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
   );
 }
 
+const UNSET_ID: number = 0;
+
 export function BudgetItemSelect({
-  selectedBudgetItemID,
-  updateBudgetItemID,
+  expense,
+  close,
+  onExpenseCategoryChange,
+  onExpenseNotesChange,
+  onExpenseDelete,
   budget,
 }: {
-  selectedBudgetItemID: number | null;
-  updateBudgetItemID: (newBudgetItemID: number | null) => void;
+  expense: ExpenseView;
+  close: () => void;
+  onExpenseCategoryChange: () => void;
+  onExpenseNotesChange: () => void;
+  onExpenseDelete: () => void;
   budget: BudgetView;
 }) {
-  const UNSET_ID = 0;
-  const keyMap = getKeyMap(budget);
+  const setErrorMessage = (msg: string | null) => msg && alert(msg);
+  const fetchHelper = new FetchHelper(setErrorMessage);
 
+  const updateBudgetItemID = (newBudgetItemID: number | null) => {
+    const request = new Request(`/api/expenses/${expense.id}/category`, {
+      method: "PUT",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ budget_item_id: newBudgetItemID }),
+    });
+    fetchHelper.fetch(request, (_json) => onExpenseCategoryChange());
+  };
+
+  const updateNotes = () => {
+    const promptMessage = `Add note for: ${expense.description}`;
+    const promptValue = prompt(promptMessage, expense.notes || undefined);
+    if (promptValue === null) {
+      return;
+    }
+
+    const newNotes = promptValue === "" ? null : promptValue;
+    if (newNotes === expense.notes) {
+      return;
+    }
+
+    const request = new Request(`/api/expenses/${expense.id}/notes`, {
+      method: "PUT",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ notes: newNotes }),
+    });
+    fetchHelper.fetch(request, (_json) => onExpenseNotesChange());
+  };
+
+  const deleteExpense = () => {
+    if (!confirm(`Do you really want to delete: ${expense.description}?`)) {
+      return;
+    }
+
+    const request = new Request(`/api/expenses/${expense.id}`, {
+      method: "DELETE",
+    });
+    fetchHelper.fetch(request, (_json) => onExpenseDelete());
+  };
+
+  const keyMap = getKeyMap(budget);
   useEffect(() => {
     const handleInput = (e) => {
       if (keyMap.has(e.key)) {
@@ -121,16 +170,89 @@ export function BudgetItemSelect({
     updateBudgetItemID(newBudgetItemID);
   };
 
+  const showDeleteButton = expense.account.account_type === "Cash";
+
   return (
-    <>
+    <Container close={close}>
+      <div style={{ flexGrow: 1 }}>
+        <Expense expense={expense} />
+      </div>
+
+      <UI.Flex>
+        <select
+          value={expense.budget_item_id ?? UNSET_ID}
+          onChange={onSelectChange}
+          style={{ width: "100%" }}
+        >
+          <option value={UNSET_ID}>-</option>
+          <BudgetItemSelectOptions budget={budget} />
+        </select>
+
+        <UI.InlineGlyphButton glyph="notes" onClick={updateNotes} />
+
+        {showDeleteButton && (
+          <UI.InlineGlyphButton glyph="delete" onClick={deleteExpense} />
+        )}
+      </UI.Flex>
+
       <KeyMapLegend setCategory={updateBudgetItemID} keyMap={keyMap} />
-      <select
-        value={selectedBudgetItemID ?? UNSET_ID}
-        onChange={onSelectChange}
-      >
-        <option value={UNSET_ID}>-</option>
-        <BudgetItemSelectOptions budget={budget} />
-      </select>
-    </>
+    </Container>
+  );
+}
+
+function Expense({ expense }: { expense: ExpenseView }) {
+  return (
+    <table>
+      <colgroup>
+        <UI.Col widthPct={1} />
+        <UI.Col />
+      </colgroup>
+      <tbody>
+        <tr>
+          <th scope="row">Date</th>
+          <td>{expense.transaction_date}</td>
+        </tr>
+        <tr>
+          <th scope="row">Amount</th>
+          <UI.CurrencyCell
+            value={expense.amount}
+            style={{ textAlign: "left" }}
+          />
+        </tr>
+        <tr>
+          <th scope="row">Description</th>
+          <td>{expense.description}</td>
+        </tr>
+        {expense.notes && (
+          <tr>
+            <th scope="row">Notes</th>
+            <td>{expense.notes}</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+}
+
+function Container({
+  close,
+  children,
+}: {
+  close: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="legend-container">
+      <div className="legend">
+        <UI.Flex>
+          <UI.InlineGlyphButton glyph="sidebar-collapse" onClick={close} />
+          <span style={{ fontSize: "larger", fontWeight: "bolder" }}>
+            Categorize
+          </span>
+        </UI.Flex>
+
+        {children}
+      </div>
+    </div>
   );
 }

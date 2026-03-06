@@ -46,6 +46,11 @@
 
 body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
   display: block;
   overflow: hidden;
 
@@ -138,14 +143,19 @@ pre {
   display: flex;
   flex-direction: column;
   gap: var(--gap-medium);
+}
 
-  .section-title {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-medium);
+.title {
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap-medium);
 
-    font-size: var(--font-header-large);
-    font-weight: bold;
+  font-size: var(--font-header-large);
+  font-weight: bold;
+
+  .close-button {
+    margin-left: auto;
+    cursor: pointer;
   }
 }
 
@@ -223,20 +233,6 @@ pre {
   padding: var(--padding-large);
   background-color: var(--color-main-background) !important;
 
-  .modal-header {
-    display: flex;
-    flex-direction: row;
-
-    .modal-title {
-      width: 100%;
-    }
-
-    .modal-close-button {
-      justify-self: end;
-      cursor: pointer;
-    }
-  }
-
   .modal-body {
     height: 100%;
 
@@ -248,13 +244,25 @@ pre {
 
 .legend-container {
   z-index: 1;
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  width: 60%;
+  padding: 0;
+
+  background-color: var(--color-main-background);
+  border-left: 1px solid; 
+  border-color: var(--color-card-border);
 
   .legend {
-    box-shadow: 0 0 5px var(--color-card-border);
-    padding: 0;
+    height: stretch;
+    padding: var(--padding-medium);
+
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--gap-medium);
   }
 
   .legend-table {

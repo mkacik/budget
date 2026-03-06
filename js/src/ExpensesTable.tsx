@@ -9,73 +9,21 @@ import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
 import { BudgetItemSelect } from "./BudgetItemSelect";
-import { JSON_HEADERS, FetchHelper } from "./Common";
 
 import * as UI from "./ui/Common";
 
-function ExpenseRow({
+function ExpenseRowCells({
   expense,
-  active,
-  onExpenseCategoryChange,
-  onExpenseNotesChange,
-  onExpenseDelete,
   budget,
   accounts,
 }: {
   expense: ExpenseView;
-  active: boolean;
-  onExpenseCategoryChange: () => void;
-  onExpenseNotesChange: () => void;
-  onExpenseDelete: () => void;
   budget: BudgetView;
   accounts: AccountsView | null;
 }) {
   const budgetItemID = expense.budget_item_id;
   const budgetItemName =
     budgetItemID !== null ? budget.getItem(budgetItemID).displayName : "";
-
-  const setErrorMessage = (msg: string | null) => msg && alert(msg);
-  const fetchHelper = new FetchHelper(setErrorMessage);
-
-  const updateBudgetItemID = (newBudgetItemID: number | null) => {
-    const request = new Request(`/api/expenses/${expense.id}/category`, {
-      method: "PUT",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ budget_item_id: newBudgetItemID }),
-    });
-    fetchHelper.fetch(request, (_json) => onExpenseCategoryChange());
-  };
-
-  const updateNotes = () => {
-    const promptMessage = `Add note for: ${expense.description}`;
-    const promptValue = prompt(promptMessage, expense.notes || undefined);
-    if (promptValue === null) {
-      return;
-    }
-
-    const newNotes = promptValue === "" ? null : promptValue;
-    if (newNotes === expense.notes) {
-      return;
-    }
-
-    const request = new Request(`/api/expenses/${expense.id}/notes`, {
-      method: "PUT",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ notes: newNotes }),
-    });
-    fetchHelper.fetch(request, (_json) => onExpenseNotesChange());
-  };
-
-  const deleteExpense = () => {
-    if (!confirm(`Do you really want to delete: ${expense.description}?`)) {
-      return;
-    }
-
-    const request = new Request(`/api/expenses/${expense.id}`, {
-      method: "DELETE",
-    });
-    fetchHelper.fetch(request, (_json) => onExpenseDelete());
-  };
 
   const dateTime =
     expense.transaction_time === null
@@ -86,43 +34,22 @@ function ExpenseRow({
     ? `[${expense.notes}] ${expense.description}`
     : expense.description;
 
-  const showDeleteButton = active && expense.account.account_type === "Cash";
-
   return (
     <>
       <td className="nowrap" title={dateTime}>
         {expense.transaction_date}
       </td>
 
-      {active ? (
-        <td className="category">
-          <BudgetItemSelect
-            selectedBudgetItemID={budgetItemID}
-            updateBudgetItemID={updateBudgetItemID}
-            budget={budget}
-          />
-        </td>
-      ) : (
-        <td>{budgetItemName}</td>
-      )}
+      <td>{budgetItemName}</td>
 
       <UI.CurrencyCell value={expense.amount} softNegatives={false} />
 
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 
       <td>
-        <UI.Flex className={"v-top"}>
-          {!active && expense.notes && (
-            <UI.InlineGlyphButton glyph="notes" onClick={() => {}} />
-          )}
-          {active && (
-            <UI.InlineGlyphButton glyph="notes" onClick={updateNotes} />
-          )}
-          {showDeleteButton && (
-            <UI.InlineGlyphButton glyph="delete" onClick={deleteExpense} />
-          )}
-          {fullDescription}
-        </UI.Flex>
+        {expense.notes && <UI.Glyph glyph="notes" size={18} />}
+        {expense.notes && " "}
+        {fullDescription}
       </td>
     </>
   );
@@ -166,23 +93,32 @@ export function ExpensesTable({
   };
 
   const [activeRow, setActiveRow] = useState<number | null>(null);
+  const [activeExpense, setActiveExpense] = useState<ExpenseView | null>(null);
 
-  const setAndScrollToActiveRow = (newActiveRow: number | null) => {
-    if (newActiveRow !== null) {
-      const map = getExpensesRefMap();
-      const row = map.get(newActiveRow);
-
-      if (row === null || row === undefined) {
-        console.log(`Unexpected empty DOM reference to row ${newActiveRow}`);
-      } else {
-        row.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
+  const setAndScrollToActiveRow = (rowIdx: number | null) => {
+    if (rowIdx === null) {
+      setActiveRow(null);
+      setActiveExpense(null);
+      return;
     }
-    setActiveRow(newActiveRow);
+
+    const map = getExpensesRefMap();
+    const row = map.get(rowIdx);
+    const expense = expenses.at(rowIdx);
+
+    if (row === null || row === undefined || expense === undefined) {
+      console.log(`Unexpected empty DOM reference to row ${rowIdx}`);
+      return;
+    }
+
+    row.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+
+    setActiveRow(rowIdx);
+    setActiveExpense(expense);
   };
 
   const prevRow = () => {
@@ -241,77 +177,85 @@ export function ExpensesTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <table className="expenses-table">
-      <colgroup>
-        <UI.Col widthPct={7} />
-        <UI.Col widthPct={showAccount ? 15 : 20} />
-        <UI.Col widthPct={7} />
-        {showAccount && <UI.Col widthPct={10} />}
-        <UI.Col />
-      </colgroup>
+    <>
+      <table className="expenses-table">
+        <colgroup>
+          <UI.Col widthPct={7} />
+          <UI.Col widthPct={showAccount ? 15 : 20} />
+          <UI.Col widthPct={7} />
+          {showAccount && <UI.Col widthPct={10} />}
+          <UI.Col />
+        </colgroup>
 
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
-        <tr>
-          <HeaderCell
-            title="Date"
-            sortByField={sortByField(SortField.DateTime)}
-          />
-          <HeaderCell title="Category" sortByField={null} />
-          <HeaderCell
-            title="Amount"
-            sortByField={sortByField(SortField.Amount)}
-            alignRight
-          />
-          {showAccount && (
+        <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+          <tr>
             <HeaderCell
-              title="Account"
-              sortByField={sortByField(SortField.Account)}
+              title="Date"
+              sortByField={sortByField(SortField.DateTime)}
             />
-          )}
-          <HeaderCell
-            title="Details"
-            sortByField={sortByField(SortField.Description)}
-          />
-        </tr>
-      </thead>
-
-      <tbody>
-        {expenses.map((expense, idx) => (
-          <tr
-            key={expense.id}
-            className={idx === activeRow ? "active-row" : undefined}
-            onClick={() =>
-              idx === activeRow
-                ? setAndScrollToActiveRow(null)
-                : setAndScrollToActiveRow(idx)
-            }
-            ref={(node: HTMLTableRowElement) => {
-              const map = getExpensesRefMap();
-              map.set(idx, node);
-
-              return () => {
-                map.delete(idx);
-              };
-            }}
-          >
-            <ExpenseRow
-              expense={expense}
-              active={idx === activeRow}
-              budget={budget}
-              onExpenseCategoryChange={() => {
-                if (settings.autoadvance) {
-                  nextRow();
-                }
-                onExpenseCategoryChange();
-              }}
-              onExpenseNotesChange={onExpenseNotesChange}
-              onExpenseDelete={onExpenseDelete}
-              accounts={showAccount ? accounts : null}
+            <HeaderCell title="Category" sortByField={null} />
+            <HeaderCell
+              title="Amount"
+              sortByField={sortByField(SortField.Amount)}
+              alignRight
+            />
+            {showAccount && (
+              <HeaderCell
+                title="Account"
+                sortByField={sortByField(SortField.Account)}
+              />
+            )}
+            <HeaderCell
+              title="Details"
+              sortByField={sortByField(SortField.Description)}
             />
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {expenses.map((expense, idx) => (
+            <tr
+              key={expense.id}
+              className={idx === activeRow ? "active-row" : undefined}
+              onClick={() =>
+                idx === activeRow
+                  ? setAndScrollToActiveRow(null)
+                  : setAndScrollToActiveRow(idx)
+              }
+              ref={(node: HTMLTableRowElement) => {
+                const map = getExpensesRefMap();
+                map.set(idx, node);
+
+                return () => {
+                  map.delete(idx);
+                };
+              }}
+            >
+              <ExpenseRowCells
+                expense={expense}
+                budget={budget}
+                accounts={showAccount ? accounts : null}
+              />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {activeExpense && (
+        <BudgetItemSelect
+          expense={activeExpense}
+          close={() => setAndScrollToActiveRow(null)}
+          onExpenseCategoryChange={() => {
+            if (settings.autoadvance) {
+              nextRow();
+            }
+            onExpenseCategoryChange();
+          }}
+          onExpenseNotesChange={onExpenseNotesChange}
+          onExpenseDelete={onExpenseDelete}
+          budget={budget}
+        />
+      )}
+    </>
   );
 }
 function HeaderCell({

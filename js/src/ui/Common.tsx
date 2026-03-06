@@ -16,6 +16,7 @@ import {
   IconPencil,
   IconPlus,
   IconPoo,
+  IconLayoutSidebarRightCollapse,
   IconTrash,
   IconUpload,
 } from "@tabler/icons-react";
@@ -57,9 +58,9 @@ export function ModalCard({
   return (
     <div className="modal-container">
       <div className="card modal">
-        <div className="modal-header title">
-          <span className="modal-title">{title}</span>
-          <span className="modal-close-button" onClick={hideModal}>
+        <div className="title">
+          {title}
+          <span className="close-button" onClick={hideModal}>
             ✕
           </span>
         </div>
@@ -107,6 +108,7 @@ type GlyphType =
   | "error"
   | "info"
   | "notes"
+  | "sidebar-collapse"
   | "success"
   | "settings"
   | "upload";
@@ -140,6 +142,10 @@ export function Glyph({ glyph, className, ...rest }: GlyphProps) {
       return <IconInfoCircle className={classNames} {...rest} />;
     case "notes":
       return <IconNotes className={classNames} {...rest} />;
+    case "sidebar-collapse":
+      return (
+        <IconLayoutSidebarRightCollapse className={classNames} {...rest} />
+      );
     case "success":
       return <IconCircleCheck className={classNames} {...rest} />;
     case "settings":
@@ -195,7 +201,7 @@ export function Section({
 }) {
   return (
     <div className="section">
-      {title && <span className="section-title">{title}</span>}
+      {title && <span className="title">{title}</span>}
       {children}
     </div>
   );
@@ -252,12 +258,14 @@ export function CurrencyCell({
   onClick,
   tooltip,
   className,
+  style,
   softNegatives = true,
 }: {
   value: number;
   onClick?: () => void;
   tooltip?: string;
   className?: string;
+  style?: React.CSSProperties;
   softNegatives?: boolean;
 }) {
   let classNames = "number r-align";
@@ -275,7 +283,12 @@ export function CurrencyCell({
   }
 
   return (
-    <td className={classNames} onClick={onClick} data-tooltip={tooltip}>
+    <td
+      className={classNames}
+      onClick={onClick}
+      data-tooltip={tooltip}
+      style={style}
+    >
       {formatCurrency(value)}
     </td>
   );
