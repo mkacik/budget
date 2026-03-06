@@ -1,6 +1,33 @@
 import React from "react";
 import { useEffect } from "react";
 
+import { IconProps } from "@tabler/icons-react";
+import {
+  IconAdjustments,
+  IconArrowDown,
+  IconArrowUp,
+  IconCircleCheck,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCopy,
+  IconExclamationCircle,
+  IconInfoCircle,
+  IconNotes,
+  IconPencil,
+  IconPlus,
+  IconPoo,
+  IconTrash,
+  IconUpload,
+} from "@tabler/icons-react";
+
+function cx(...args: Array<string | null | undefined>): string | undefined {
+  const classNames = args.filter((arg) => arg && arg.trim());
+  if (classNames.length === 0) {
+    return undefined;
+  }
+  return classNames.join(" ");
+}
+
 export function ModalCard({
   title,
   visible,
@@ -46,108 +73,111 @@ export function ErrorCard({ message }: { message: string | null }) {
   return <StatusCard status="error" message={message} />;
 }
 
-type Status = "error" | "info" | "success";
-
 export function StatusCard({
   status,
   message,
   children,
 }: {
-  status: Status;
+  status: "error" | "info" | "success";
   message: string | null;
   children?: React.ReactNode;
 }) {
-  if (message === null) {
-    return null;
-  }
-
-  const classNames = ["card", status];
-  const glyph = status === "success" ? "check_circle" : status;
-
   return (
-    <div className={classNames.join(" ")}>
-      <span className="status">
-        <InlineGlyph glyph={glyph} />
-        {message}
-      </span>
-      {children}
-    </div>
+    message && (
+      <div className={cx("card", status)}>
+        <span className="status">
+          <Glyph glyph={status} size={20} />
+          {message}
+        </span>
+        {children}
+      </div>
+    )
   );
 }
 
-export type Glyph =
+type GlyphType =
   | "add"
-  | "arrow_downward"
-  | "arrow_upward"
-  | "check"
-  | "check_circle"
-  | "chevron_left"
-  | "chevron_right"
+  | "arrow-up"
+  | "arrow-down"
+  | "chevron-left"
+  | "chevron-right"
+  | "copy"
   | "delete"
   | "edit"
-  | "edit_note"
   | "error"
-  | "file_copy"
   | "info"
   | "notes"
-  | "pie_chart"
+  | "success"
   | "settings"
   | "upload";
+
+interface GlyphProps extends IconProps {
+  glyph: GlyphType;
+}
+
+export function Glyph({ glyph, className, ...rest }: GlyphProps) {
+  const classNames = cx("glyph", className);
+  switch (glyph) {
+    case "add":
+      return <IconPlus className={classNames} {...rest} />;
+    case "arrow-up":
+      return <IconArrowUp className={classNames} {...rest} />;
+    case "arrow-down":
+      return <IconArrowDown className={classNames} {...rest} />;
+    case "chevron-left":
+      return <IconChevronLeft className={classNames} {...rest} />;
+    case "chevron-right":
+      return <IconChevronRight className={classNames} {...rest} />;
+    case "copy":
+      return <IconCopy className={classNames} {...rest} />;
+    case "delete":
+      return <IconTrash className={classNames} {...rest} />;
+    case "edit":
+      return <IconPencil className={classNames} {...rest} />;
+    case "error":
+      return <IconExclamationCircle className={classNames} {...rest} />;
+    case "info":
+      return <IconInfoCircle className={classNames} {...rest} />;
+    case "notes":
+      return <IconNotes className={classNames} {...rest} />;
+    case "success":
+      return <IconCircleCheck className={classNames} {...rest} />;
+    case "settings":
+      return <IconAdjustments className={classNames} {...rest} />;
+    case "upload":
+      return <IconUpload className={classNames} {...rest} />;
+    default:
+      return <IconPoo className={classNames} {...rest} />;
+  }
+}
+
+export function InlineGlyphButton({
+  glyph,
+  onClick,
+}: {
+  glyph: GlyphType;
+  onClick: () => void;
+}) {
+  return (
+    <span className="button button-small" onClick={onClick}>
+      <Glyph glyph={glyph} size={18} />
+    </span>
+  );
+}
 
 export function GlyphButton({
   glyph,
   onClick,
   text,
 }: {
-  glyph: Glyph;
+  glyph: GlyphType;
   onClick: () => void;
   text?: string;
 }) {
   return (
-    <div className="button" onClick={onClick}>
-      <span className="material-symbols-outlined">{glyph}</span>
+    <span className="button" onClick={onClick}>
+      <Glyph glyph={glyph} size={20} />
       {text}
-    </div>
-  );
-}
-
-export function InlineGlyphButton({
-  glyph,
-  onClick,
-  text,
-}: {
-  glyph: Glyph;
-  onClick: () => void;
-  text?: string;
-}) {
-  return (
-    <div className="button button-small" onClick={onClick}>
-      <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-        {glyph}
-      </span>
-      {text}
-    </div>
-  );
-}
-
-export function InlineGlyph({ glyph }: { glyph: Glyph }) {
-  return <span className="material-symbols-outlined">{glyph}</span>;
-}
-
-export function SmallInlineGlyph({
-  glyph,
-  onClick,
-}: {
-  glyph: Glyph;
-  onClick?: (e: React.SyntheticEvent) => void;
-}) {
-  return (
-    <span
-      onClick={onClick}
-      className="material-symbols-outlined"
-      style={{ fontSize: "20px" }}
-    >
-      {glyph}
     </span>
   );
 }
@@ -182,11 +212,7 @@ export function Flex({
   className?: string;
   children: React.ReactNode;
 }) {
-  let classNames = "flexrow";
-  if (className) {
-    classNames += " " + className;
-  }
-  return <span className={classNames}>{children}</span>;
+  return <span className={cx("flexrow", className)}>{children}</span>;
 }
 
 export function Col({ widthPct }: { widthPct?: number }) {

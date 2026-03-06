@@ -229,11 +229,14 @@ export function AccountsSection({
 
   return (
     <UI.Section title="Accounts">
-      <UI.GlyphButton
-        glyph="add"
-        text="add account"
-        onClick={() => editAccount(null)}
-      />
+      <UI.Flex>
+        <UI.GlyphButton
+          glyph="add"
+          text="add account"
+          onClick={() => editAccount(null)}
+        />
+      </UI.Flex>
+
       <AccountsTable accounts={accounts.accounts} editAccount={editAccount} />
 
       <UI.ModalCard

@@ -315,7 +315,7 @@ export function BudgetPage({
                 onClick={() => editItem(null)}
               />
               <UI.GlyphButton
-                glyph="file_copy"
+                glyph="copy"
                 text="clone to empty year"
                 onClick={() => setModalMode({ variant: "clone" })}
               />

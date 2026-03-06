@@ -215,11 +215,13 @@ export function StatementSchemasSection({
 
   return (
     <UI.Section title="Statement Schemas">
-      <UI.GlyphButton
-        glyph="add"
-        text="add schema"
-        onClick={() => editSchema(null)}
-      />
+      <UI.Flex>
+        <UI.GlyphButton
+          glyph="add"
+          text="add schema"
+          onClick={() => editSchema(null)}
+        />
+      </UI.Flex>
 
       <StatementSchemasTable schemas={schemas} editSchema={editSchema} />
 

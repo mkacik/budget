@@ -146,11 +146,13 @@ export function FundsPage({
     <>
       <UI.Section title="Funds">
         <UI.ErrorCard message={errorMessage} />
-        <UI.GlyphButton
-          glyph="add"
-          text="add fund"
-          onClick={() => editFund(null)}
-        />
+        <UI.Flex>
+          <UI.GlyphButton
+            glyph="add"
+            text="add fund"
+            onClick={() => editFund(null)}
+          />
+        </UI.Flex>
         {items && (
           <FundsTable
             funds={funds}

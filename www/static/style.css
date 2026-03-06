@@ -328,6 +328,10 @@ table {
     text-align: right;
   }
 
+  .v-top {
+    align-items: flex-start;
+  }
+
   .td-button {
     cursor: pointer;
 
@@ -394,6 +398,12 @@ table {
   }
 }
 
+.glyph {
+  color: var(--color-glyph);
+  align-self: center;
+  vertical-align: middle
+}
+
 .edit-form {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -435,9 +445,7 @@ table {
 .button {
   border: none;
   border-radius: var(--border-radius);
-  width: fit-content;
-  height: fit-content;
-  padding: 0.5rem !important;
+  padding: var(--padding-medium) !important;
 
   display: flex;
   align-items: center;
@@ -451,6 +459,8 @@ table {
 }
 
 .button-small {
+  width: fit-content;
+  height: fit-content;
   padding: var(--padding-small) !important;
 }
 

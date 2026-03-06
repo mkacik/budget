@@ -227,15 +227,13 @@ function App({
     <>
       <Header>
         <UI.Flex>
-          <UI.InlineGlyphButton
-            glyph="chevron_left"
-            onClick={setYear(year - 1)}
-          />
+          <Header.Link onClick={setYear(year - 1)}>
+            <UI.Glyph glyph="chevron-left" size={18} />
+          </Header.Link>
           <Header.Main>{year}</Header.Main>
-          <UI.InlineGlyphButton
-            glyph="chevron_right"
-            onClick={setYear(year + 1)}
-          />
+          <Header.Link onClick={setYear(year + 1)}>
+            <UI.Glyph glyph="chevron-right" size={18} />
+          </Header.Link>
         </UI.Flex>
 
         <Header.Link onClick={setTab(Tab.Budget)}>Budget</Header.Link>

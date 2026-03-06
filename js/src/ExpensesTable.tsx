@@ -13,44 +13,6 @@ import { JSON_HEADERS, FetchHelper } from "./Common";
 
 import * as UI from "./ui/Common";
 
-function ExpenseNotesGlyph({
-  description,
-  notes,
-  setNotes,
-  isActiveRow,
-}: {
-  description: string;
-  notes: string | null;
-  setNotes: (notes: string | null) => void;
-  isActiveRow: boolean;
-}) {
-  if (isActiveRow === false) {
-    if (notes === null) {
-      return null;
-    }
-
-    return <UI.SmallInlineGlyph glyph="notes" />;
-  }
-
-  const onClickEditButton = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-    const promptMessage = `Add note for: ${description}`;
-    const newNotes = prompt(promptMessage, notes || undefined);
-
-    // pressing cancel returns null
-    if (newNotes === null) {
-      return;
-    }
-
-    const sanitized = newNotes === "" ? null : newNotes;
-    if (sanitized !== notes) {
-      setNotes(sanitized);
-    }
-  };
-
-  return <UI.SmallInlineGlyph glyph="edit_note" onClick={onClickEditButton} />;
-}
-
 function ExpenseRow({
   expense,
   active,
@@ -84,7 +46,18 @@ function ExpenseRow({
     fetchHelper.fetch(request, (_json) => onExpenseCategoryChange());
   };
 
-  const updateNotes = (newNotes: string | null) => {
+  const updateNotes = () => {
+    const promptMessage = `Add note for: ${expense.description}`;
+    const promptValue = prompt(promptMessage, expense.notes || undefined);
+    if (promptValue === null) {
+      return;
+    }
+
+    const newNotes = promptValue === "" ? null : promptValue;
+    if (newNotes === expense.notes) {
+      return;
+    }
+
     const request = new Request(`/api/expenses/${expense.id}/notes`, {
       method: "PUT",
       headers: JSON_HEADERS,
@@ -93,8 +66,7 @@ function ExpenseRow({
     fetchHelper.fetch(request, (_json) => onExpenseNotesChange());
   };
 
-  const deleteExpense = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
+  const deleteExpense = () => {
     if (!confirm(`Do you really want to delete: ${expense.description}?`)) {
       return;
     }
@@ -139,15 +111,15 @@ function ExpenseRow({
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 
       <td>
-        <UI.Flex>
-          <ExpenseNotesGlyph
-            description={expense.description}
-            notes={expense.notes}
-            setNotes={updateNotes}
-            isActiveRow={active}
-          />
+        <UI.Flex className={"v-top"}>
+          {!active && expense.notes && (
+            <UI.InlineGlyphButton glyph="notes" onClick={() => {}} />
+          )}
+          {active && (
+            <UI.InlineGlyphButton glyph="notes" onClick={updateNotes} />
+          )}
           {showDeleteButton && (
-            <UI.SmallInlineGlyph glyph="delete" onClick={deleteExpense} />
+            <UI.InlineGlyphButton glyph="delete" onClick={deleteExpense} />
           )}
           {fullDescription}
         </UI.Flex>
@@ -354,11 +326,11 @@ function HeaderCell({
   const sortButtons = sortByField && (
     <>
       <UI.InlineGlyphButton
-        glyph="arrow_downward"
+        glyph="arrow-down"
         onClick={() => sortByField(SortOrder.Desc)}
       />
       <UI.InlineGlyphButton
-        glyph="arrow_upward"
+        glyph="arrow-up"
         onClick={() => sortByField(SortOrder.Asc)}
       />
     </>
