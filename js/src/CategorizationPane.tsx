@@ -9,39 +9,60 @@ import * as UI from "./ui/Common";
 
 const CHARS = "1234567890qwertyuiopasdfghjklzxcvbnm".split("");
 
-type KeyMap = Map<string, BudgetItemView | null>;
+type ItemKey = {
+  item: BudgetItemView | null;
+  key: string | null;
+};
 
-function getKeyMap(budget: BudgetView): KeyMap {
-  const keyMap: KeyMap = new Map();
-  let assigned = 0;
+class KeyMapping {
+  mapping: Map<string, BudgetItemView | null>;
+  items: Array<ItemKey>;
 
-  const items = [budget.items, budget.ignoredItems].flat();
-  for (const item of items) {
-    if (item.isBudgetOnly) {
-      continue;
+  constructor(budget: BudgetView) {
+    const mapping: Map<string, BudgetItemView | null> = new Map();
+    const items: Array<ItemKey> = [];
+
+    let assignedKeys = 0;
+    const allItems = [budget.items, budget.ignoredItems].flat();
+    for (const item of allItems) {
+      if (item.isBudgetOnly) {
+        continue;
+      }
+
+      let key: string | null = null;
+      if (assignedKeys < CHARS.length) {
+        key = CHARS[assignedKeys]!;
+        mapping.set(key, item);
+        assignedKeys += 1;
+      }
+      items.push({ item: item, key: key });
     }
-    if (assigned >= CHARS.length) {
-      break;
-    }
-    keyMap.set(CHARS[assigned], item);
-    assigned += 1;
+
+    mapping.set("Backspace", null);
+    items.push({ item: null, key: "Backspace" });
+
+    this.mapping = mapping;
+    this.items = items;
   }
-  keyMap.set("Backspace", null);
-
-  return keyMap;
 }
 
-function KeyMapLegend({
-  setCategory,
-  keyMap,
+function CategorizationTable({
+  items,
+  updateBudgetItemID,
 }: {
-  setCategory: (id: number | null) => void;
-  keyMap: KeyMap;
+  items: Array<ItemKey>;
+  updateBudgetItemID: (id: number | null) => void;
 }) {
   const rows: Array<React.ReactNode> = [];
-  for (const [key, item] of keyMap.entries()) {
+  for (const itemKey of items) {
+    const key = itemKey.key;
+    const item = itemKey.item;
+
     const row = (
-      <tr key={key} onClick={() => setCategory(item?.id || null)}>
+      <tr
+        key={item?.id ?? key}
+        onClick={() => updateBudgetItemID(item && item.id)}
+      >
         <td>
           <b>{key}</b>
         </td>
@@ -52,7 +73,7 @@ function KeyMapLegend({
   }
 
   return (
-    <table className="legend-table">
+    <table className="compact large">
       <thead>
         <tr>
           <td>Key</td>
@@ -61,6 +82,50 @@ function KeyMapLegend({
       </thead>
       <tbody>{rows}</tbody>
     </table>
+  );
+}
+
+function CategorizationTables({
+  updateBudgetItemID,
+  keyMapping,
+}: {
+  updateBudgetItemID: (id: number | null) => void;
+  keyMapping: KeyMapping;
+}) {
+  useEffect(() => {
+    const handleInput = (e) => {
+      if (keyMapping.mapping.has(e.key)) {
+        const itemID = keyMapping.mapping.get(e.key)?.id ?? null;
+        updateBudgetItemID(itemID);
+      }
+    };
+    document.addEventListener("keydown", handleInput);
+
+    return () => document.removeEventListener("keydown", handleInput);
+  });
+
+  const items = keyMapping.items;
+  if (items.length <= 20) {
+    return (
+      <CategorizationTable
+        items={items}
+        updateBudgetItemID={updateBudgetItemID}
+      />
+    );
+  }
+
+  const halfIdx = (items.length + 1) / 2;
+  return (
+    <UI.Flex className="v-top">
+      <CategorizationTable
+        items={items.slice(0, halfIdx)}
+        updateBudgetItemID={updateBudgetItemID}
+      />
+      <CategorizationTable
+        items={items.slice(halfIdx)}
+        updateBudgetItemID={updateBudgetItemID}
+      />
+    </UI.Flex>
   );
 }
 
@@ -90,9 +155,66 @@ function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
   );
 }
 
+function Expense({ expense }: { expense: ExpenseView }) {
+  return (
+    <table className="large">
+      <colgroup>
+        <UI.Col widthPct={1} />
+        <col />
+      </colgroup>
+      <tbody>
+        <tr>
+          <th scope="row">Date</th>
+          <td>{expense.transaction_date}</td>
+        </tr>
+        <tr>
+          <th scope="row">Amount</th>
+          <UI.CurrencyCell
+            value={expense.amount}
+            style={{ textAlign: "left" }}
+          />
+        </tr>
+        <tr>
+          <th scope="row">Description</th>
+          <td>{expense.description}</td>
+        </tr>
+        {expense.notes && (
+          <tr>
+            <th scope="row">Notes</th>
+            <td>{expense.notes}</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+}
+
+function Container({
+  close,
+  children,
+}: {
+  close: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="side-pane-container">
+      <div className="side-pane">
+        <UI.Flex>
+          <UI.InlineGlyphButton glyph="sidebar-collapse" onClick={close} />
+          <span style={{ fontSize: "larger", fontWeight: "bolder" }}>
+            Categorize
+          </span>
+        </UI.Flex>
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const UNSET_ID: number = 0;
 
-export function BudgetItemSelect({
+export function CategorizationPane({
   expense,
   close,
   onExpenseCategoryChange,
@@ -150,18 +272,7 @@ export function BudgetItemSelect({
     fetchHelper.fetch(request, (_json) => onExpenseDelete());
   };
 
-  const keyMap = getKeyMap(budget);
-  useEffect(() => {
-    const handleInput = (e) => {
-      if (keyMap.has(e.key)) {
-        const itemID = keyMap.get(e.key)?.id ?? null;
-        updateBudgetItemID(itemID);
-      }
-    };
-    document.addEventListener("keydown", handleInput);
-
-    return () => document.removeEventListener("keydown", handleInput);
-  });
+  const keyMapping = new KeyMapping(budget);
 
   const onSelectChange = (e: React.SyntheticEvent): void => {
     const elem = e.target as HTMLSelectElement;
@@ -195,64 +306,10 @@ export function BudgetItemSelect({
         )}
       </UI.Flex>
 
-      <KeyMapLegend setCategory={updateBudgetItemID} keyMap={keyMap} />
+      <CategorizationTables
+        updateBudgetItemID={updateBudgetItemID}
+        keyMapping={keyMapping}
+      />
     </Container>
-  );
-}
-
-function Expense({ expense }: { expense: ExpenseView }) {
-  return (
-    <table>
-      <colgroup>
-        <UI.Col widthPct={1} />
-        <UI.Col />
-      </colgroup>
-      <tbody>
-        <tr>
-          <th scope="row">Date</th>
-          <td>{expense.transaction_date}</td>
-        </tr>
-        <tr>
-          <th scope="row">Amount</th>
-          <UI.CurrencyCell
-            value={expense.amount}
-            style={{ textAlign: "left" }}
-          />
-        </tr>
-        <tr>
-          <th scope="row">Description</th>
-          <td>{expense.description}</td>
-        </tr>
-        {expense.notes && (
-          <tr>
-            <th scope="row">Notes</th>
-            <td>{expense.notes}</td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  );
-}
-
-function Container({
-  close,
-  children,
-}: {
-  close: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="legend-container">
-      <div className="legend">
-        <UI.Flex>
-          <UI.InlineGlyphButton glyph="sidebar-collapse" onClick={close} />
-          <span style={{ fontSize: "larger", fontWeight: "bolder" }}>
-            Categorize
-          </span>
-        </UI.Flex>
-
-        {children}
-      </div>
-    </div>
   );
 }

@@ -8,7 +8,7 @@ import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
-import { BudgetItemSelect } from "./BudgetItemSelect";
+import { CategorizationPane } from "./CategorizationPane";
 
 import * as UI from "./ui/Common";
 
@@ -93,20 +93,18 @@ export function ExpensesTable({
   };
 
   const [activeRow, setActiveRow] = useState<number | null>(null);
-  const [activeExpense, setActiveExpense] = useState<ExpenseView | null>(null);
+  const activeExpense = activeRow !== null ? expenses[activeRow] : null;
 
   const setAndScrollToActiveRow = (rowIdx: number | null) => {
     if (rowIdx === null) {
       setActiveRow(null);
-      setActiveExpense(null);
       return;
     }
 
     const map = getExpensesRefMap();
     const row = map.get(rowIdx);
-    const expense = expenses.at(rowIdx);
 
-    if (row === null || row === undefined || expense === undefined) {
+    if (row === null || row === undefined) {
       console.log(`Unexpected empty DOM reference to row ${rowIdx}`);
       return;
     }
@@ -118,7 +116,6 @@ export function ExpensesTable({
     });
 
     setActiveRow(rowIdx);
-    setActiveExpense(expense);
   };
 
   const prevRow = () => {
@@ -240,8 +237,9 @@ export function ExpensesTable({
           ))}
         </tbody>
       </table>
+
       {activeExpense && (
-        <BudgetItemSelect
+        <CategorizationPane
           expense={activeExpense}
           close={() => setAndScrollToActiveRow(null)}
           onExpenseCategoryChange={() => {

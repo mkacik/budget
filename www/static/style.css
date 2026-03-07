@@ -242,7 +242,7 @@ pre {
   }
 }
 
-.legend-container {
+.side-pane-container {
   z-index: 1;
   position: absolute;
   bottom: 0;
@@ -255,25 +255,25 @@ pre {
   border-left: 1px solid; 
   border-color: var(--color-card-border);
 
-  .legend {
+  .side-pane {
     height: stretch;
-    padding: var(--padding-medium);
+    padding: 1rem;
 
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     gap: var(--gap-medium);
   }
-
-  .legend-table {
-    td {
-      padding: var(--padding-small);
-    }
-  }
 }
 
 .large {
   font-size: var(--font-content-large);
+}
+
+.compact {
+  td {
+    padding: var(--padding-small);
+  }
 }
 
 table {
@@ -343,10 +343,6 @@ table {
     text-align: right;
   }
 
-  .v-top {
-    align-items: flex-start;
-  }
-
   .td-button {
     cursor: pointer;
 
@@ -354,6 +350,10 @@ table {
       background-color: var(--color-hover-dark);
     }
   }
+}
+
+.v-top {
+  align-items: flex-start !important;
 }
 
 .expenses-table {
