@@ -175,7 +175,7 @@ export function ExpensesTable({
 
   return (
     <>
-      <table className="expenses-table">
+      <UI.Table striped topAligned>
         <colgroup>
           <UI.Col widthPct={7} />
           <UI.Col widthPct={showAccount ? 15 : 20} />
@@ -184,7 +184,7 @@ export function ExpensesTable({
           <UI.Col />
         </colgroup>
 
-        <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+        <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
           <tr>
             <HeaderCell
               title="Date"
@@ -213,7 +213,10 @@ export function ExpensesTable({
           {expenses.map((expense, idx) => (
             <tr
               key={expense.id}
-              className={idx === activeRow ? "active-row" : undefined}
+              className={UI.cx(
+                "table-button",
+                idx === activeRow && "active-row",
+              )}
               onClick={() =>
                 idx === activeRow
                   ? setAndScrollToActiveRow(null)
@@ -236,7 +239,7 @@ export function ExpensesTable({
             </tr>
           ))}
         </tbody>
-      </table>
+      </UI.Table>
 
       {activeExpense && (
         <CategorizationPane
@@ -280,7 +283,7 @@ function HeaderCell({
 
   return (
     <th>
-      <UI.Flex className={alignRight ? "r-align" : undefined}>
+      <UI.Flex className={UI.cx(alignRight && "r-align")}>
         {title}
         {sortButtons}
       </UI.Flex>

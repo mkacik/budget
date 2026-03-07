@@ -77,7 +77,7 @@ function SpendingTableHeaderRow({
       });
     };
     const cell = (
-      <th key={month} className="r-align nowrap td-button" onClick={onClick}>
+      <th key={month} className="r-align nowrap table-button" onClick={onClick}>
         {month}
       </th>
     );
@@ -158,7 +158,7 @@ function SpendingTableUncategorizedRow({
     });
   };
   const headerCell = (
-    <td className="td-button" onClick={headerCellOnClick}>
+    <td className="table-button" onClick={headerCellOnClick}>
       <i>uncategorized</i>
     </td>
   );
@@ -224,7 +224,7 @@ function SpendingTableRow({
     });
   };
   const headerCell = (
-    <td className="td-button" onClick={headerCellOnClick}>
+    <td className="table-button" onClick={headerCellOnClick}>
       <UI.Flex>
         {!isCategory && <UI.Indent />}
         {obj.name}
@@ -327,7 +327,7 @@ export function MonthlySpendingTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <table>
+    <UI.Table>
       <SpendingTableColgroup hasFunds={hasFunds} />
 
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
@@ -357,6 +357,6 @@ export function MonthlySpendingTable({
           yearlyBudget={budget.amountPerYear}
         />
       </tfoot>
-    </table>
+    </UI.Table>
   );
 }

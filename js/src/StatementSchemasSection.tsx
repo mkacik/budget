@@ -180,14 +180,14 @@ function StatementSchemasTable({
   });
 
   return (
-    <table className="large">
+    <UI.Table largeFont striped>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>
         </tr>
       </thead>
       <tbody>{rows}</tbody>
-    </table>
+    </UI.Table>
   );
 }
 

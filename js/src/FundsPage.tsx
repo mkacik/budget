@@ -82,7 +82,7 @@ function FundsTable({
   }
 
   return (
-    <table className="large">
+    <UI.Table largeFont>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>
@@ -91,7 +91,7 @@ function FundsTable({
         </tr>
       </thead>
       <tbody>{rows}</tbody>
-    </table>
+    </UI.Table>
   );
 }
 

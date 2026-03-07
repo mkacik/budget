@@ -194,7 +194,7 @@ function AccountsTable({
   });
 
   return (
-    <table className="large">
+    <UI.Table largeFont striped>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>
@@ -203,7 +203,7 @@ function AccountsTable({
         </tr>
       </thead>
       <tbody>{rows}</tbody>
-    </table>
+    </UI.Table>
   );
 }
 

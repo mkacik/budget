@@ -73,7 +73,7 @@ function CategorizationTable({
   }
 
   return (
-    <table className="compact large">
+    <UI.Table largeFont striped condensed>
       <thead>
         <tr>
           <td>Key</td>
@@ -81,7 +81,7 @@ function CategorizationTable({
         </tr>
       </thead>
       <tbody>{rows}</tbody>
-    </table>
+    </UI.Table>
   );
 }
 
@@ -157,7 +157,7 @@ function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
 
 function Expense({ expense }: { expense: ExpenseView }) {
   return (
-    <table className="large">
+    <UI.Table largeFont>
       <colgroup>
         <UI.Col widthPct={1} />
         <col />
@@ -185,7 +185,7 @@ function Expense({ expense }: { expense: ExpenseView }) {
           </tr>
         )}
       </tbody>
-    </table>
+    </UI.Table>
   );
 }
 

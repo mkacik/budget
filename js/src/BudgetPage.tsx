@@ -121,7 +121,7 @@ export function BudgetTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <table className="large">
+    <UI.Table largeFont>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         {header}
       </thead>
@@ -129,7 +129,7 @@ export function BudgetTable({
       <tfoot>
         {showAmounts && <BudgetTableFooter amountPerYear={amountPerYear} />}
       </tfoot>
-    </table>
+    </UI.Table>
   );
 }
 

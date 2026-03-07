@@ -20,8 +20,11 @@ import {
   IconTrash,
   IconUpload,
 } from "@tabler/icons-react";
+export { Table } from "./Table";
 
-function cx(...args: Array<string | null | undefined>): string | undefined {
+export function cx(
+  ...args: Array<string | null | undefined | false>
+): string | undefined {
   const classNames = args.filter((arg) => arg && arg.trim());
   if (classNames.length === 0) {
     return undefined;
@@ -273,7 +276,7 @@ export function CurrencyCell({
     classNames += " soft";
   }
   if (onClick) {
-    classNames += " td-button";
+    classNames += " table-button";
   }
   if (tooltip) {
     classNames += " tooltip-cell";

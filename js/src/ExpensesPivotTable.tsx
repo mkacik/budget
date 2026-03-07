@@ -18,7 +18,7 @@ export function ExpensesPivotTable({
   }
 
   return (
-    <table>
+    <UI.Table striped>
       <thead>
         <tr>
           <td>Account</td>
@@ -38,6 +38,6 @@ export function ExpensesPivotTable({
             </tr>
           ))}
       </tbody>
-    </table>
+    </UI.Table>
   );
 }

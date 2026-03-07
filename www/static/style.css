@@ -270,12 +270,6 @@ pre {
   font-size: var(--font-content-large);
 }
 
-.compact {
-  td {
-    padding: var(--padding-small);
-  }
-}
-
 table {
   width: 100%;
   border: none;
@@ -343,43 +337,33 @@ table {
     text-align: right;
   }
 
-  .td-button {
+  .table-button {
     cursor: pointer;
 
     &:hover {
       background-color: var(--color-hover-dark);
     }
   }
-}
-
-.v-top {
-  align-items: flex-start !important;
-}
-
-.expenses-table {
-  tr:nth-child(even) {
-    background-color: var(--color-table-row);
-  }
-
-  tbody {
-    tr {
-      &:hover {
-        cursor: pointer;
-      }
-    }
-  }
-
-  .category {
-    padding: var(--padding-small);
-  }
-
-  td {
-    vertical-align: top;
-  }
 
   .active-row {
     background-color: var(--color-hover-dark) !important;
   }
+}
+
+table.condensed {
+  td {
+    padding: var(--padding-small);
+  }
+}
+
+table.striped {
+  tr:nth-child(even) {
+    background-color: var(--color-table-row);
+  }
+}
+
+.v-top {
+  align-items: flex-start !important;
 }
 
 .login-container {
