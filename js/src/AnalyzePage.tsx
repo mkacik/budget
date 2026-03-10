@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Fund, ExpensesQuery, SpendingData } from "./generated/types";
 
@@ -23,9 +23,9 @@ export function AnalyzePage({
   funds: Array<Fund>;
 }) {
   const [data, setData] = useState<MonthlySpendingData | null>(null);
-
   const [expensesQuery, setExpensesQuery] =
     useState<TitledExpensesQuery | null>(null);
+  const expensesRef = useRef<HTMLDivElement>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -43,6 +43,18 @@ export function AnalyzePage({
     fetchData();
   }, []);
 
+  const scrollToExpensesTable = () => {
+    const node = expensesRef.current;
+    if (node === null) {
+      return;
+    }
+    node.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "start",
+    });
+  };
+
   return (
     <>
       <UI.Section title="Analyze spending">
@@ -55,12 +67,15 @@ export function AnalyzePage({
           />
         )}
       </UI.Section>
+
       {data && expensesQuery && (
         <UI.Section title={expensesQuery.title}>
+          <div ref={expensesRef}></div>
           <ExpensesList
             query={expensesQuery as ExpensesQuery}
             budget={budget}
             onExpenseCategoryChange={fetchData}
+            onExpensesFetched={scrollToExpensesTable}
           />
         </UI.Section>
       )}

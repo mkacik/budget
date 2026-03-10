@@ -47,10 +47,12 @@ export function ExpensesList({
   budget,
   query,
   onExpenseCategoryChange,
+  onExpensesFetched,
 }: {
   budget: BudgetView;
   query: ExpensesQuery;
   onExpenseCategoryChange?: () => void;
+  onExpensesFetched?: () => void;
 }) {
   const [expenses, setExpenses] = useState<Array<ExpenseView>>([]);
   const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
@@ -67,13 +69,17 @@ export function ExpensesList({
         body: JSON.stringify(query),
       });
 
-      fetchHelper.fetch(request, (json) => {
+      await fetchHelper.fetch(request, (json) => {
         const result = json as Expenses;
         const expenses = parseExpenses(result.expenses, accounts);
         const sortComparator = getSortComparator(sortBy);
         const sortedExpenses = expenses.toSorted(sortComparator);
         setExpenses(sortedExpenses);
       });
+
+      if (onExpensesFetched) {
+        onExpensesFetched();
+      }
     } catch (error) {
       fetchHelper.handleError(error);
     }
