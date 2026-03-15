@@ -180,7 +180,7 @@ function StatementSchemasTable({
   });
 
   return (
-    <UI.Table largeFont striped>
+    <UI.Table fontSize="large" striped>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>

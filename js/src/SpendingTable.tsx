@@ -23,7 +23,7 @@ function SpendingTableColgroup() {
   return (
     <colgroup>
       <UI.Col />
-      {Array(14) // 12 months + total + funds = 14 cols
+      {Array(15)
         .fill(0)
         .map((month, idx) => (
           <UI.Col key={idx} widthPct={6} />
@@ -61,22 +61,23 @@ function SpendingTableHeaderRow({
       <th>Name</th>
       {cells}
       <th className="r-align">TOTAL</th>
-      <th className="r-align">+funds</th>
+      <th className="r-align">+ funds</th>
+      <th className="r-align">BUDGET</th>
     </tr>
   );
 }
 
 function SpendingTableFooterRow({
-  year,
   data,
+  budget,
   updateExpensesQuery,
 }: {
-  year: number;
   data: MonthlySpendingData;
+  budget: BudgetView;
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const cells: Array<React.ReactNode> = [];
-  for (const month of getMonths(year)) {
+  for (const month of getMonths(budget.year)) {
     const onClick = () => {
       updateExpensesQuery({
         title: `${month} :: all (excluding expenses in ignored categories)`,
@@ -84,10 +85,9 @@ function SpendingTableFooterRow({
         selector: { variant: "AllNotIgnored" },
       });
     };
-    const key = month;
     const cell = (
       <UI.CurrencyCell
-        key={key}
+        key={month}
         value={data.getMonthTotal(month)}
         onClick={onClick}
       />
@@ -101,6 +101,7 @@ function SpendingTableFooterRow({
       {cells}
       <UI.CurrencyCell value={data.getTotalSpend()} />
       <UI.CurrencyCell value={data.getTotalSpendInclFunds()} />
+      <UI.CurrencyCell value={budget.amountPerYear} />
     </tr>
   );
 }
@@ -150,76 +151,130 @@ function SpendingTableUncategorizedRow({
       {cells}
       <UI.CurrencyCell value={total} onClick={headerCellOnClick} />
       <UI.CurrencyCell value={data.getUncategorizedTotal()} />
+      <UI.CurrencyCell value={0} />
     </tr>
   );
 }
 
-function SpendingTableRow({
-  obj,
-  year,
+function SpendingTableCategoryRow({
+  category,
   data,
   updateExpensesQuery,
 }: {
-  obj: BudgetItemView | BudgetCategoryView;
-  year: number;
+  category: BudgetCategoryView;
   data: MonthlySpendingData;
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
-  const isCategory = obj instanceof BudgetCategoryView;
-
+  const year = category.year;
   const headerCellOnClick = () => {
     updateExpensesQuery({
-      title: `${year} :: ${obj.displayName}`,
+      title: `${year} :: ${category.name}`,
       period: year.toString(),
       selector: {
-        variant: isCategory ? "BudgetCategory" : "BudgetItem",
-        id: obj.id,
+        variant: "BudgetCategory",
+        id: category.id,
+      },
+    });
+  };
+  const headerCell = (
+    <td className="table-button" onClick={headerCellOnClick}>
+      {category.name}
+    </td>
+  );
+
+  const cells: Array<React.ReactNode> = [];
+  for (const month of getMonths(year)) {
+    const onClick = () => {
+      updateExpensesQuery({
+        title: `${month} :: ${category.displayName}`,
+        period: month,
+        selector: {
+          variant: "BudgetCategory",
+          id: category.id,
+        },
+      });
+    };
+    cells.push(
+      <UI.CurrencyCell
+        key={month}
+        value={data.getCategorySpend(category.id, month)}
+        onClick={onClick}
+      />,
+    );
+  }
+
+  const totalSpend = data.getCategoryTotal(category.id);
+  const totalSpendInclFunds = data.getCategoryTotalInclFunds(category.id);
+
+  return (
+    <tr className="bold highlight">
+      {headerCell}
+      {cells}
+      <UI.CurrencyCell value={totalSpend} onClick={headerCellOnClick} />
+      <UI.CurrencyCell value={totalSpendInclFunds} />
+      <UI.CurrencyCell value={category.amountPerYear} />
+    </tr>
+  );
+}
+
+function SpendingTableItemRow({
+  item,
+  data,
+  updateExpensesQuery,
+}: {
+  item: BudgetItemView;
+  data: MonthlySpendingData;
+  updateExpensesQuery: (TitledExpensesQuery) => void;
+}) {
+  const year = item.year;
+  const headerCellOnClick = () => {
+    updateExpensesQuery({
+      title: `${year} :: ${item.displayName}`,
+      period: year.toString(),
+      selector: {
+        variant: "BudgetItem",
+        id: item.id,
       },
     });
   };
   const headerCell = (
     <td className="table-button" onClick={headerCellOnClick}>
       <UI.Flex>
-        {!isCategory && <UI.Indent />}
-        {obj.name}
+        <UI.Indent />
+        {item.name}
       </UI.Flex>
     </td>
   );
 
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
-    const spend = isCategory
-      ? data.getCategorySpend(obj.id, month)
-      : data.getItemSpend(obj.id, month);
     const onClick = () => {
       updateExpensesQuery({
-        title: `${month} :: ${obj.displayName}`,
+        title: `${month} :: ${item.displayName}`,
         period: month,
         selector: {
-          variant: isCategory ? "BudgetCategory" : "BudgetItem",
-          id: obj.id,
+          variant: "BudgetItem",
+          id: item.id,
         },
       });
     };
-    const key = month;
-    const cell = <UI.CurrencyCell key={key} value={spend} onClick={onClick} />;
+    const spend = data.getItemSpend(item.id, month);
+    const cell = (
+      <UI.CurrencyCell key={month} value={spend} onClick={onClick} />
+    );
     cells.push(cell);
   }
 
-  const totalSpend = isCategory
-    ? data.getCategoryTotal(obj.id)
-    : data.getItemTotal(obj.id);
-
-  const totalSpendInclFunds = isCategory
-    ? data.getCategoryTotalInclFunds(obj.id)
-    : data.getItemTotalInclFunds(obj.id);
+  const totalSpend = data.getItemTotal(item.id);
+  const totalSpendInclFunds = data.getItemTotalInclFunds(item.id);
 
   return (
-    <tr className={isCategory ? "bold highlight" : ""}>
+    <tr>
       {headerCell}
       {cells}
       <UI.CurrencyCell value={totalSpend} onClick={headerCellOnClick} />
       <UI.CurrencyCell value={totalSpendInclFunds} />
+      <UI.CurrencyCell value={item.amountPerYear} />
     </tr>
   );
 }
@@ -238,10 +293,9 @@ export function SpendingTable({
   const rows: Array<React.ReactNode> = [];
   for (const category of budget.categories) {
     rows.push(
-      <SpendingTableRow
+      <SpendingTableCategoryRow
         key={`${category.id}`}
-        obj={category}
-        year={year}
+        category={category}
         data={data}
         updateExpensesQuery={updateExpensesQuery}
       />,
@@ -252,10 +306,9 @@ export function SpendingTable({
         continue;
       }
       rows.push(
-        <SpendingTableRow
+        <SpendingTableItemRow
           key={`${category.id}-${item.id}`}
-          obj={item}
-          year={year}
+          item={item}
           data={data}
           updateExpensesQuery={updateExpensesQuery}
         />,
@@ -266,7 +319,7 @@ export function SpendingTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <UI.Table softZeros>
+    <UI.Table fontSize="small" softZeros>
       <SpendingTableColgroup />
 
       <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
@@ -287,8 +340,8 @@ export function SpendingTable({
 
       <tfoot>
         <SpendingTableFooterRow
-          year={year}
           data={data}
+          budget={budget}
           updateExpensesQuery={updateExpensesQuery}
         />
       </tfoot>

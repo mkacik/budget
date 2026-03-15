@@ -3,23 +3,23 @@ import React from "react";
 import { cx } from "./Common";
 
 function TableRoot({
+  fontSize,
   condensed,
-  largeFont,
   softZeros,
   striped,
   topAligned,
   children,
 }: {
+  fontSize?: "small" | "large";
   condensed?: boolean;
-  largeFont?: boolean;
   softZeros?: boolean;
   striped?: boolean;
   topAligned?: boolean;
   children: React.ReactNode;
 }) {
   const classNames = cx(
+    fontSize,
     condensed && "condensed",
-    largeFont && "large",
     softZeros && "soft-zeros",
     striped && "striped",
     topAligned && "v-top",

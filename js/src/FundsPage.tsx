@@ -84,7 +84,7 @@ function FundsTable({
   }
 
   return (
-    <UI.Table largeFont softZeros>
+    <UI.Table fontSize="large" softZeros>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>

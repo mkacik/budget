@@ -56,6 +56,7 @@ export type BudgetCloneRequest = { from_year: number; to_year: number };
 
 export type BudgetItem = {
   id: number;
+  year: number;
   ignored: boolean;
   display_name: string;
   category_id: number;
@@ -74,9 +75,9 @@ export type BudgetItemFields = {
 };
 
 export type BudgetItemWithSpend = {
-  year: number;
   spend: number;
   id: number;
+  year: number;
   ignored: boolean;
   display_name: string;
   category_id: number;

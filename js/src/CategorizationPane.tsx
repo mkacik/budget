@@ -73,7 +73,7 @@ function CategorizationTable({
   }
 
   return (
-    <UI.Table largeFont striped condensed>
+    <UI.Table fontSize="large" striped condensed>
       <thead>
         <tr>
           <td>Key</td>
@@ -157,7 +157,7 @@ function BudgetItemSelectOptions({ budget }: { budget: BudgetView }) {
 
 function Expense({ expense }: { expense: ExpenseView }) {
   return (
-    <UI.Table largeFont>
+    <UI.Table fontSize="large">
       <colgroup>
         <UI.Col widthPct={1} />
         <col />

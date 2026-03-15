@@ -71,6 +71,10 @@ export class BudgetItemView {
   get isCategorizationOnly() {
     return this.item.allowance === null && !this.item.ignored;
   }
+
+  get year() {
+    return this.item.year;
+  }
 }
 
 export class BudgetCategoryView {
@@ -112,6 +116,10 @@ export class BudgetCategoryView {
 
   get displayName() {
     return this.category.name;
+  }
+
+  get year() {
+    return this.category.year;
   }
 }
 

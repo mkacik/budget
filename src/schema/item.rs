@@ -30,6 +30,7 @@ pub struct BudgetItemFields {
 #[ts(export_to = TS_FILE)]
 pub struct BudgetItem {
     pub id: ID,
+    pub year: i32,            // computed, inherited from Category
     pub ignored: bool,        // computed, inherited from Category
     pub display_name: String, // computed, {category_name} :: {name}
 
@@ -42,7 +43,6 @@ pub struct BudgetItem {
 #[derive(Debug, FromRow, Deserialize, Serialize, TS)]
 #[ts(export_to = TS_FILE)]
 pub struct BudgetItemWithSpend {
-    pub year: i32, // computed, inherited from Category
     pub spend: CentAmount,
 
     #[serde(flatten)]

@@ -368,6 +368,10 @@ table.soft-zeros {
   }
 }
 
+table.small {
+  font-size: var(--font-content-small);
+}
+
 .v-top {
   align-items: flex-start !important;
 }
