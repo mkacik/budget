@@ -15,7 +15,7 @@ import { FundForm } from "./FundForm";
 import { FetchHelper } from "./Common";
 import { FundsView } from "./FundsView";
 import { ExpensesList } from "./ExpensesList";
-import { TitledExpensesQuery } from "./MonthlySpendingTable";
+import { TitledExpensesQuery } from "./SpendingTable";
 
 import * as UI from "./ui/Common";
 

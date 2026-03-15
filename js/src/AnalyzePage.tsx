@@ -6,10 +6,7 @@ import { Fund, ExpensesQuery, SpendingData } from "./generated/types";
 import { FundsView } from "./FundsView";
 import { BudgetView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
-import {
-  TitledExpensesQuery,
-  MonthlySpendingTable,
-} from "./MonthlySpendingTable";
+import { TitledExpensesQuery, SpendingTable } from "./SpendingTable";
 import { ExpensesList } from "./ExpensesList";
 import { FetchHelper } from "./Common";
 
@@ -60,7 +57,7 @@ export function AnalyzePage({
       <UI.Section title="Analyze spending">
         <UI.ErrorCard message={errorMessage} />
         {data && (
-          <MonthlySpendingTable
+          <SpendingTable
             data={data}
             budget={budget}
             updateExpensesQuery={setExpensesQuery}

@@ -224,7 +224,7 @@ function SpendingTableRow({
   );
 }
 
-export function MonthlySpendingTable({
+export function SpendingTable({
   data,
   budget,
   updateExpensesQuery,
