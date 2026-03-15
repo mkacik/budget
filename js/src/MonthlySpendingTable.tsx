@@ -19,13 +19,11 @@ function getMonths(year: number): Array<string> {
   });
 }
 
-function SpendingTableColgroup({ hasFunds }: { hasFunds: boolean }) {
-  // 13/14 -> 12 months + total + optional funds
-  const columnCount = hasFunds ? 14 : 13;
+function SpendingTableColgroup() {
   return (
     <colgroup>
       <UI.Col />
-      {Array(columnCount)
+      {Array(14) // 12 months + total + funds = 14 cols
         .fill(0)
         .map((month, idx) => (
           <UI.Col key={idx} widthPct={6} />
@@ -34,37 +32,11 @@ function SpendingTableColgroup({ hasFunds }: { hasFunds: boolean }) {
   );
 }
 
-function SpendingTableCell({
-  spend,
-  limit,
-  onClick,
-}: {
-  spend: number;
-  limit: number | null;
-  onClick?: () => void;
-}) {
-  if (!limit) {
-    return <UI.CurrencyCell value={spend} onClick={onClick} />;
-  }
-
-  const tooltip = `budgeted: ${UI.formatCurrency(limit)}`;
-  return (
-    <UI.CurrencyCell
-      value={spend}
-      onClick={onClick}
-      tooltip={tooltip}
-      className={spend > limit ? "red" : undefined}
-    />
-  );
-}
-
 function SpendingTableHeaderRow({
   year,
-  hasFunds,
   updateExpensesQuery,
 }: {
   year: number;
-  hasFunds: boolean;
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const cells: Array<React.ReactNode> = [];
@@ -89,7 +61,7 @@ function SpendingTableHeaderRow({
       <th>Name</th>
       {cells}
       <th className="r-align">TOTAL</th>
-      {hasFunds && <th className="r-align">+funds</th>}
+      <th className="r-align">+funds</th>
     </tr>
   );
 }
@@ -97,15 +69,11 @@ function SpendingTableHeaderRow({
 function SpendingTableFooterRow({
   year,
   data,
-  hasFunds,
   updateExpensesQuery,
-  yearlyBudget,
 }: {
   year: number;
   data: MonthlySpendingData;
-  hasFunds: boolean;
   updateExpensesQuery: (TitledExpensesQuery) => void;
-  yearlyBudget: number;
 }) {
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
@@ -116,11 +84,11 @@ function SpendingTableFooterRow({
         selector: { variant: "AllNotIgnored" },
       });
     };
+    const key = month;
     const cell = (
-      <SpendingTableCell
-        key={month}
-        spend={data.getMonthTotal(month)}
-        limit={null}
+      <UI.CurrencyCell
+        key={key}
+        value={data.getMonthTotal(month)}
         onClick={onClick}
       />
     );
@@ -131,10 +99,8 @@ function SpendingTableFooterRow({
     <tr>
       <th>TOTAL</th>
       {cells}
-      <SpendingTableCell spend={data.getTotalSpend()} limit={yearlyBudget} />
-      {hasFunds && (
-        <SpendingTableCell spend={data.getTotalSpendInclFunds()} limit={null} />
-      )}
+      <UI.CurrencyCell value={data.getTotalSpend()} />
+      <UI.CurrencyCell value={data.getTotalSpendInclFunds()} />
     </tr>
   );
 }
@@ -142,12 +108,10 @@ function SpendingTableFooterRow({
 function SpendingTableUncategorizedRow({
   year,
   data,
-  hasFunds,
   updateExpensesQuery,
 }: {
   year: number;
   data: MonthlySpendingData;
-  hasFunds: boolean;
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const headerCellOnClick = () => {
@@ -173,14 +137,8 @@ function SpendingTableUncategorizedRow({
         selector: { variant: "Uncategorized" },
       });
     };
-    const cell = (
-      <SpendingTableCell
-        key={month}
-        spend={spend}
-        limit={0}
-        onClick={onClick}
-      />
-    );
+    const key = month;
+    const cell = <UI.CurrencyCell key={key} value={spend} onClick={onClick} />;
     cells.push(cell);
   }
 
@@ -190,10 +148,8 @@ function SpendingTableUncategorizedRow({
     <tr className="bold highlight">
       {headerCell}
       {cells}
-      <SpendingTableCell spend={total} limit={0} onClick={headerCellOnClick} />
-      {hasFunds && (
-        <SpendingTableCell spend={data.getUncategorizedTotal()} limit={null} />
-      )}
+      <UI.CurrencyCell value={total} onClick={headerCellOnClick} />
+      <UI.CurrencyCell value={data.getUncategorizedTotal()} />
     </tr>
   );
 }
@@ -202,13 +158,11 @@ function SpendingTableRow({
   obj,
   year,
   data,
-  hasFunds,
   updateExpensesQuery,
 }: {
   obj: BudgetItemView | BudgetCategoryView;
   year: number;
   data: MonthlySpendingData;
-  hasFunds: boolean;
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const isCategory = obj instanceof BudgetCategoryView;
@@ -247,14 +201,8 @@ function SpendingTableRow({
         },
       });
     };
-    const cell = (
-      <SpendingTableCell
-        key={month}
-        spend={spend}
-        limit={null}
-        onClick={onClick}
-      />
-    );
+    const key = month;
+    const cell = <UI.CurrencyCell key={key} value={spend} onClick={onClick} />;
     cells.push(cell);
   }
 
@@ -270,14 +218,8 @@ function SpendingTableRow({
     <tr className={isCategory ? "bold highlight" : ""}>
       {headerCell}
       {cells}
-      <SpendingTableCell
-        spend={totalSpend}
-        limit={obj.amountPerYear}
-        onClick={headerCellOnClick}
-      />
-      {hasFunds && (
-        <SpendingTableCell spend={totalSpendInclFunds} limit={null} />
-      )}
+      <UI.CurrencyCell value={totalSpend} onClick={headerCellOnClick} />
+      <UI.CurrencyCell value={totalSpendInclFunds} />
     </tr>
   );
 }
@@ -292,7 +234,6 @@ export function MonthlySpendingTable({
   updateExpensesQuery: (TitledExpensesQuery) => void;
 }) {
   const year = budget.year;
-  const hasFunds = budget.hasFunds;
 
   const rows: Array<React.ReactNode> = [];
   for (const category of budget.categories) {
@@ -302,7 +243,6 @@ export function MonthlySpendingTable({
         obj={category}
         year={year}
         data={data}
-        hasFunds={hasFunds}
         updateExpensesQuery={updateExpensesQuery}
       />,
     );
@@ -317,7 +257,6 @@ export function MonthlySpendingTable({
           obj={item}
           year={year}
           data={data}
-          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />,
       );
@@ -327,13 +266,12 @@ export function MonthlySpendingTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <UI.Table>
-      <SpendingTableColgroup hasFunds={hasFunds} />
+    <UI.Table softZeros>
+      <SpendingTableColgroup />
 
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+      <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
         <SpendingTableHeaderRow
           year={year}
-          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />
       </thead>
@@ -343,7 +281,6 @@ export function MonthlySpendingTable({
         <SpendingTableUncategorizedRow
           year={year}
           data={data}
-          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
         />
       </tbody>
@@ -352,9 +289,7 @@ export function MonthlySpendingTable({
         <SpendingTableFooterRow
           year={year}
           data={data}
-          hasFunds={hasFunds}
           updateExpensesQuery={updateExpensesQuery}
-          yearlyBudget={budget.amountPerYear}
         />
       </tfoot>
     </UI.Table>

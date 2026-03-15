@@ -362,6 +362,12 @@ table.striped {
   }
 }
 
+table.soft-zeros {
+  .zero {
+    color: var(--color-table-border);
+  }
+}
+
 .v-top {
   align-items: flex-start !important;
 }

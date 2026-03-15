@@ -121,8 +121,8 @@ export function BudgetTable({
   const useStickyHeaders = useAppSettingsContext().stickyHeaders;
 
   return (
-    <UI.Table largeFont>
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+    <UI.Table largeFont softZeros>
+      <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
         {header}
       </thead>
       <tbody>{children}</tbody>

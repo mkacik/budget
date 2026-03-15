@@ -57,6 +57,8 @@ function FundsTable({
 
     const fundItems = fundsView.getItems(fund.id);
     for (const item of fundItems) {
+      const key = `item:${item.id}`;
+
       const displayName = `${item.year} :: ${item.display_name}`;
       const showItemExpenses = () => {
         setExpensesQuery({
@@ -66,7 +68,7 @@ function FundsTable({
         });
       };
       const row = (
-        <tr key={`item:${item.id}`}>
+        <tr key={key}>
           <td>
             <UI.Flex>
               <UI.Indent />
@@ -82,7 +84,7 @@ function FundsTable({
   }
 
   return (
-    <UI.Table largeFont>
+    <UI.Table largeFont softZeros>
       <thead className={useStickyHeaders ? "sticky-header" : undefined}>
         <tr>
           <th>Name</th>

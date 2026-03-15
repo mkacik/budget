@@ -259,39 +259,24 @@ export function formatCurrency(value: number) {
 export function CurrencyCell({
   value,
   onClick,
-  tooltip,
   className,
   style,
-  softNegatives = true,
 }: {
   value: number;
   onClick?: () => void;
-  tooltip?: string;
   className?: string;
   style?: React.CSSProperties;
-  softNegatives?: boolean;
 }) {
-  let classNames = "number r-align";
-  if (softNegatives && value <= 0) {
-    classNames += " soft";
-  }
-  if (onClick) {
-    classNames += " table-button";
-  }
-  if (tooltip) {
-    classNames += " tooltip-cell";
-  }
-  if (className) {
-    classNames += " " + className;
-  }
+  const classNames = cx(
+    "number",
+    "r-align",
+    value <= 0 && "zero",
+    onClick && "table-button",
+    className,
+  );
 
   return (
-    <td
-      className={classNames}
-      onClick={onClick}
-      data-tooltip={tooltip}
-      style={style}
-    >
+    <td className={classNames} onClick={onClick} style={style}>
       {formatCurrency(value)}
     </td>
   );

@@ -42,7 +42,7 @@ function ExpenseRowCells({
 
       <td>{budgetItemName}</td>
 
-      <UI.CurrencyCell value={expense.amount} softNegatives={false} />
+      <UI.CurrencyCell value={expense.amount} />
 
       {accounts && <td>{accounts.getAccount(expense.account_id).name}</td>}
 
