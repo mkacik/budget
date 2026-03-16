@@ -9,7 +9,6 @@ import {
 } from "./generated/types";
 
 import { AccountView, AccountsView } from "./AccountsView";
-import { useAppSettingsContext } from "./AppSettings";
 
 import {
   Form,
@@ -172,8 +171,6 @@ function AccountsTable({
   accounts: Array<AccountView>;
   editAccount: (account: Account | null) => void;
 }) {
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   const rows = accounts.map((account) => {
     const schema = account.statementSchema?.name;
     return (
@@ -195,7 +192,7 @@ function AccountsTable({
 
   return (
     <UI.Table fontSize="large" striped>
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+      <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>

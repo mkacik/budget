@@ -21,8 +21,8 @@ export function ExpensesPivotTable({
     <UI.Table striped>
       <thead>
         <tr>
-          <td>Account</td>
-          <td className="r-align">Total</td>
+          <th>Account breakdown</th>
+          <th className="r-align">Total</th>
         </tr>
       </thead>
       <tbody>

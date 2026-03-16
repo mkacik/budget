@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Fund } from "./generated/types";
 
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
-import { useAppSettingsContext } from "./AppSettings";
 import { BudgetCloneForm } from "./BudgetCloneForm";
 import { BudgetCategoryForm } from "./BudgetCategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
@@ -118,13 +117,9 @@ export function BudgetTable({
     </tr>
   );
 
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   return (
     <UI.Table fontSize="large" softZeros>
-      <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
-        {header}
-      </thead>
+      <thead>{header}</thead>
       <tbody>{children}</tbody>
       <tfoot>
         {showAmounts && <BudgetTableFooter amountPerYear={amountPerYear} />}

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { ExpenseView } from "./ExpenseView";
 
 import { AccountsView } from "./AccountsView";
-import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView } from "./BudgetView";
 import { SortBy, SortField, SortOrder } from "./ExpensesSort";
 
@@ -171,8 +170,6 @@ export function ExpensesTable({
 
   const showAccount = settings.showAccount;
 
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   return (
     <>
       <UI.Table striped topAligned>
@@ -184,7 +181,7 @@ export function ExpensesTable({
           <UI.Col />
         </colgroup>
 
-        <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
+        <thead>
           <tr>
             <HeaderCell
               title="Date"

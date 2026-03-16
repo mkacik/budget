@@ -76,8 +76,8 @@ function CategorizationTable({
     <UI.Table fontSize="large" striped condensed>
       <thead>
         <tr>
-          <td>Key</td>
-          <td>Category</td>
+          <th>Key</th>
+          <th>Category</th>
         </tr>
       </thead>
       <tbody>{rows}</tbody>

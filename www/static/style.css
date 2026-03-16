@@ -274,7 +274,6 @@ table {
   width: 100%;
   border: none;
   border-spacing: 0;
-  border-collapse: collapse;
   text-align: left;
 
   thead,
@@ -283,9 +282,13 @@ table {
     background-color: var(--color-table-header);
   }
 
-  tr {
-    border-bottom: 1px solid var(--color-table-border);
-    border-top: 1px solid var(--color-table-border);
+  thead {
+    position: sticky;
+    top: -1rem;
+
+    th {
+      border-top: 1px solid var(--color-table-border);
+    }
   }
 
   tbody {
@@ -297,15 +300,12 @@ table {
   }
 
   th {
+    border-bottom: 1px solid var(--color-table-border);
     padding: var(--padding-medium);
   }
 
-  thead.sticky-header {
-    position: sticky;
-    top: -1rem;
-  }
-
   td {
+    border-bottom: 1px solid var(--color-table-border);
     padding: var(--padding-medium);
   }
 
@@ -347,6 +347,14 @@ table {
 
   .active-row {
     background-color: var(--color-hover-dark) !important;
+  }
+
+  .l-border {
+    border-left: 1px solid var(--color-table-border);
+  }
+
+  .r-border {
+    border-right: 1px solid var(--color-table-border);
   }
 }
 

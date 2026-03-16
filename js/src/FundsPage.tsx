@@ -10,7 +10,6 @@ import {
 } from "./generated/types";
 
 import { getAmountPerYear, BudgetView } from "./BudgetView";
-import { useAppSettingsContext } from "./AppSettings";
 import { FundForm } from "./FundForm";
 import { FetchHelper } from "./Common";
 import { FundsView } from "./FundsView";
@@ -35,8 +34,6 @@ function FundsTable({
   editFund: (fund: Fund | null) => void;
   setExpensesQuery: (query: TitledExpensesQuery) => void;
 }) {
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   const fundsView = new FundsView(funds, items);
 
   const rows: Array<React.ReactNode> = [];
@@ -85,7 +82,7 @@ function FundsTable({
 
   return (
     <UI.Table fontSize="large" softZeros>
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+      <thead>
         <tr>
           <th>Name</th>
           <th className="r-align">Allowance</th>

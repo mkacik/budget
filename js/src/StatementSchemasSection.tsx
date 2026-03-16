@@ -20,7 +20,6 @@ import {
   LabeledTextArea,
 } from "./ui/Form";
 import { FetchHelper, JSON_HEADERS } from "./Common";
-import { useAppSettingsContext } from "./AppSettings";
 
 import * as UI from "./ui/Common";
 
@@ -161,8 +160,6 @@ function StatementSchemasTable({
   schemas: Array<StatementSchema>;
   editSchema: (schema: StatementSchema | null) => void;
 }) {
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   const rows = schemas.map((schema) => {
     return (
       <tr key={schema.id}>
@@ -181,7 +178,7 @@ function StatementSchemasTable({
 
   return (
     <UI.Table fontSize="large" striped>
-      <thead className={useStickyHeaders ? "sticky-header" : undefined}>
+      <thead>
         <tr>
           <th>Name</th>
         </tr>

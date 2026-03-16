@@ -2,7 +2,6 @@ import React from "react";
 
 import { ExpensesQuery } from "./generated/types";
 
-import { useAppSettingsContext } from "./AppSettings";
 import { BudgetView, BudgetCategoryView, BudgetItemView } from "./BudgetView";
 import { MonthlySpendingData } from "./MonthlySpendingData";
 
@@ -58,9 +57,9 @@ function SpendingTableHeaderRow({
 
   return (
     <tr>
-      <th>Name</th>
+      <th className="r-border">Name</th>
       {cells}
-      <th className="r-align">TOTAL</th>
+      <th className="r-align l-border">TOTAL</th>
       <th className="r-align">+ funds</th>
       <th className="r-align">BUDGET</th>
     </tr>
@@ -97,9 +96,9 @@ function SpendingTableFooterRow({
 
   return (
     <tr>
-      <th>TOTAL</th>
+      <td className="r-border">TOTAL</td>
       {cells}
-      <UI.CurrencyCell value={data.getTotalSpend()} />
+      <UI.CurrencyCell value={data.getTotalSpend()} className="l-border" />
       <UI.CurrencyCell value={data.getTotalSpendInclFunds()} />
       <UI.CurrencyCell value={budget.amountPerYear} />
     </tr>
@@ -122,11 +121,6 @@ function SpendingTableUncategorizedRow({
       selector: { variant: "Uncategorized" },
     });
   };
-  const headerCell = (
-    <td className="table-button" onClick={headerCellOnClick}>
-      <i>uncategorized</i>
-    </td>
-  );
 
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
@@ -147,9 +141,15 @@ function SpendingTableUncategorizedRow({
 
   return (
     <tr className="bold highlight">
-      {headerCell}
+      <td className="table-button r-border" onClick={headerCellOnClick}>
+        <i>uncategorized</i>
+      </td>
       {cells}
-      <UI.CurrencyCell value={total} onClick={headerCellOnClick} />
+      <UI.CurrencyCell
+        value={total}
+        onClick={headerCellOnClick}
+        className="l-border"
+      />
       <UI.CurrencyCell value={data.getUncategorizedTotal()} />
       <UI.CurrencyCell value={0} />
     </tr>
@@ -176,11 +176,6 @@ function SpendingTableCategoryRow({
       },
     });
   };
-  const headerCell = (
-    <td className="table-button" onClick={headerCellOnClick}>
-      {category.name}
-    </td>
-  );
 
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
@@ -208,9 +203,15 @@ function SpendingTableCategoryRow({
 
   return (
     <tr className="bold highlight">
-      {headerCell}
+      <td className="table-button r-border" onClick={headerCellOnClick}>
+        {category.name}
+      </td>
       {cells}
-      <UI.CurrencyCell value={totalSpend} onClick={headerCellOnClick} />
+      <UI.CurrencyCell
+        value={totalSpend}
+        onClick={headerCellOnClick}
+        className="l-border"
+      />
       <UI.CurrencyCell value={totalSpendInclFunds} />
       <UI.CurrencyCell value={category.amountPerYear} />
     </tr>
@@ -237,14 +238,6 @@ function SpendingTableItemRow({
       },
     });
   };
-  const headerCell = (
-    <td className="table-button" onClick={headerCellOnClick}>
-      <UI.Flex>
-        <UI.Indent />
-        {item.name}
-      </UI.Flex>
-    </td>
-  );
 
   const cells: Array<React.ReactNode> = [];
   for (const month of getMonths(year)) {
@@ -270,9 +263,17 @@ function SpendingTableItemRow({
 
   return (
     <tr>
-      {headerCell}
+      <td className="table-button r-border" onClick={headerCellOnClick}>
+        <UI.Flex>
+          <UI.Indent /> {item.name}
+        </UI.Flex>
+      </td>
       {cells}
-      <UI.CurrencyCell value={totalSpend} onClick={headerCellOnClick} />
+      <UI.CurrencyCell
+        value={totalSpend}
+        onClick={headerCellOnClick}
+        className="l-border"
+      />
       <UI.CurrencyCell value={totalSpendInclFunds} />
       <UI.CurrencyCell value={item.amountPerYear} />
     </tr>
@@ -316,13 +317,11 @@ export function SpendingTable({
     }
   }
 
-  const useStickyHeaders = useAppSettingsContext().stickyHeaders;
-
   return (
     <UI.Table fontSize="small" softZeros>
       <SpendingTableColgroup />
 
-      <thead className={UI.cx(useStickyHeaders && "sticky-header")}>
+      <thead>
         <SpendingTableHeaderRow
           year={year}
           updateExpensesQuery={updateExpensesQuery}

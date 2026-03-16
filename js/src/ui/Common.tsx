@@ -249,7 +249,7 @@ export function LoadingBanner({ isLoading }: { isLoading: boolean }) {
 }
 
 export function Indent() {
-  return <span className="soft">{" :: "}</span>;
+  return <span className="glyph">{" :: "}</span>;
 }
 
 export function formatCurrency(value: number) {
