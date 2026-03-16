@@ -20,6 +20,7 @@ import {
   IconTrash,
   IconUpload,
 } from "@tabler/icons-react";
+
 export { Table } from "./Table";
 
 export function cx(
@@ -99,65 +100,35 @@ export function StatusCard({
   );
 }
 
-type GlyphType =
-  | "add"
-  | "arrow-up"
-  | "arrow-down"
-  | "chevron-left"
-  | "chevron-right"
-  | "copy"
-  | "delete"
-  | "edit"
-  | "error"
-  | "info"
-  | "notes"
-  | "sidebar-collapse"
-  | "success"
-  | "settings"
-  | "upload";
+// prettier-ignore
+const GLYPH_MAP = {
+  "add": IconPlus,
+  "arrow-up": IconArrowUp,
+  "arrow-down": IconArrowDown,
+  "chevron-left": IconChevronLeft,
+  "chevron-right": IconChevronRight,
+  "copy": IconCopy,
+  "delete": IconTrash,
+  "edit": IconPencil,
+  "error": IconExclamationCircle,
+  "info": IconInfoCircle,
+  "notes": IconNotes,
+  "sidebar-collapse": IconLayoutSidebarRightCollapse,
+  "success": IconCircleCheck,
+  "settings": IconAdjustments,
+  "upload": IconUpload,
+} as const;
+
+type GlyphType = keyof typeof GLYPH_MAP;
 
 interface GlyphProps extends IconProps {
   glyph: GlyphType;
 }
 
 export function Glyph({ glyph, className, ...rest }: GlyphProps) {
-  const classNames = cx("glyph", className);
-  switch (glyph) {
-    case "add":
-      return <IconPlus className={classNames} {...rest} />;
-    case "arrow-up":
-      return <IconArrowUp className={classNames} {...rest} />;
-    case "arrow-down":
-      return <IconArrowDown className={classNames} {...rest} />;
-    case "chevron-left":
-      return <IconChevronLeft className={classNames} {...rest} />;
-    case "chevron-right":
-      return <IconChevronRight className={classNames} {...rest} />;
-    case "copy":
-      return <IconCopy className={classNames} {...rest} />;
-    case "delete":
-      return <IconTrash className={classNames} {...rest} />;
-    case "edit":
-      return <IconPencil className={classNames} {...rest} />;
-    case "error":
-      return <IconExclamationCircle className={classNames} {...rest} />;
-    case "info":
-      return <IconInfoCircle className={classNames} {...rest} />;
-    case "notes":
-      return <IconNotes className={classNames} {...rest} />;
-    case "sidebar-collapse":
-      return (
-        <IconLayoutSidebarRightCollapse className={classNames} {...rest} />
-      );
-    case "success":
-      return <IconCircleCheck className={classNames} {...rest} />;
-    case "settings":
-      return <IconAdjustments className={classNames} {...rest} />;
-    case "upload":
-      return <IconUpload className={classNames} {...rest} />;
-    default:
-      return <IconPoo className={classNames} {...rest} />;
-  }
+  const IconComponent = GLYPH_MAP[glyph] || IconPoo;
+
+  return <IconComponent className={cx("glyph", className)} {...rest} />;
 }
 
 export function InlineGlyphButton({
